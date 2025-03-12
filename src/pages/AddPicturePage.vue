@@ -4,7 +4,17 @@
       {{ route.query?.id ? '编辑图片' : '创建图片' }}
     </h2>
 
-    <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+    <!-- 选择上传方式 -->
+    <a-tabs v-model:activeKey="uploadType"
+    >
+      <a-tab-pane key="file" tab="文件上传">
+        <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+      </a-tab-pane>
+      <a-tab-pane key="url" tab="URL 上传" force-render>
+        <UrlPictureUpload :picture="picture" :onSuccess="onSuccess" />
+      </a-tab-pane>
+    </a-tabs>
+
     <a-form v-if="picture" layout="vertical" :model="pictureForm" @finish="handleSubmit">
       <a-form layout="vertical" :model="pictureForm" @finish="handleSubmit">
         <a-form-item label="名称" name="name">
@@ -54,7 +64,9 @@ import {
   listPictureTagCategoryUsingGet
 } from '@/api/pictureController.ts'
 import { useRoute, useRouter } from 'vue-router'
+import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
 
+const uploadType = ref<'file' | 'url'>('file') // 上传方式
 
 // 定义变量，接收上传的图片和填写的表单信息
 const picture = ref<API.PictureVO>()
