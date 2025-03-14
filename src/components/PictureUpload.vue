@@ -29,7 +29,10 @@ interface Props {
   picture?: API.PictureVO
   // onSuccess: 上传成功后，把得到新图片的信息返回父组件，更新picture的值
   onSuccess?: (newPicture: API.PictureVO) => void
+  // 空间ID
+  spaceId?: number
 }
+
 const props = defineProps<Props>()
 
 // Upload组件支持上传前校验和自定义请求处理逻辑。编写对应函数并传递给组件
@@ -56,7 +59,8 @@ const handleUpload = async ({ file }: any) => {
   loading.value = true
   try {
     // 上传时，如果已有picture，表示对已经上传的图片进行更新，需要记录picture的id
-    const params = props.picture ? { id: props.picture.id } : {};
+    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {};
+    params.spaceId = props.spaceId
     // 上传图片
     const res = await uploadPictureUsingPost(params, {}, file)
     if (res.data.code === 0 && res.data.data) {

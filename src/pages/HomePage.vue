@@ -29,56 +29,29 @@
       </a-space>
     </div>
     <!-- 图片列表 -->
-    <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-      :data-source="dataList"
-      :pagination="pagination"
-      :loading="loading"
-    >
-      <template #renderItem="{ item: picture }">
-        <a-list-item style="padding: 0">
-          <!-- 单张图片 -->
-          <a-card hoverable @click="doClickPicture(picture)">
-            <template #cover>
-              <!-- 因为图片宽高不同，防止页面参差不齐。
-            统一设置相同高度，并使用 object-fit: cover 优化图片展示效果，不会受到挤压 -->
-              <img
-                style="height: 180px; object-fit: cover"
-                :alt="picture.name"
-                :src="picture.thumbnailUrl ?? picture.url"
-                loading="lazy"
-              />
-            </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green">
-                    {{ picture.category ?? '默认' }}
-                  </a-tag>
-                  <a-tag v-for="tag in picture.tags" :key="tag">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-              </template>
-            </a-card-meta>
-          </a-card>
-        </a-list-item>
-      </template>
-    </a-list>
+    <PictureList :dataList="dataList" :loading="loading" />
+    <a-pagination
+      style="text-align: right"
+      v-model:current="searchParams.current"
+      v-model:pageSize="searchParams.pageSize"
+      :total="total"
+      @change="onPageChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router' // 定义数据
+import { useRouter } from 'vue-router'
+import PictureList from '@/components/PictureList.vue' // 定义数据
 
 // 数据
-const dataList = ref([])
+const dataList = ref<API.PictureVO>([])
 const total = ref(0)
 const loading = ref(true)
 
@@ -90,27 +63,31 @@ const searchParams = reactive<API.PictureQueryRequest>({
   sortOrder: 'descend',
 })
 
-// 分页参数
-const pagination = computed(() => {
-  return {
-    current: searchParams.current ?? 1,
-    pageSize: searchParams.pageSize ?? 10,
-    total: total.value,
-    // 切换页号时,会修改搜索参数并获取数据. (这里不指定number类型会爆红)
-    onChange: (page: number, pageSize: number) => {
-      searchParams.current = page
-      searchParams.pageSize = pageSize
-      fetchData()
-    },
-  }
-})
+// // 分页参数
+// const pagination = computed(() => {
+//   return {
+//     current: searchParams.current ?? 1,
+//     pageSize: searchParams.pageSize ?? 10,
+//     total: total.value,
+//     // 切换页号时,会修改搜索参数并获取数据. (这里不指定number类型会爆红)
+//     onChange: (page: number, pageSize: number) => {
+//       searchParams.current = page
+//       searchParams.pageSize = pageSize
+//       fetchData()
+//     },
+//   }
+// })
+const onPageChange = (page: number, pageSize: number) => {
+  searchParams.current = page
+  searchParams.pageSize = pageSize
+  fetchData()
+}
 
+// 获取标签和分类选项
 const categoryList = ref<string[]>([])
 const selectedCategory = ref<string>('all')
 const tagList = ref<string[]>([])
 const selectedTagList = ref<string[]>([])
-
-// 获取标签和分类选项
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   if (res.data.code === 0 && res.data.data) {
@@ -150,7 +127,6 @@ const fetchData = async () => {
   }
   loading.value = false
 }
-
 onMounted(() => {
   fetchData()
 })
@@ -160,16 +136,6 @@ const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
-
-const router = useRouter()
-// 跳转至图片详情
-const doClickPicture = (picture:API.PictureVO) => {
-  router.push({
-    path: `/picture/${picture.id}`,
-  })
-}
-
-
 </script>
 
 <style scoped>

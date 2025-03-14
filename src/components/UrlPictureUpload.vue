@@ -28,6 +28,8 @@ interface Props {
   picture?: API.PictureVO
   // onSuccess: 上传成功后，把得到新图片的信息返回父组件，更新picture的值
   onSuccess?: (newPicture: API.PictureVO) => void
+  // 空间ID
+  spaceId?: number
 }
 
 const props = defineProps<Props>()
@@ -45,6 +47,7 @@ const handleUpload = async () => {
     if (props.picture) {
       params.id = props.picture.id
     }
+    params.spaceId = props.spaceId
     // 上传图片
     const res = await uploadPictureByUrlUsingPost(params)
     if (res.data.code === 0 && res.data.data) {

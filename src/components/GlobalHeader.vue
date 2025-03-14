@@ -31,6 +31,12 @@
                     <LogoutOutlined />
                     退出登录
                   </a-menu-item>
+                  <a-menu-item>
+                    <router-link to="/my_space">
+                      <UserOutlined />
+                      我的空间
+                    </router-link>
+                  </a-menu-item>
                 </a-menu>
               </template>
             </a-dropdown>
@@ -45,15 +51,18 @@
 </template>
 <script lang="ts" setup>
 import { computed, h, ref } from 'vue'
-import { HomeOutlined } from '@ant-design/icons-vue'
+import { HomeOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { type MenuProps, message } from 'ant-design-vue'
+import { useRouter } from 'vue-router'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import { userLogoutUsingPost } from '@/api/userController.ts'
 
 const originItems = [
   {
     key: '/',
     icon: () => h(HomeOutlined),
     label: '主页',
-    title: '主页'
+    title: '主页',
   },
   {
     key: '/add_picture',
@@ -63,7 +72,7 @@ const originItems = [
   {
     key: '/admin/userManage',
     label: '用户管理',
-    title: '用户管理'
+    title: '用户管理',
   },
   {
     key: '/admin/pictureManage',
@@ -71,10 +80,15 @@ const originItems = [
     title: '图片管理',
   },
   {
+    key: '/admin/spaceManage',
+    label: '空间管理',
+    title: '空间管理',
+  },
+  {
     key: 'others',
     label: h('a', { href: 'https://gitee.com/', target: '_blank' }, '编程导航'),
-    title: '编程导航'
-  }
+    title: '编程导航',
+  },
 ]
 
 // 根据权限过滤菜单项
@@ -95,9 +109,6 @@ const items = computed<MenuProps['items']>(() => {
   return filterMenus(originItems)
 })
 
-import { useRouter } from 'vue-router'
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import { userLogoutUsingPost } from '@/api/userController.ts'
 
 const router = useRouter()
 const loginUserStore = useLoginUserStore()
@@ -105,7 +116,7 @@ const loginUserStore = useLoginUserStore()
 // 路由跳转事件
 const doMenuClick = ({ key }: { key: string }) => {
   router.push({
-    path: key
+    path: key,
   })
 }
 
@@ -122,7 +133,7 @@ const doLogout = async () => {
   console.log(res)
   if (res.data.code === 0) {
     loginUserStore.setLoginUser({
-      userName: '未登录'
+      userName: '未登录',
     })
     message.success('退出登录成功')
     await router.push('/user/login')
