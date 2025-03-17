@@ -4,6 +4,10 @@
       {{ route.query?.id ? '编辑图片' : '创建图片' }}
     </h2>
 
+    <a-typography-paragraph v-if="spaceId" type="secondary">
+      保存至空间：<a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
+    </a-typography-paragraph>
+
     <!-- 选择上传方式 -->
     <a-tabs v-model:activeKey="uploadType"
     >
@@ -107,11 +111,9 @@ const handleSubmit = async (values: any) => {
   }
 }
 
-// 给分类和标签选择框补充选项数据，注意需要转换为对应组件接受的格式
+// 分类和标签
 const categoryOptions = ref<string[]>([])
 const tagOptions = ref<string[]>([])
-
-// 获取标签和分类选项
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   if (res.data.code === 0 && res.data.data) {

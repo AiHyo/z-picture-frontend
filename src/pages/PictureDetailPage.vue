@@ -48,8 +48,22 @@
             <a-descriptions-item label="大小">
               {{ formatSize(picture.picSize) }}
             </a-descriptions-item>
+            <a-descriptions-item label="主色调">
+              <a-space>
+                {{ picture.picColor ?? '-' }}
+                <div
+                  v-if="picture.picColor"
+                  :style="{
+                    backgroundColor: toHexColor(picture.picColor),
+                    width: '16px',
+                    height: '16px',
+                  }"
+                />
+              </a-space>
+            </a-descriptions-item>
           </a-descriptions>
-          <a-space wrap> <!-- wrap: 让a-space内的元素自动换行 -->
+          <a-space wrap>
+            <!-- wrap: 让a-space内的元素自动换行 -->
             <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit"
               >编辑
             </a-button>
@@ -62,10 +76,17 @@
               </template>
               免费下载
             </a-button>
+            <a-button type="primary" ghost @click="doShare">
+              分享
+              <template #icon>
+                <share-alt-outlined />
+              </template>
+            </a-button>
           </a-space>
         </a-card>
       </a-col>
     </a-row>
+    <ShareModal ref="shareModalRef" :link="shareLink" />
   </div>
 </template>
 
@@ -73,10 +94,11 @@
 import { computed, onMounted, ref, h } from 'vue'
 import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import { downloadImage, formatSize } from '../utils'
-import { EditOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons-vue'
-import router from '@/router'
+import { downloadImage, formatSize } from '@/utils'
+import { EditOutlined, DeleteOutlined, DownloadOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
+import router, { toHexColor } from '@/router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import ShareModal from '@/components/ShareModal.vue'
 
 // const props = defineProps<{
 //   id: string | number
@@ -87,7 +109,6 @@ interface props {
 
 const props = defineProps<props>()
 const picture = ref<API.PictureVO>({})
-
 // 获取图片详情
 const fetchPictureDetail = async () => {
   try {
@@ -150,6 +171,20 @@ const doDelete = async () => {
 const doDownload = () => {
   downloadImage(picture.value.url)
 }
+
+// 分享弹窗引用 和 分享链接
+const shareModalRef = ref()
+const shareLink = ref<string>()
+// 分享
+const doShare = (picture: API.PictureVO, e: Event) => {
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${props.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
+}
+
+
+
 </script>
 
 <style scoped>
