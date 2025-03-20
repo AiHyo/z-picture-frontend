@@ -9,8 +9,7 @@
     </a-typography-paragraph>
 
     <!-- 选择上传方式 -->
-    <a-tabs v-model:activeKey="uploadType"
-    >
+    <a-tabs v-model:activeKey="uploadType">
       <a-tab-pane key="file" tab="文件上传">
         <PictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
       </a-tab-pane>
@@ -19,56 +18,80 @@
       </a-tab-pane>
     </a-tabs>
 
+    <!-- 图片编辑 -->
+    <div v-if="picture" class="edit-bar">
+      <a-space size="middle">
+        <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
+        <a-button type="primary" ghost :icon="h(FullscreenOutlined)" @click="doImagePainting">
+          AI 扩图
+        </a-button>
+      </a-space>
+    </div>
+    <ImageCropper
+      ref="imageCropperRef"
+      :imageUrl="picture?.url"
+      :picture="picture"
+      :spaceId="spaceId"
+      :onSuccess="onCropSuccess"
+    />
+    <ImageOutPainting
+      ref="imageOutPaintingRef"
+      :picture="picture"
+      :spaceId="spaceId"
+      :onSuccess="onImageOutPaintingSuccess"
+    />
+
     <a-form v-if="picture" layout="vertical" :model="pictureForm" @finish="handleSubmit">
-      <a-form layout="vertical" :model="pictureForm" @finish="handleSubmit">
-        <a-form-item label="名称" name="name">
-          <a-input v-model:value="pictureForm.name" placeholder="请输入名称" />
-        </a-form-item>
-        <a-form-item label="简介" name="introduction">
-          <a-textarea
-            v-model:value="pictureForm.introduction"
-            placeholder="请输入简介"
-            :rows="2"
-            autoSize
-            allowClear
-          />
-        </a-form-item>
-        <a-form-item label="分类" name="category">
-          <a-auto-complete
-            v-model:value="pictureForm.category"
-            :options="categoryOptions"
-            placeholder="请输入分类"
-            allowClear
-          />
-        </a-form-item>
-        <a-form-item label="标签" name="tags">
-          <a-select
-            v-model:value="pictureForm.tags"
-            :options="tagOptions"
-            mode="tags"
-            placeholder="请输入标签"
-            allowClear
-          />
-        </a-form-item>
-        <a-form-item>
-          <a-button type="primary" html-type="submit" style="width: 100%">创建</a-button>
-        </a-form-item>
-      </a-form>
+      <a-form-item label="名称" name="name">
+        <a-input v-model:value="pictureForm.name" placeholder="请输入名称" />
+      </a-form-item>
+      <a-form-item label="简介" name="introduction">
+        <a-textarea
+          v-model:value="pictureForm.introduction"
+          placeholder="请输入简介"
+          :rows="2"
+          autoSize
+          allowClear
+        />
+      </a-form-item>
+      <a-form-item label="分类" name="category">
+        <a-auto-complete
+          v-model:value="pictureForm.category"
+          :options="categoryOptions"
+          placeholder="请输入分类"
+          allowClear
+        />
+      </a-form-item>
+      <a-form-item label="标签" name="tags">
+        <a-select
+          v-model:value="pictureForm.tags"
+          :options="tagOptions"
+          mode="tags"
+          placeholder="请输入标签"
+          allowClear
+        />
+      </a-form-item>
+      <a-form-item>
+        <a-button type="primary" html-type="submit" style="width: 100%">保存</a-button>
+      </a-form-item>
     </a-form>
   </div>
 </template>
 
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, h, onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   editPictureUsingPost,
   getPictureVoByIdUsingGet,
-  listPictureTagCategoryUsingGet
+  listPictureTagCategoryUsingGet,
 } from '@/api/pictureController.ts'
 import { useRoute, useRouter } from 'vue-router'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
+import { EditOutlined, FullscreenOutlined } from '@ant-design/icons-vue'
+import ImageCropper from '@/components/ImageCropper.vue'
+import ImageOutPainting from '@/components/ImageOutPainting.vue'
 
 const uploadType = ref<'file' | 'url'>('file') // 上传方式
 
@@ -81,10 +104,9 @@ const onSuccess = (newPicture: API.PictureVO) => {
 }
 
 // 必须使用computed,及时更新
-const spaceId = computed(()=>{
+const spaceId = computed(() => {
   return route.query?.spaceId
 })
-
 
 /**
  * 提交表单：实际调用的是【修改图片接口】
@@ -138,7 +160,6 @@ onMounted(() => {
   getTagCategoryOptions()
 })
 
-
 const route = useRoute()
 // 获取原图片
 const getOldPicture = async () => {
@@ -163,7 +184,27 @@ onMounted(() => {
   getOldPicture()
 })
 
+// 编辑图片
+const imageCropperRef = ref()
+const doEditPicture = () => {
+  if (imageCropperRef.value) {
+    imageCropperRef.value.openModal()
+  }
+}
+const onCropSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
 
+// AI 扩图
+const imageOutPaintingRef = ref()
+const doImagePainting = () => {
+  if (imageOutPaintingRef.value) {
+    imageOutPaintingRef.value.openModal()
+  }
+}
+const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
 </script>
 
 <style>
@@ -171,5 +212,9 @@ onMounted(() => {
   max-width: 720px;
   margin: 0 auto;
 }
-</style>
 
+#addPicturePage .edit-bar {
+  text-align: center;
+  margin: 16px 0;
+}
+</style>

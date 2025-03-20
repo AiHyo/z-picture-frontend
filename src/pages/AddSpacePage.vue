@@ -49,6 +49,7 @@ import {
 import { useRoute, useRouter } from 'vue-router'
 import { SPACE_LEVEL_OPTIONS } from '@/constants/space.ts'
 import { formatSize } from '@/utils'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 const space = ref<API.SpaceVO>()
 const spaceForm = reactive<API.SpaceAddRequest | API.SpaceEditRequest>({})
@@ -67,7 +68,6 @@ const fetchSpaceLevelList = async () => {
 onMounted(() => {
   fetchSpaceLevelList()
 })
-
 
 // 提交表单
 const router = useRouter()
@@ -90,10 +90,16 @@ const handleSubmit = async (values: any) => {
   // 操作成功
   if (res.data.code === 0 && res.data.data) {
     message.success('操作成功')
-    // 跳转到空间详情页
-    router.push({
-      path: `/space/${res.data.data}`,
-    })
+    const loginUserStore = useLoginUserStore()
+    if (loginUserStore.loginUser.userRole == 'admin'){
+      router.push({path: '/admin/spaceManage'})
+    }
+    else{
+      // TODO 跳转到空间详情页 目前用户没有该页面
+      router.push({
+        path: `/space/${res.data.data.id}`,
+      })
+    }
   } else {
     message.error('操作失败，' + res.data.message)
   }

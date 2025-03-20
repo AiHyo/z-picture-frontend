@@ -137,7 +137,7 @@ const canEdit = computed(() => {
   if (!loginUser.id) {
     return false
   }
-  // 仅本人或管理员可编辑
+  // 判断用户=>图片权限
   const user = picture.value.user || {}
   return loginUser.id === user.id || loginUser.userRole === 'admin'
 })
@@ -162,6 +162,11 @@ const doDelete = async () => {
   const res = await deletePictureUsingPost({ id })
   if (res.data.code === 0) {
     message.success('删除成功')
+    if(picture.value.spaceId) {
+      router.push({path: '/space/' + picture.value.spaceId})
+    }else{
+      router.push({path: '/'})
+    }
   } else {
     message.error('删除失败')
   }
