@@ -71,6 +71,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListSpaceUserVO_ = {
+    code?: number
+    data?: SpaceUserVO[]
+    message?: string
+  }
+
   type BaseResponseLoginUserVO_ = {
     code?: number
     data?: LoginUserVO
@@ -143,6 +149,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseSpaceUser_ = {
+    code?: number
+    data?: SpaceUser
+    message?: string
+  }
+
   type BaseResponseSpaceVO_ = {
     code?: number
     data?: SpaceVO
@@ -181,6 +193,13 @@ declare namespace API {
 
   type DeleteRequest = {
     id?: number
+  }
+
+  type doLoginUsingPOSTParams = {
+    /** password */
+    password?: string
+    /** username */
+    username?: string
   }
 
   type GetOutPaintingTaskResponse = {
@@ -420,6 +439,7 @@ declare namespace API {
     id?: number
     introduction?: string
     name?: string
+    permissionList?: string[]
     picColor?: string
     picFormat?: string
     picHeight?: number
@@ -453,6 +473,7 @@ declare namespace API {
     maxSize?: number
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     totalCount?: number
     totalSize?: number
     updateTime?: string
@@ -462,6 +483,7 @@ declare namespace API {
   type SpaceAddRequest = {
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
   }
 
   type SpaceCategoryAnalyzeRequest = {
@@ -496,6 +518,7 @@ declare namespace API {
     sortOrder?: string
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     userId?: number
   }
 
@@ -548,6 +571,21 @@ declare namespace API {
     usedSize?: number
   }
 
+  type SpaceUser = {
+    createTime?: string
+    id?: number
+    spaceId?: number
+    spaceRole?: string
+    updateTime?: string
+    userId?: number
+  }
+
+  type SpaceUserAddRequest = {
+    spaceId?: number
+    spaceRole?: string
+    userId?: number
+  }
+
   type SpaceUserAnalyzeRequest = {
     queryAll?: boolean
     queryPublic?: boolean
@@ -561,14 +599,39 @@ declare namespace API {
     period?: string
   }
 
+  type SpaceUserEditRequest = {
+    id?: number
+    spaceRole?: string
+  }
+
+  type SpaceUserQueryRequest = {
+    id?: number
+    spaceId?: number
+    spaceRole?: string
+    userId?: number
+  }
+
+  type SpaceUserVO = {
+    createTime?: string
+    id?: number
+    space?: SpaceVO
+    spaceId?: number
+    spaceRole?: string
+    updateTime?: string
+    user?: UserVO
+    userId?: number
+  }
+
   type SpaceVO = {
     createTime?: string
     editTime?: string
     id?: number
     maxCount?: number
     maxSize?: number
+    permissionList?: string[]
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     totalCount?: number
     totalSize?: number
     updateTime?: string

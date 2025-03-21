@@ -67,7 +67,7 @@
             <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit"
               >编辑
             </a-button>
-            <a-button v-if="canEdit" :icon="h(DeleteOutlined)" danger @click="doDelete"
+            <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete"
               >删除
             </a-button>
             <a-button type="primary" @click="doDownload">
@@ -99,6 +99,7 @@ import { EditOutlined, DeleteOutlined, DownloadOutlined, ShareAltOutlined } from
 import router, { toHexColor } from '@/router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import ShareModal from '@/components/ShareModal.vue'
+import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
 
 // const props = defineProps<{
 //   id: string | number
@@ -129,18 +130,18 @@ onMounted(() => {
 })
 
 // 是否具有编辑权限
-const loginUserStore = useLoginUserStore()
-const canEdit = computed(() => {
-  // 使用计算属性,当loginUserStore.loginUser变化则重新计算
-  const loginUser = loginUserStore.loginUser
-  // 未登录不可编辑
-  if (!loginUser.id) {
-    return false
-  }
-  // 判断用户=>图片权限
-  const user = picture.value.user || {}
-  return loginUser.id === user.id || loginUser.userRole === 'admin'
-})
+// const loginUserStore = useLoginUserStore()
+// const canEdit = computed(() => {
+//   // 使用计算属性,当loginUserStore.loginUser变化则重新计算
+//   const loginUser = loginUserStore.loginUser
+//   // 未登录不可编辑
+//   if (!loginUser.id) {
+//     return false
+//   }
+//   // 判断用户=>图片权限
+//   const user = picture.value.user || {}
+//   return loginUser.id === user.id || loginUser.userRole === 'admin'
+// })
 
 // 编辑
 const doEdit = () => {
@@ -187,6 +188,16 @@ const doShare = (picture: API.PictureVO, e: Event) => {
     shareModalRef.value.openModal()
   }
 }
+
+// 获取权限列表
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (picture.value.permissionList ?? []).includes(permission)
+  })
+}
+// 定义权限检查
+const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 
 
 
