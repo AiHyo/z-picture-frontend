@@ -8,6 +8,7 @@ import 'ant-design-vue/dist/reset.css';
 import '@/access.ts'
 import VueCropper from 'vue-cropper'
 import 'vue-cropper/dist/index.css'
+import '@/styles/sketch-theme.css'
 
 const app = createApp(App)
 

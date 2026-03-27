@@ -1,6 +1,8 @@
 <template>
-  <div id="mySpacePage">
-    <p>正在跳转，请稍后。。。</p>
+  <div id="mySpacePage" class="paper-panel redirect-note">
+    <span class="sketch-note">Redirecting</span>
+    <h2>正在跳转到你的空间</h2>
+    <p>这里仍然沿用原有空间检查逻辑，只是把等待态也做得像个产品页面。</p>
   </div>
 </template>
 
@@ -29,9 +31,10 @@ const checkUserSpace = async () => {
     pageSize: 1,
   })
   if (res.data.code === 0) {
+    const records = res.data.data?.records ?? []
     // 如果有，则进入第一个空间
-    if (res.data.data?.records?.length > 0) {
-      const space = res.data.data.records[0]
+    if (records.length > 0) {
+      const space = records[0]
       router.replace(`/space/${space.id}`)
     } else {
       // 如果没有，则跳转到创建空间页面
@@ -48,3 +51,24 @@ onMounted(() => {
   checkUserSpace()
 })
 </script>
+
+<style scoped>
+.redirect-note {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.redirect-note h2 {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: 2rem;
+}
+
+.redirect-note p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.68);
+}
+</style>

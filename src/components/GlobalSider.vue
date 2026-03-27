@@ -1,20 +1,26 @@
 <template>
   <div id="globalSider">
-<!--  breakpoint="lg"
-      collapsed-width="0"
-      -->
     <a-layout-sider
       v-if="loginUserStore.loginUser.id"
-      width="200"
+      width="264"
       breakpoint="lg"
       collapsed-width="0"
+      class="sider-shell"
     >
-      <a-menu
-        v-model:selectedKeys="current"
-        mode="inline"
-        :items="menuItems"
-        @click="doMenuClick"
-      />
+      <div class="paper-panel sider-panel">
+        <div class="sider-head">
+          <span class="sketch-note">Side Notes</span>
+          <h3>我的工作台</h3>
+          <p>固定入口放上面，团队空间挂下面，数据和导航继续走原来的主链路。</p>
+        </div>
+        <a-menu
+          v-model:selectedKeys="current"
+          mode="inline"
+          :items="menuItems"
+          @click="doMenuClick"
+          class="sider-menu"
+        />
+      </div>
     </a-layout-sider>
   </div>
 </template>
@@ -24,7 +30,6 @@ import { PictureOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons-v
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
-import * as path from 'node:path'
 import { listMyTeamSpaceUsingPost } from '@/api/spaceUserController.ts'
 import { message } from 'ant-design-vue'
 
@@ -108,5 +113,44 @@ router.afterEach((to, from, next) => {
 <style scoped>
 #globalSider .ant-layout-sider {
   background: none;
+}
+
+#globalSider .sider-shell {
+  position: sticky;
+  top: 12px;
+}
+
+#globalSider .sider-panel {
+  padding: 18px;
+}
+
+#globalSider .sider-head {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+#globalSider .sider-head h3 {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+#globalSider .sider-head p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.7);
+  line-height: 1.5;
+}
+
+#globalSider .sider-menu {
+  margin-top: 6px;
+}
+
+#globalSider :deep(.ant-menu-item-group-title) {
+  padding: 10px 14px 4px;
+  color: rgba(45, 45, 45, 0.54);
+  font-family: var(--sketch-title-font);
+  font-size: 0.95rem;
 }
 </style>

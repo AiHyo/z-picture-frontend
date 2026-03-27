@@ -1,65 +1,63 @@
 <template>
   <div class="picture-search-form">
-    <!-- 搜索表单 -->
-    <a-form name="searchForm" layout="inline" :model="searchParams" @finish="doSearch">
-      <a-form-item label="关键词" name="searchText">
-        <a-input
-          v-model:value="searchParams.searchText"
-          placeholder="从名称和简介搜索"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item name="category" label="分类">
-        <a-auto-complete
-          v-model:value="searchParams.category"
-          style="min-width: 180px"
-          placeholder="请输入分类"
-          :options="categoryOptions"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item name="tags" label="标签">
-        <a-select
-          v-model:value="searchParams.tags"
-          style="min-width: 180px"
-          mode="tags"
-          placeholder="请输入标签"
-          :options="tagOptions"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item label="日期" name="dateRange">
-        <a-range-picker
-          style="width: 400px"
-          show-time
-          v-model:value="dateRange"
-          :placeholder="['编辑开始时间', '编辑结束时间']"
-          format="YYYY/MM/DD HH:mm:ss"
-          :presets="rangePresets"
-          @change="onRangeChange"
-        />
-      </a-form-item>
-      <a-form-item label="名称" name="name">
-        <a-input v-model:value="searchParams.name" placeholder="请输入名称" allow-clear />
-      </a-form-item>
-      <a-form-item label="简介" name="introduction">
-        <a-input v-model:value="searchParams.introduction" placeholder="请输入简介" allow-clear />
-      </a-form-item>
-      <a-form-item label="宽度" name="picWidth">
-        <a-input-number v-model:value="searchParams.picWidth" />
-      </a-form-item>
-      <a-form-item label="高度" name="picHeight">
-        <a-input-number v-model:value="searchParams.picHeight" />
-      </a-form-item>
-      <a-form-item label="格式" name="picFormat">
-        <a-input v-model:value="searchParams.picFormat" placeholder="请输入格式" allow-clear />
-      </a-form-item>
-      <a-form-item>
+    <a-form name="searchForm" layout="vertical" :model="searchParams" @finish="doSearch">
+      <div class="picture-search-form__grid">
+        <a-form-item label="关键词" name="searchText">
+          <a-input
+            v-model:value="searchParams.searchText"
+            placeholder="从名称和简介搜索"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item name="category" label="分类">
+          <a-auto-complete
+            v-model:value="searchParams.category"
+            placeholder="请输入分类"
+            :options="categoryOptions"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item name="tags" label="标签">
+          <a-select
+            v-model:value="searchParams.tags"
+            mode="tags"
+            placeholder="请输入标签"
+            :options="tagOptions"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item label="日期" name="dateRange" class="picture-search-form__wide">
+          <a-range-picker
+            show-time
+            v-model:value="dateRange"
+            :placeholder="['编辑开始时间', '编辑结束时间']"
+            format="YYYY/MM/DD HH:mm:ss"
+            :presets="rangePresets"
+            @change="onRangeChange"
+          />
+        </a-form-item>
+        <a-form-item label="名称" name="name">
+          <a-input v-model:value="searchParams.name" placeholder="请输入名称" allow-clear />
+        </a-form-item>
+        <a-form-item label="简介" name="introduction">
+          <a-input v-model:value="searchParams.introduction" placeholder="请输入简介" allow-clear />
+        </a-form-item>
+        <a-form-item label="宽度" name="picWidth">
+          <a-input-number v-model:value="searchParams.picWidth" class="picture-search-form__field" />
+        </a-form-item>
+        <a-form-item label="高度" name="picHeight">
+          <a-input-number v-model:value="searchParams.picHeight" class="picture-search-form__field" />
+        </a-form-item>
+        <a-form-item label="格式" name="picFormat">
+          <a-input v-model:value="searchParams.picFormat" placeholder="请输入格式" allow-clear />
+        </a-form-item>
+      </div>
+      <div class="picture-search-form__actions">
         <a-space>
-          <a-button type="primary" html-type="submit" style="width: 96px">搜索</a-button>
+          <a-button type="primary" html-type="submit">搜索</a-button>
           <a-button html-type="reset" @click="doClear">重置</a-button>
         </a-space>
-      </a-form-item>
+      </div>
     </a-form>
   </div>
 </template>
@@ -81,8 +79,8 @@ const doSearch = () => {
 }
 
 // 分类和标签
-const categoryOptions = ref<string[]>([])
-const tagOptions = ref<string[]>([])
+const categoryOptions = ref<{ value: string; label: string }[]>([])
+const tagOptions = ref<{ value: string; label: string }[]>([])
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   if (res.data.code === 0 && res.data.data) {
@@ -130,9 +128,8 @@ const rangePresets = ref([
 
 // 重置搜索条件
 const doClear = () => {
-  // 取消所有对象的值
   Object.keys(searchParams).forEach((key) => {
-    searchParams[key] = undefined
+    delete searchParams[key as keyof API.PictureQueryRequest]
   })
   // 日期筛选项单独清空，必须定义为空数组
   dateRange.value = []
@@ -142,8 +139,27 @@ const doClear = () => {
 </script>
 
 <style scoped>
-.picture-search-form .ant-form-item {
-  margin-top: 16px;
+.picture-search-form__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 16px;
+}
+
+.picture-search-form__wide {
+  grid-column: span 2;
+}
+
+.picture-search-form__actions {
+  margin-top: 8px;
+}
+
+.picture-search-form__field {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .picture-search-form__wide {
+    grid-column: span 1;
+  }
 }
 </style>
-

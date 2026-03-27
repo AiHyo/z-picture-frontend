@@ -1,91 +1,95 @@
 <template>
-  <div id="PictureDetailPage">
-    <a-row :gutter="[16, 16]">
-      <!-- 行列的间距都为16px -->
-      <!-- 图片展示区 【和图片信息区的a-col中对应的大小要相加为24（每列24，很小的时候则自己24表示自己一行）】 -->
-      <a-col :sm="24" :md="16" :xl="18">
-        <a-card title="图片预览">
-          <a-image :src="picture.url" style="max-height: 600px; object-fit: contain" />
-        </a-card>
-      </a-col>
-      <!-- 图片信息区 -->
-      <a-col :sm="24" :md="8" :xl="6">
-        <a-card title="图片信息">
-          <a-descriptions :column="1">
-            <!-- 每行只有一列，只展示一条属性 -->
-            <a-descriptions-item label="作者">
-              <a-space>
-                <a-avatar :size="24" :src="picture.user?.userAvatar" />
-                <div>{{ picture.user?.userName }}</div>
-              </a-space>
-            </a-descriptions-item>
-            <a-descriptions-item label="名称">
-              {{ picture.name ?? '未命名' }}
-            </a-descriptions-item>
-            <a-descriptions-item label="简介">
-              {{ picture.introduction ?? '-' }}
-            </a-descriptions-item>
-            <a-descriptions-item label="分类">
-              {{ picture.category ?? '默认' }}
-            </a-descriptions-item>
-            <a-descriptions-item label="标签">
-              <a-tag v-for="tag in picture.tags" :key="tag">
-                {{ tag }}
-              </a-tag>
-            </a-descriptions-item>
-            <a-descriptions-item label="格式">
-              {{ picture.picFormat ?? '-' }}
-            </a-descriptions-item>
-            <a-descriptions-item label="宽度">
-              {{ picture.picWidth ?? '-' }}
-            </a-descriptions-item>
-            <a-descriptions-item label="高度">
-              {{ picture.picHeight ?? '-' }}
-            </a-descriptions-item>
-            <a-descriptions-item label="宽高比">
-              {{ picture.picScale ?? '-' }}
-            </a-descriptions-item>
-            <a-descriptions-item label="大小">
-              {{ formatSize(picture.picSize) }}
-            </a-descriptions-item>
-            <a-descriptions-item label="主色调">
-              <a-space>
-                {{ picture.picColor ?? '-' }}
-                <div
-                  v-if="picture.picColor"
-                  :style="{
-                    backgroundColor: toHexColor(picture.picColor),
-                    width: '16px',
-                    height: '16px',
-                  }"
-                />
-              </a-space>
-            </a-descriptions-item>
-          </a-descriptions>
-          <a-space wrap>
-            <!-- wrap: 让a-space内的元素自动换行 -->
-            <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit"
-              >编辑
-            </a-button>
-            <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete"
-              >删除
-            </a-button>
-            <a-button type="primary" @click="doDownload">
-              <template #icon>
-                <DownloadOutlined />
-              </template>
-              免费下载
-            </a-button>
-            <a-button type="primary" ghost @click="doShare">
-              分享
-              <template #icon>
-                <share-alt-outlined />
-              </template>
-            </a-button>
-          </a-space>
-        </a-card>
-      </a-col>
-    </a-row>
+  <div id="PictureDetailPage" class="page-shell detail-page">
+    <section class="page-head">
+      <span class="sketch-note">Picture Note</span>
+      <h1 class="page-head__title">{{ picture.name ?? '未命名图片' }}</h1>
+      <p class="page-head__desc">
+        下载、分享、编辑、删除继续走原来的行为函数。这里做的只是把详情页从说明书排版，改成像一张真正被钉在墙上的图片档案。
+      </p>
+    </section>
+
+    <section class="detail-grid">
+      <a-card title="图片预览" class="detail-preview">
+        <div class="preview-frame">
+          <a-image :src="picture.url || ''" class="preview-image" />
+        </div>
+      </a-card>
+
+      <a-card title="图片档案" class="detail-side">
+        <div class="author-strip">
+          <a-avatar :size="42" :src="picture.user?.userAvatar" />
+          <div>
+            <strong>{{ picture.user?.userName ?? '匿名作者' }}</strong>
+            <p>上传到图库的原始记录和属性摘要</p>
+          </div>
+        </div>
+
+        <a-descriptions :column="1">
+          <a-descriptions-item label="作者">
+            <a-space>
+              <a-avatar :size="24" :src="picture.user?.userAvatar" />
+              <div>{{ picture.user?.userName }}</div>
+            </a-space>
+          </a-descriptions-item>
+          <a-descriptions-item label="名称">
+            {{ picture.name ?? '未命名' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="简介">
+            {{ picture.introduction ?? '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="分类">
+            {{ picture.category ?? '默认' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="标签">
+            <a-tag v-for="tag in picture.tags ?? []" :key="tag">
+              {{ tag }}
+            </a-tag>
+          </a-descriptions-item>
+          <a-descriptions-item label="格式">
+            {{ picture.picFormat ?? '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="宽度">
+            {{ picture.picWidth ?? '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="高度">
+            {{ picture.picHeight ?? '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="宽高比">
+            {{ picture.picScale ?? '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="大小">
+            {{ formatSize(picture.picSize) }}
+          </a-descriptions-item>
+          <a-descriptions-item label="主色调">
+            <a-space>
+              {{ picture.picColor ?? '-' }}
+              <div
+                v-if="picture.picColor"
+                class="color-chip"
+                :style="{ backgroundColor: toHexColor(picture.picColor) }"
+              />
+            </a-space>
+          </a-descriptions-item>
+        </a-descriptions>
+
+        <div class="sketch-actions detail-actions">
+          <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit">编辑</a-button>
+          <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete">删除</a-button>
+          <a-button type="primary" @click="doDownload">
+            <template #icon>
+              <DownloadOutlined />
+            </template>
+            免费下载
+          </a-button>
+          <a-button type="primary" ghost @click="doShare">
+            分享
+            <template #icon>
+              <ShareAltOutlined />
+            </template>
+          </a-button>
+        </div>
+      </a-card>
+    </section>
     <ShareModal ref="shareModalRef" :link="shareLink" />
   </div>
 </template>
@@ -97,7 +101,6 @@ import { message } from 'ant-design-vue'
 import { downloadImage, formatSize } from '@/utils'
 import { EditOutlined, DeleteOutlined, DownloadOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
 import router, { toHexColor } from '@/router'
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import ShareModal from '@/components/ShareModal.vue'
 import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
 
@@ -109,12 +112,13 @@ interface props {
 }
 
 const props = defineProps<props>()
+const pictureId = computed(() => Number(props.id))
 const picture = ref<API.PictureVO>({})
 // 获取图片详情
 const fetchPictureDetail = async () => {
   try {
     const res = await getPictureVoByIdUsingGet({
-      id: props.id,
+      id: pictureId.value,
     })
     if (res.data.code === 0 && res.data.data) {
       picture.value = res.data.data
@@ -180,7 +184,7 @@ const doDownload = () => {
 
 // 分享弹窗引用 和 分享链接
 const shareModalRef = ref()
-const shareLink = ref<string>()
+const shareLink = ref('')
 // 分享
 const doShare = (picture: API.PictureVO, e: Event) => {
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${props.id}`
@@ -204,6 +208,84 @@ const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 </script>
 
 <style scoped>
-#PictureDetailPage {
+.detail-page {
+  gap: 22px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.78fr);
+  gap: 20px;
+}
+
+.detail-preview,
+.detail-side {
+  height: 100%;
+}
+
+.preview-frame {
+  display: grid;
+  place-items: center;
+  min-height: 560px;
+  padding: 18px;
+  border: 2px dashed rgba(45, 45, 45, 0.24);
+  border-radius: var(--sketch-radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 249, 196, 0.2), rgba(255, 255, 255, 0)),
+    rgba(247, 241, 232, 0.68);
+}
+
+.preview-image {
+  max-height: 600px;
+  object-fit: contain;
+}
+
+:deep(.preview-image img) {
+  max-height: 600px;
+  object-fit: contain;
+}
+
+.author-strip {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 2px dashed rgba(45, 45, 45, 0.22);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 249, 196, 0.24);
+}
+
+.author-strip strong {
+  display: block;
+  font-family: var(--sketch-title-font);
+  font-size: 1.15rem;
+}
+
+.author-strip p {
+  margin: 4px 0 0;
+  color: rgba(45, 45, 45, 0.66);
+}
+
+.detail-actions {
+  margin-top: 18px;
+}
+
+.color-chip {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--sketch-border);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0 0 rgba(45, 45, 45, 0.16);
+}
+
+@media (max-width: 960px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-frame {
+    min-height: 360px;
+  }
 }
 </style>

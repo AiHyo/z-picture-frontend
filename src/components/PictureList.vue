@@ -1,48 +1,67 @@
 <template>
   <div class="picture-list">
-    <!-- 图片列表 -->
+    <div v-if="!loading && dataList.length === 0" class="paper-panel sketch-empty">
+      <span class="sketch-note">Empty Board</span>
+      <h3>暂时没有匹配的图片</h3>
+      <p>换个关键词、分类或标签再试一次。</p>
+    </div>
     <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
+      v-else
+      :grid="{ gutter: 20, xs: 1, sm: 2, md: 2, lg: 3, xl: 4, xxl: 4 }"
       :data-source="dataList"
       :loading="loading"
+      class="picture-list__grid"
     >
       <template #renderItem="{ item: picture }">
-        <a-list-item style="padding: 0">
-          <!-- 单张图片 -->
-          <a-card hoverable @click="doClickPicture(picture)">
+        <a-list-item class="picture-list__item">
+          <a-card hoverable class="picture-card" @click="doClickPicture(picture)">
             <template #cover>
-              <!-- 因为图片宽高不同，防止页面参差不齐。
-            统一设置相同高度，并使用 object-fit: cover 优化图片展示效果，不会受到挤压 -->
-              <img
-                style="height: 180px; object-fit: cover"
-                :alt="picture.name"
-                :src="picture.thumbnailUrl ?? picture.url"
-                loading="lazy"
-              />
+              <div class="picture-card__cover">
+                <img
+                  :alt="picture.name"
+                  :src="picture.thumbnailUrl ?? picture.url"
+                  loading="lazy"
+                />
+              </div>
             </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green">
-                    {{ picture.category ?? '默认' }}
-                  </a-tag>
-                  <a-tag v-for="tag in picture.tags" :key="tag">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-              </template>
-            </a-card-meta>
+            <div class="picture-card__meta">
+              <div class="picture-card__category">
+                <a-tag>{{ picture.category ?? '默认分类' }}</a-tag>
+              </div>
+              <a-card-meta :title="picture.name ?? '未命名图片'">
+                <template #description>
+                  <p class="picture-card__intro">
+                    {{ picture.introduction ?? '还没有补充简介，先看看画面本身。' }}
+                  </p>
+                  <div class="picture-card__tags">
+                    <a-tag v-for="tag in picture.tags ?? []" :key="tag">
+                      {{ tag }}
+                    </a-tag>
+                  </div>
+                </template>
+              </a-card-meta>
+            </div>
             <template v-if="showOp" #actions>
-              <search-outlined @click="(e) => doSearch(picture, e)" />
-              <share-alt-outlined @click="(e) => doShare(picture, e)" />
-              <a-space v-if="canEdit" @click="(e) => doEdit(picture, e)">
-                <edit-outlined />
+              <span class="picture-card__action" @click="(e) => doSearch(picture, e)">
+                <SearchOutlined />
+                搜图
+              </span>
+              <span class="picture-card__action" @click="(e) => doShare(picture, e)">
+                <ShareAltOutlined />
+                分享
+              </span>
+              <span v-if="canEdit" class="picture-card__action" @click="(e) => doEdit(picture, e)">
+                <EditOutlined />
                 编辑
-              </a-space>
-              <a-space v-if="canDelete" @click="(e) => doDelete(picture, e)">
-                <delete-outlined />
+              </span>
+              <span
+                v-if="canDelete"
+                class="picture-card__action picture-card__action--danger"
+                @click="(e) => doDelete(picture, e)"
+              >
+                <DeleteOutlined />
                 删除
-              </a-space>
+              </span>
             </template>
           </a-card>
         </a-list-item>
@@ -92,7 +111,7 @@ const doClickPicture = (picture: API.PictureVO) => {
 
 // 分享弹窗引用 和 分享链接
 const shareModalRef = ref()
-const shareLink = ref<string>()
+const shareLink = ref('')
 // 分享
 const doShare = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
@@ -102,7 +121,7 @@ const doShare = (picture: API.PictureVO, e: Event) => {
   }
 }
 
-const doSearch = (picture, e) => {
+const doSearch = (picture: API.PictureVO, e: Event) => {
   // 阻止冒泡
   e.stopPropagation()
   // 打开新的页面
@@ -110,7 +129,7 @@ const doSearch = (picture, e) => {
 }
 
 // 编辑
-const doEdit = (picture, e) => {
+const doEdit = (picture: API.PictureVO, e: Event) => {
   // 阻止事件冒泡
   e.stopPropagation()
   router.push({
@@ -123,7 +142,7 @@ const doEdit = (picture, e) => {
 }
 
 // 删除
-const doDelete = async (picture, e) => {
+const doDelete = async (picture: API.PictureVO, e: Event) => {
   // 阻止事件冒泡
   e.stopPropagation()
   const id = picture.id
@@ -141,4 +160,86 @@ const doDelete = async (picture, e) => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.picture-list__item {
+  padding: 0;
+}
+
+.picture-card {
+  cursor: pointer;
+  transform: rotate(-0.8deg);
+  transition: transform 120ms ease;
+}
+
+.picture-card:hover {
+  transform: translateY(-2px) rotate(0.8deg);
+}
+
+.picture-card__cover {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 249, 196, 0.18), rgba(255, 255, 255, 0)),
+    #f7f1e8;
+}
+
+.picture-card__cover::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 2px dashed rgba(45, 45, 45, 0.24);
+  border-radius: var(--sketch-radius-sm);
+  pointer-events: none;
+}
+
+.picture-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.picture-card:hover .picture-card__cover img {
+  transform: scale(1.04);
+}
+
+.picture-card__meta {
+  display: grid;
+  gap: 10px;
+}
+
+.picture-card__intro {
+  margin: 10px 0 0;
+  color: rgba(45, 45, 45, 0.7);
+  line-height: 1.45;
+}
+
+.picture-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.picture-card__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--sketch-fg);
+  font-size: 0.98rem;
+}
+
+.picture-card__action--danger {
+  color: var(--sketch-accent);
+}
+
+.picture-card :deep(.ant-card-meta-title) {
+  margin-bottom: 0;
+  font-family: var(--sketch-title-font);
+  font-size: 1.3rem;
+  line-height: 1.05;
+  white-space: normal;
+}
+</style>

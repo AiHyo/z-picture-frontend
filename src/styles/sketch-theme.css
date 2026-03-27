@@ -1,0 +1,582 @@
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Ma+Shan+Zheng&family=Patrick+Hand&display=swap');
+
+:root {
+  --sketch-bg: #fdfbf7;
+  --sketch-fg: #2d2d2d;
+  --sketch-muted: #e5e0d8;
+  --sketch-paper: #fffdf8;
+  --sketch-paper-strong: #fff9c4;
+  --sketch-border: #2d2d2d;
+  --sketch-accent: #ff4d4d;
+  --sketch-blue: #2d5da1;
+  --sketch-shadow: 4px 4px 0 0 var(--sketch-border);
+  --sketch-shadow-lg: 8px 8px 0 0 var(--sketch-border);
+  --sketch-shadow-soft: 3px 3px 0 0 rgba(45, 45, 45, 0.12);
+  --sketch-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --sketch-radius-md: 30px 12px 34px 14px / 14px 34px 12px 30px;
+  --sketch-radius-sm: 18px 8px 22px 10px / 10px 22px 8px 18px;
+  --sketch-title-font: 'Ma Shan Zheng', 'Kalam', 'STKaiti', 'KaiTi', cursive;
+  --sketch-body-font: 'Patrick Hand', 'Segoe Print', 'STKaiti', 'KaiTi', cursive;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 28%),
+    radial-gradient(var(--sketch-muted) 1px, transparent 1px),
+    linear-gradient(180deg, #fffefb 0%, var(--sketch-bg) 100%);
+  background-size: auto, 24px 24px, auto;
+  color: var(--sketch-fg);
+  font-family: var(--sketch-body-font);
+}
+
+a {
+  color: var(--sketch-blue);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+#app {
+  color: var(--sketch-fg);
+}
+
+.sketch-app {
+  min-height: 100vh;
+  color: var(--sketch-fg);
+}
+
+.paper-panel {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-md);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--sketch-shadow);
+}
+
+.paper-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(255, 77, 77, 0.05), transparent 28%),
+    radial-gradient(circle at top right, rgba(45, 93, 161, 0.08), transparent 22%);
+}
+
+.paper-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.sketch-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 6px 14px;
+  border: 2px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-sm);
+  background: var(--sketch-paper-strong);
+  box-shadow: var(--sketch-shadow-soft);
+  color: var(--sketch-fg);
+  font-family: var(--sketch-title-font);
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  transform: rotate(-1.5deg);
+}
+
+.page-shell {
+  display: grid;
+  gap: 24px;
+}
+
+.page-head {
+  display: grid;
+  gap: 12px;
+}
+
+.page-head__title {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  line-height: 1;
+}
+
+.page-head__desc {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(45, 45, 45, 0.72);
+  font-size: 1.08rem;
+  line-height: 1.55;
+}
+
+.note-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.note-chip {
+  padding: 14px 16px;
+  border: 2px dashed var(--sketch-border);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 249, 196, 0.42);
+}
+
+.note-chip strong {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--sketch-title-font);
+  font-size: 1.1rem;
+}
+
+.sketch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.pagination-shell {
+  padding: 16px 20px;
+}
+
+.sketch-empty {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.sketch-empty h3 {
+  margin: 14px 0 8px;
+  font-family: var(--sketch-title-font);
+  font-size: 1.6rem;
+}
+
+.sketch-empty p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.7);
+}
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 440px);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.auth-copy,
+.auth-panel {
+  padding: 28px;
+}
+
+.auth-copy {
+  display: grid;
+  align-content: center;
+  gap: 18px;
+  min-height: 100%;
+}
+
+.auth-copy h1 {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 0.98;
+}
+
+.auth-copy p {
+  margin: 0;
+  max-width: 40ch;
+  color: rgba(45, 45, 45, 0.74);
+  font-size: 1.08rem;
+}
+
+.auth-points {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-points li {
+  padding: 12px 14px;
+  border: 2px dashed var(--sketch-border);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.sketch-app :where(.ant-layout, .ant-layout-header, .ant-layout-content, .ant-layout-sider, .ant-layout-footer) {
+  background: transparent;
+}
+
+.sketch-app :where(.ant-card) {
+  border: 3px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-md);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--sketch-shadow);
+  overflow: hidden;
+}
+
+.sketch-app :where(.ant-card-head) {
+  min-height: 62px;
+  border-bottom: 2px dashed rgba(45, 45, 45, 0.26);
+  background: linear-gradient(180deg, rgba(255, 249, 196, 0.38), rgba(255, 255, 255, 0.86));
+}
+
+.sketch-app :where(.ant-card-head-title) {
+  font-family: var(--sketch-title-font);
+  font-size: 1.2rem;
+}
+
+.sketch-app :where(.ant-card-body) {
+  padding: 22px;
+}
+
+.sketch-app :where(.ant-card-actions) {
+  border-top: 2px dashed rgba(45, 45, 45, 0.24);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.sketch-app :where(.ant-card-actions > li) {
+  margin: 12px 0;
+}
+
+.sketch-app :where(.ant-card-actions > li:not(:last-child)) {
+  border-inline-end: 2px dashed rgba(45, 45, 45, 0.22);
+}
+
+.sketch-app :where(.ant-btn) {
+  height: auto;
+  min-height: 48px;
+  padding: 10px 18px;
+  border: 3px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-sm);
+  background: #fff;
+  box-shadow: var(--sketch-shadow);
+  color: var(--sketch-fg);
+  font-family: var(--sketch-body-font);
+  font-size: 1rem;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.sketch-app :where(.ant-btn:hover) {
+  transform: translate(2px, 2px) rotate(-1deg);
+  box-shadow: 2px 2px 0 0 var(--sketch-border);
+  color: #fff !important;
+  border-color: var(--sketch-border) !important;
+  background: var(--sketch-accent) !important;
+}
+
+.sketch-app :where(.ant-btn:active) {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+.sketch-app :where(.ant-btn-primary, .ant-btn-link) {
+  background: var(--sketch-accent);
+  color: #fff;
+}
+
+.sketch-app :where(.ant-btn-primary.ant-btn-background-ghost) {
+  background: rgba(45, 93, 161, 0.08);
+  color: var(--sketch-blue);
+}
+
+.sketch-app :where(.ant-btn-dangerous) {
+  background: rgba(255, 77, 77, 0.08);
+  color: var(--sketch-accent);
+}
+
+.sketch-app :where(.ant-btn-link) {
+  border-style: dashed;
+}
+
+.sketch-app :where(.ant-btn[disabled], .ant-btn[disabled]:hover) {
+  transform: none;
+  box-shadow: none;
+  background: rgba(229, 224, 216, 0.7) !important;
+  color: rgba(45, 45, 45, 0.45) !important;
+}
+
+.sketch-app :where(.ant-input, .ant-input-affix-wrapper, .ant-input-number, .ant-input-number-affix-wrapper, .ant-picker, .ant-select-selector, .ant-mentions, .ant-input-search .ant-input-group-addon .ant-btn, .ant-input-group-addon) {
+  border: 2px solid var(--sketch-border) !important;
+  border-radius: var(--sketch-radius-sm) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 2px 2px 0 0 rgba(45, 45, 45, 0.14);
+  color: var(--sketch-fg);
+  font-family: var(--sketch-body-font);
+}
+
+.sketch-app :where(.ant-input, .ant-input-affix-wrapper, .ant-picker, .ant-select-selector, .ant-input-number, .ant-input-number-affix-wrapper) {
+  min-height: 46px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.sketch-app :where(.ant-input-number-input-wrap input, .ant-input::placeholder, .ant-input-affix-wrapper input::placeholder, .ant-select-selection-placeholder) {
+  color: rgba(45, 45, 45, 0.44) !important;
+}
+
+.sketch-app :where(.ant-input:focus, .ant-input-affix-wrapper-focused, .ant-picker-focused, .ant-select-focused .ant-select-selector, .ant-input-number-focused) {
+  border-color: var(--sketch-blue) !important;
+  box-shadow: 0 0 0 4px rgba(45, 93, 161, 0.12) !important;
+}
+
+.sketch-app :where(.ant-select-arrow, .ant-picker-suffix, .ant-input-password-icon) {
+  color: var(--sketch-border);
+}
+
+.sketch-app :where(.ant-form-inline) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  align-items: flex-start;
+}
+
+.sketch-app :where(.ant-form-inline .ant-form-item) {
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
+.sketch-app :where(.ant-form-item-label > label) {
+  color: var(--sketch-fg);
+  font-family: var(--sketch-title-font);
+  font-size: 1rem;
+}
+
+.sketch-app :where(.ant-tabs-nav::before, .ant-tabs-ink-bar) {
+  display: none;
+}
+
+.sketch-app :where(.ant-tabs-nav) {
+  margin-bottom: 18px;
+}
+
+.sketch-app :where(.ant-tabs-tab) {
+  margin: 0 12px 12px 0 !important;
+  padding: 10px 16px !important;
+  border: 2px solid var(--sketch-border) !important;
+  border-radius: var(--sketch-radius-sm);
+  background: #fff;
+  box-shadow: 2px 2px 0 0 rgba(45, 45, 45, 0.14);
+  font-family: var(--sketch-body-font);
+}
+
+.sketch-app :where(.ant-tabs-tab:hover) {
+  transform: rotate(-1deg);
+}
+
+.sketch-app :where(.ant-tabs-tab-active) {
+  background: var(--sketch-paper-strong) !important;
+}
+
+.sketch-app :where(.ant-tag) {
+  margin-inline-end: 6px;
+  padding: 3px 10px;
+  border: 2px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 249, 196, 0.42);
+  color: var(--sketch-fg);
+  font-family: var(--sketch-body-font);
+}
+
+.sketch-app :where(.ant-tag-checkable-checked) {
+  background: var(--sketch-accent) !important;
+  color: #fff !important;
+}
+
+.sketch-app :where(.ant-pagination) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.sketch-app :where(.ant-pagination-item, .ant-pagination-prev, .ant-pagination-next, .ant-pagination-options .ant-select-selector) {
+  border: 2px solid var(--sketch-border) !important;
+  border-radius: var(--sketch-radius-sm) !important;
+  background: #fff;
+  box-shadow: 2px 2px 0 0 rgba(45, 45, 45, 0.14);
+}
+
+.sketch-app :where(.ant-pagination-item-active) {
+  background: var(--sketch-paper-strong);
+}
+
+.sketch-app :where(.ant-menu) {
+  background: transparent;
+  font-family: var(--sketch-body-font);
+  color: var(--sketch-fg);
+}
+
+.sketch-app :where(.ant-menu-horizontal, .ant-menu-inline) {
+  border: none !important;
+}
+
+.sketch-app :where(.ant-menu-item, .ant-menu-submenu-title, .ant-dropdown-menu-item, .ant-dropdown-menu-submenu-title) {
+  height: auto;
+  min-height: 44px;
+  margin: 4px 0 !important;
+  padding: 10px 14px !important;
+  border: 2px dashed transparent;
+  border-radius: var(--sketch-radius-sm);
+  line-height: 1.2;
+}
+
+.sketch-app :where(.ant-menu-item-selected, .ant-menu-submenu-selected > .ant-menu-submenu-title) {
+  border-color: var(--sketch-border);
+  background: rgba(255, 249, 196, 0.56) !important;
+  color: var(--sketch-fg) !important;
+}
+
+.sketch-app :where(.ant-menu-item-active, .ant-menu-submenu-title:hover) {
+  color: var(--sketch-blue) !important;
+  background: rgba(45, 93, 161, 0.08) !important;
+}
+
+.sketch-app :where(.ant-dropdown .ant-dropdown-menu, .ant-dropdown-menu) {
+  padding: 10px;
+  border: 3px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-md);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: var(--sketch-shadow);
+}
+
+.sketch-app :where(.ant-avatar) {
+  border: 2px solid var(--sketch-border);
+  background: rgba(255, 249, 196, 0.84);
+}
+
+.sketch-app :where(.ant-table-wrapper) {
+  border: 3px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-md);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--sketch-shadow);
+  overflow: hidden;
+}
+
+.sketch-app :where(.ant-table) {
+  background: transparent;
+}
+
+.sketch-app :where(.ant-table-thead > tr > th) {
+  border-bottom: 2px solid rgba(45, 45, 45, 0.25) !important;
+  background: rgba(229, 224, 216, 0.72) !important;
+  color: var(--sketch-fg);
+  font-family: var(--sketch-title-font);
+}
+
+.sketch-app :where(.ant-table-tbody > tr > td) {
+  border-bottom: 1px dashed rgba(45, 45, 45, 0.16) !important;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.sketch-app :where(.ant-table-tbody > tr:hover > td) {
+  background: rgba(255, 249, 196, 0.22) !important;
+}
+
+.sketch-app :where(.ant-descriptions-view) {
+  border: 2px dashed rgba(45, 45, 45, 0.2);
+  border-radius: var(--sketch-radius-sm);
+  overflow: hidden;
+}
+
+.sketch-app :where(.ant-descriptions .ant-descriptions-item-label, .ant-descriptions .ant-descriptions-item-content) {
+  padding: 14px 16px !important;
+  background: transparent;
+}
+
+.sketch-app :where(.ant-descriptions .ant-descriptions-item-label) {
+  font-family: var(--sketch-title-font);
+}
+
+.sketch-app :where(.ant-modal-content) {
+  border: 3px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-md);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: var(--sketch-shadow-lg);
+}
+
+.sketch-app :where(.ant-modal-header) {
+  border-bottom: 2px dashed rgba(45, 45, 45, 0.18);
+  background: transparent;
+}
+
+.sketch-app :where(.ant-modal-title) {
+  font-family: var(--sketch-title-font);
+  font-size: 1.3rem;
+}
+
+.sketch-app :where(.ant-message-notice-content) {
+  border: 2px solid var(--sketch-border);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: var(--sketch-shadow);
+}
+
+.sketch-app :where(.ant-qrcode) {
+  border: 2px dashed var(--sketch-border);
+  border-radius: var(--sketch-radius-sm);
+  background: #fff;
+}
+
+.sketch-app :where(.ant-progress-circle .ant-progress-text) {
+  font-family: var(--sketch-title-font);
+  color: var(--sketch-fg) !important;
+}
+
+.sketch-app :where(.ant-list-empty-text) {
+  padding: 0;
+}
+
+.sketch-app :where(.ant-spin-dot-item) {
+  background-color: var(--sketch-accent);
+}
+
+.sketch-app :where(.ant-typography, .ant-typography-secondary) {
+  color: inherit;
+}
+
+@media (max-width: 1200px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-head__title {
+    font-size: 2.4rem;
+  }
+
+  .auth-copy,
+  .auth-panel {
+    padding: 22px;
+  }
+
+  .sketch-app :where(.ant-card-body) {
+    padding: 18px;
+  }
+
+  .sketch-app :where(.ant-pagination) {
+    justify-content: center;
+  }
+}

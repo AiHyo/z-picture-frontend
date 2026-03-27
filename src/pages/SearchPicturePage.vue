@@ -1,34 +1,46 @@
 <template>
-  <div id="searchPicturePage">
-    <h2 style="margin-bottom: 16px">以图搜图</h2>
-    <h3 style="margin: 16px 0">原图</h3>
-    <a-card style="width: 240px">
-      <template #cover>
-        <img
-          style="height: 180px; object-fit: cover"
-          :alt="picture.name"
-          :src="picture.thumbnailUrl ?? picture.url"
-        />
-      </template>
-    </a-card>
-    <h3 style="margin: 16px 0">识图结果</h3>
-    <!-- 图片列表 -->
-    <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-      :data-source="dataList"
-    >
-      <template #renderItem="{ item }">
-        <a-list-item style="padding: 0">
-          <a :href="item.thumbUrl" target="_blank">
-            <a-card>
-              <template #cover>
-                <img style="height: 180px; object-fit: cover" :src="item.thumbUrl" />
-              </template>
-            </a-card>
-          </a>
-        </a-list-item>
-      </template>
-    </a-list>
+  <div id="searchPicturePage" class="page-shell search-picture-page">
+    <section class="page-head">
+      <span class="sketch-note">Reverse Search</span>
+      <h1 class="page-head__title">以图搜图</h1>
+      <p class="page-head__desc">原始搜图逻辑不动，只把“原图”和“结果”关系讲清楚，让这页像真正的视觉检索面板。</p>
+    </section>
+
+    <section class="search-picture-layout">
+      <div class="paper-panel source-panel">
+        <span class="sketch-note">Source</span>
+        <h2>原图</h2>
+        <div class="source-frame">
+          <img :alt="picture.name" :src="picture.thumbnailUrl ?? picture.url" />
+        </div>
+      </div>
+
+      <div class="results-panel">
+        <div class="results-head">
+          <span class="sketch-note">Matches</span>
+          <h2>识图结果</h2>
+          <p>点击任意结果会在新标签页打开原始来源。</p>
+        </div>
+        <a-list
+          :grid="{ gutter: 20, xs: 1, sm: 2, md: 2, lg: 3, xl: 4, xxl: 4 }"
+          :data-source="dataList"
+        >
+          <template #renderItem="{ item }">
+            <a-list-item class="search-picture__item">
+              <a :href="item.thumbUrl" target="_blank" rel="noreferrer">
+                <a-card class="search-result-card">
+                  <template #cover>
+                    <div class="search-result-card__cover">
+                      <img :src="item.thumbUrl" alt="search result" />
+                    </div>
+                  </template>
+                </a-card>
+              </a>
+            </a-list-item>
+          </template>
+        </a-list>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -39,21 +51,28 @@ import { getPictureVoByIdUsingGet, searchPictureByPictureUsingPost } from '@/api
 import { message } from 'ant-design-vue'
 
 const route = useRoute()
+const toNumber = (value: unknown): number | undefined => {
+  const raw = Array.isArray(value) ? value[0] : value
+  if (raw === undefined || raw === null || raw === '') {
+    return undefined
+  }
+  const num = Number(raw)
+  return Number.isNaN(num) ? undefined : num
+}
 
 // 图片 id
 const pictureId = computed(() => {
-  return route.query?.pictureId
+  return toNumber(route.query?.pictureId)
 })
 
 const picture = ref<API.PictureVO>({})
 
 // 获取老数据
 const getOldPicture = async () => {
-  // 获取数据
-  const id = route.query?.pictureId
+  const id = pictureId.value
   if (id) {
     const res = await getPictureVoByIdUsingGet({
-      id: id,
+      id,
     })
     if (res.data.code === 0 && res.data.data) {
       const data = res.data.data
@@ -69,6 +88,9 @@ onMounted(() => {
 const dataList = ref<API.ImageSearchResult[]>([])
 // 获取搜图结果
 const fetchData = async () => {
+  if (!pictureId.value) {
+    return
+  }
   const res = await searchPictureByPictureUsingPost({
     pictureId: pictureId.value,
   })
@@ -86,3 +108,87 @@ onMounted(() => {
 
 
 </script>
+
+<style scoped>
+.search-picture-page {
+  gap: 22px;
+}
+
+.search-picture-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.source-panel {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+}
+
+.source-panel h2,
+.results-head h2 {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: 2rem;
+}
+
+.source-frame,
+.search-result-card__cover {
+  position: relative;
+  overflow: hidden;
+  border: 2px dashed rgba(45, 45, 45, 0.22);
+  border-radius: var(--sketch-radius-md);
+  background: #f7f1e8;
+}
+
+.source-frame {
+  min-height: 220px;
+}
+
+.source-frame img,
+.search-result-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.results-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.results-head {
+  display: grid;
+  gap: 8px;
+}
+
+.results-head p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.68);
+}
+
+.search-picture__item {
+  padding: 0;
+}
+
+.search-result-card {
+  transform: rotate(-0.8deg);
+  transition: transform 120ms ease;
+}
+
+.search-result-card:hover {
+  transform: translateY(-2px) rotate(0.8deg);
+}
+
+.search-result-card__cover {
+  height: 220px;
+}
+
+@media (max-width: 900px) {
+  .search-picture-layout {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
