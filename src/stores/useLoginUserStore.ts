@@ -8,10 +8,18 @@ export const useLoginUserStore = defineStore("loginUser", () => {
   });
 
   async function fetchLoginUser() {
-    const res = await getLoginUserUsingGet()
-    if (res.data.code === 0 && res.data.data) {
-      loginUser.value = res.data.data;
+    try {
+      const res = await getLoginUserUsingGet()
+      if (res.data.code === 0 && res.data.data) {
+        loginUser.value = res.data.data;
+        return
+      }
+    } catch (error) {
+      console.error('获取登录态失败', error)
     }
+    loginUser.value = {
+      userName: "未登录",
+    };
 
     // //测试用户3秒后登录
     // setTimeout(()=>{

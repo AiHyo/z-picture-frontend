@@ -1,0 +1,218 @@
+:root {
+  --sketch-accent: #f97316;
+  --sketch-blue: #0d9488;
+  --sketch-blue-soft: #14b8a6;
+  --sketch-paper-strong: #fff5bf;
+  --sketch-note-font: 'KaiTi', 'STKaiti', 'YouYuan', 'Segoe Print', cursive;
+  --sketch-title-font: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif;
+  --sketch-body-font: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif;
+  --sketch-reading-width: 74ch;
+}
+
+body {
+  font-family: var(--sketch-body-font);
+}
+
+.sketch-note {
+  font-family: var(--sketch-note-font);
+}
+
+.page-head__desc {
+  max-width: var(--sketch-reading-width);
+}
+
+.paper-section {
+  padding: 24px;
+}
+
+.workspace-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.workspace-grid--sidebar {
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  align-items: start;
+}
+
+.panel-intro {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.panel-intro p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.68);
+}
+
+.sketch-meta-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(45, 45, 45, 0.82);
+}
+
+.admin-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.admin-stat {
+  padding: 16px 18px;
+  border: 2px dashed rgba(45, 45, 45, 0.22);
+  border-radius: var(--sketch-radius-sm);
+  background: linear-gradient(180deg, rgba(255, 249, 196, 0.28), rgba(255, 255, 255, 0.88));
+}
+
+.admin-stat strong {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--sketch-title-font);
+  font-size: 1.15rem;
+}
+
+.admin-stat span {
+  color: rgba(45, 45, 45, 0.68);
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.admin-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.table-cell-stack {
+  display: grid;
+  gap: 4px;
+}
+
+.table-cell-stack--tight {
+  gap: 2px;
+}
+
+.table-cell-stack small,
+.table-cell-stack span {
+  color: rgba(45, 45, 45, 0.74);
+}
+
+.table-image {
+  display: block;
+  width: 120px;
+  max-width: 100%;
+  border: 2px dashed rgba(45, 45, 45, 0.22);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f7f1e8;
+}
+
+.table-image :where(img) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.chart-shell__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.chart-shell__copy {
+  display: grid;
+  gap: 8px;
+}
+
+.chart-shell__copy h3 {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: 1.5rem;
+}
+
+.chart-shell__copy p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.68);
+}
+
+.chart-shell__canvas {
+  min-height: 320px;
+}
+
+.modal-note {
+  margin: 0 0 16px;
+  color: rgba(45, 45, 45, 0.7);
+}
+
+.sketch-app :where(.ant-btn-primary.ant-btn-background-ghost) {
+  background: rgba(13, 148, 136, 0.08);
+}
+
+.sketch-app :where(.ant-input:focus, .ant-input-affix-wrapper-focused, .ant-picker-focused, .ant-select-focused .ant-select-selector, .ant-input-number-focused) {
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.12) !important;
+}
+
+.sketch-app :where(.ant-menu-item-active, .ant-menu-submenu-title:hover) {
+  background: rgba(13, 148, 136, 0.08) !important;
+}
+
+.sketch-app :where(
+  a:focus-visible,
+  button:focus-visible,
+  [role='button']:focus-visible,
+  .ant-btn:focus-visible,
+  .ant-menu-item:focus-visible,
+  .ant-dropdown-trigger:focus-visible,
+  .ant-card-hoverable:focus-visible
+) {
+  outline: 3px solid rgba(13, 148, 136, 0.34);
+  outline-offset: 3px;
+}
+
+@media (max-width: 960px) {
+  .workspace-grid--sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .paper-section {
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .sketch-note,
+  .sketch-app :where(.ant-btn:hover, .ant-tabs-tab:hover),
+  .picture-card,
+  .search-result-card {
+    transform: none !important;
+  }
+}
+
+

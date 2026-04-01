@@ -1,61 +1,73 @@
 <template>
-  <div class="vip-exchange-container">
-    <a-card :bordered="false" class="exchange-card">
-      <div class="card-header">
-        <CrownOutlined class="vip-icon" />
-        <h2 class="card-title">会员兑换中心</h2>
+  <div class="page-shell vip-exchange-page">
+    <section class="page-head">
+      <span class="sketch-note">Membership</span>
+      <h1 class="page-head__title">会员兑换中心</h1>
+      <p class="page-head__desc">
+        兑换接口和校验规则不动，只把这页从一张普通卡片改成完整的权益说明与操作面板，减少“输入完不知道会发生什么”的旧体验。
+      </p>
+    </section>
+
+    <section class="workspace-grid workspace-grid--sidebar">
+      <div class="paper-panel paper-section vip-form-panel">
+        <div class="panel-intro">
+          <span class="sketch-note">Redeem Code</span>
+          <p>输入兑换码后直接走原有兑换接口。成功和失败反馈仍然由现有消息提示承接。</p>
+        </div>
+        <a-form :model="formState" name="vipExchangeForm" :rules="rules" @finish="onFinish" layout="vertical">
+          <a-form-item label="兑换码" name="vipCode">
+            <a-input
+              v-model:value="formState.vipCode"
+              placeholder="请输入会员兑换码"
+              :maxLength="20"
+              size="large"
+            />
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" html-type="submit" :loading="loading" block size="large">
+              <GiftOutlined v-if="!loading" />
+              立即兑换
+            </a-button>
+          </a-form-item>
+        </a-form>
       </div>
 
-      <a-form
-        :model="formState"
-        name="vipExchangeForm"
-        :rules="rules"
-        @finish="onFinish"
-        layout="vertical"
-      >
-        <a-form-item label="兑换码" name="vipCode">
-          <a-input
-            v-model:value="formState.vipCode"
-            placeholder="请输入会员兑换码"
-            :maxLength="20"
-            size="large"
-          />
-        </a-form-item>
-
-        <a-form-item>
-          <a-button type="primary" html-type="submit" :loading="loading" block size="large">
-            <GiftOutlined v-if="!loading" />
-            立即兑换
-          </a-button>
-        </a-form-item>
-      </a-form>
-
-      <div class="vip-info">
-        <h3 class="benefits-title">
-          <TrophyOutlined class="benefits-icon" /> 会员特权
-        </h3>
-        <ul class="benefits-list">
-          <li><CheckCircleFilled /> 无限制图片上传</li>
-          <li><CheckCircleFilled /> 高级图片处理功能</li>
-          <li><CheckCircleFilled /> 专属空间存储扩容</li>
-          <li><CheckCircleFilled /> 优先客服支持</li>
-        </ul>
-      </div>
-    </a-card>
+      <aside class="vip-side">
+        <div class="paper-panel paper-section">
+          <div class="panel-intro vip-benefits-head">
+            <span class="sketch-note">Benefits</span>
+            <p>这是权益说明，不是装饰。用户在提交前应该先知道自己买到了什么。</p>
+          </div>
+          <ul class="benefits-list">
+            <li><CheckCircleFilled /> 无限制图片上传</li>
+            <li><CheckCircleFilled /> 高级图片处理功能</li>
+            <li><CheckCircleFilled /> 专属空间存储扩容</li>
+            <li><CheckCircleFilled /> 优先客服支持</li>
+          </ul>
+        </div>
+        <div class="paper-panel paper-section">
+          <span class="sketch-note">Privilege Map</span>
+          <div class="admin-overview">
+            <div class="admin-stat">
+              <strong>4 项</strong>
+              <span>核心权益</span>
+            </div>
+            <div class="admin-stat">
+              <strong>1 次</strong>
+              <span>输入即可生效</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import {
-  CheckCircleFilled,
-  CrownOutlined,
-  GiftOutlined,
-  TrophyOutlined
-} from '@ant-design/icons-vue'
+import { CheckCircleFilled, GiftOutlined } from '@ant-design/icons-vue'
 import { exchangeVipUsingPost } from '@/api/userController'
-import { useLoginUserStore } from '@/stores/useLoginUserStore'
 
 const formState = reactive({
   vipCode: '',
@@ -69,9 +81,8 @@ const rules = {
 }
 
 const loading = ref(false)
-const loginUserStore = useLoginUserStore()
 
-const onFinish = async (values: any) => {
+const onFinish = async (values: { vipCode: string }) => {
   loading.value = true
   try {
     const res = await exchangeVipUsingPost({
@@ -94,99 +105,39 @@ const onFinish = async (values: any) => {
 </script>
 
 <style scoped>
-.vip-exchange-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 20px;
-  min-height: calc(100vh - 120px);
+.vip-exchange-page {
+  gap: 22px;
 }
 
-.exchange-card {
-  width: 500px;
-  max-width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
+.vip-form-panel,
+.vip-side {
+  display: grid;
+  gap: 20px;
 }
 
-.card-header {
-  text-align: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px dashed #f0f0f0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.vip-icon {
-  font-size: 40px;
-  color: #ffd700;
+.vip-benefits-head {
   margin-bottom: 12px;
 }
 
-.card-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.vip-info {
-  margin-top: 28px;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 20px;
-  background-color: #f9f9ff;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.benefits-title {
-  font-size: 20px;
-  color: #1890ff;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.benefits-icon {
-  margin-right: 8px;
-  font-size: 22px;
-  color: #1890ff;
-}
-
 .benefits-list {
-  padding-left: 12px;
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
 .benefits-list li {
-  margin-bottom: 16px;
   display: flex;
   align-items: center;
-  font-size: 16px;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 2px dashed rgba(45, 45, 45, 0.2);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 255, 255, 0.74);
 }
 
-.benefits-list li :deep(.anticon) {
-  color: #52c41a;
-  margin-right: 12px;
-  font-size: 18px;
-}
-
-:deep(.ant-btn-primary) {
-  height: 48px;
-  font-size: 16px;
-  background: linear-gradient(to right, #1890ff, #096dd9);
-  border: none;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:deep(.ant-btn-primary .anticon) {
-  margin-right: 8px;
+.benefits-list :deep(.anticon) {
+  color: var(--sketch-blue);
 }
 </style>

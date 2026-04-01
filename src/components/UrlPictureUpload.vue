@@ -1,58 +1,47 @@
 <template>
   <div class="url-picture-upload">
-    <a-input-group compact style="margin-bottom: 16px">
-      <a-input
-        v-model:value="fileUrl"
-        style="width: calc(100% - 120px)"
-        placeholder="请输入图片 URL"
-      />
-      <a-button type="primary" :loading="loading" @click="handleUpload" style="width: 120px"
-        >提交
-      </a-button>
-    </a-input-group>
-    <div class="img-wrapper">
-      <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
+    <div class="url-picture-upload__bar">
+      <a-input v-model:value="fileUrl" placeholder="请输入图片 URL" />
+      <a-button type="primary" :loading="loading" @click="handleUpload">提交</a-button>
+    </div>
+    <div class="url-picture-upload__preview">
+      <template v-if="picture?.url">
+        <img :src="picture.url" alt="url upload preview" />
+      </template>
+      <div v-else class="url-picture-upload__empty">
+        <span class="sketch-note">Remote Source</span>
+        <p>提交 URL 后，预览结果会显示在这里。</p>
+      </div>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
-import type { UploadProps } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
-import { uploadPictureByUrlUsingPost, uploadPictureUsingPost } from '@/api/pictureController.ts'
+import { uploadPictureByUrlUsingPost } from '@/api/pictureController.ts'
 
-// 定义受控组件的 props
 interface Props {
-  // picture:   已经上传的图片信息
   picture?: API.PictureVO
-  // onSuccess: 上传成功后，把得到新图片的信息返回父组件，更新picture的值
   onSuccess?: (newPicture: API.PictureVO) => void
-  // 空间ID
   spaceId?: number
 }
 
 const props = defineProps<Props>()
 
-const loading = ref<boolean>(false)
+const loading = ref(false)
 const fileUrl = ref<string>()
-/**
- * 上传
- */
+
 const handleUpload = async () => {
   loading.value = true
   try {
     const params: API.PictureUploadRequest = { fileUrl: fileUrl.value }
-    // 上传时，如果已有picture，表示对已经上传的图片进行更新，需要记录picture的id
     if (props.picture) {
       params.id = props.picture.id
     }
     params.spaceId = props.spaceId
-    // 上传图片
     const res = await uploadPictureByUrlUsingPost(params)
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')
-      // 将上传成功的图片信息传递给父组件
       props.onSuccess?.(res.data.data)
     } else {
       message.error('图片上传失败，' + res.data.message)
@@ -66,16 +55,49 @@ const handleUpload = async () => {
 </script>
 <style scoped>
 .url-picture-upload {
-  margin-bottom: 16px;
+  display: grid;
+  gap: 16px;
 }
 
-.url-picture-upload img {
+.url-picture-upload__bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 12px;
+}
+
+.url-picture-upload__preview {
+  min-height: 320px;
+  padding: 16px;
+  border: 2px dashed rgba(45, 45, 45, 0.22);
+  border-radius: var(--sketch-radius-md);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.url-picture-upload__preview img {
+  display: block;
   max-width: 100%;
-  max-height: 480px;
+  max-height: 420px;
+  margin: 0 auto;
+  border-radius: 18px;
 }
 
-.url-picture-upload .img-wrapper {
+.url-picture-upload__empty {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 10px;
+  min-height: 286px;
   text-align: center;
-  margin-top: 16px;
+}
+
+.url-picture-upload__empty p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.66);
+}
+
+@media (max-width: 640px) {
+  .url-picture-upload__bar {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

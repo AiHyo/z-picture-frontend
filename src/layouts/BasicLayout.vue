@@ -8,7 +8,7 @@
       <a-layout class="layout-body">
         <GlobalSider class="sider" />
         <a-layout-content class="content">
-          <div class="content-board paper-panel">
+          <div class="content-board">
             <router-view />
           </div>
         </a-layout-content>
@@ -41,9 +41,9 @@ import GlobalSider from '@/components/GlobalSider.vue'
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(circle at 12% 18%, rgba(255, 77, 77, 0.08), transparent 16%),
-    radial-gradient(circle at 88% 22%, rgba(45, 93, 161, 0.12), transparent 18%),
-    radial-gradient(circle at 74% 78%, rgba(255, 249, 196, 0.58), transparent 22%);
+    radial-gradient(circle at 12% 18%, rgba(249, 115, 22, 0.08), transparent 16%),
+    radial-gradient(circle at 88% 22%, rgba(13, 148, 136, 0.12), transparent 18%),
+    radial-gradient(circle at 74% 78%, rgba(255, 245, 191, 0.58), transparent 22%);
 }
 
 #basicLayout .layout-frame {
@@ -64,6 +64,7 @@ import GlobalSider from '@/components/GlobalSider.vue'
   align-items: flex-start;
   gap: 20px;
   min-height: 0;
+  width: 100%;
 }
 
 #basicLayout .sider {
@@ -72,12 +73,19 @@ import GlobalSider from '@/components/GlobalSider.vue'
 
 #basicLayout .content {
   min-width: 0;
+  width: 100%;
+  flex: 1 1 0;
   padding: 0;
 }
 
 #basicLayout .content-board {
+  width: 100%;
   min-height: 68vh;
-  padding: 26px;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 2px dashed rgba(45, 45, 45, 0.18);
+  border-radius: calc(var(--sketch-radius-md) + 4px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.08));
 }
 
 #basicLayout .footer {
@@ -114,10 +122,27 @@ import GlobalSider from '@/components/GlobalSider.vue'
 
   #basicLayout .layout-body {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  #basicLayout .sider,
+  #basicLayout .content {
+    width: 100%;
+  }
+
+  #basicLayout .content {
+    order: 1;
+    flex: none;
+  }
+
+  #basicLayout .sider {
+    order: 2;
   }
 
   #basicLayout .content-board {
-    padding: 20px;
+    padding: 6px;
   }
 }
 </style>
+
+

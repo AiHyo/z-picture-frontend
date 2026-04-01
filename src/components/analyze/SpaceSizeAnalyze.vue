@@ -1,8 +1,13 @@
 <template>
-  <div class="space-size-analyze">
-    <a-card title="空间图片大小分析">
-      <v-chart :option="options" style="height: 320px; max-width: 100%" :loading="loading" />
-    </a-card>
+  <div class="paper-panel paper-section chart-shell">
+    <div class="chart-shell__head">
+      <div class="chart-shell__copy">
+        <span class="sketch-note">Size Bands</span>
+        <h3>空间图片大小分析</h3>
+        <p>过滤零值区间后再画图，避免一堆没意义的空扇区占视线。</p>
+      </div>
+    </div>
+    <v-chart :option="options" class="chart-shell__canvas" autoresize :loading="loading" />
   </div>
 </template>
 
@@ -24,61 +29,47 @@ const props = withDefaults(defineProps<Props>(), {
   queryPublic: false,
 })
 
-// 图表数据
-const dataList = ref<API.SpaceSizeAnalyzeResponse>([])
-// 加载状态
+const dataList = ref<any[]>([])
 const loading = ref(true)
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
   const res = await getSpaceSizeAnalyzeUsingPost({
     queryAll: props.queryAll,
     queryPublic: props.queryPublic,
     spaceId: props.spaceId,
-  })
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data ?? []
+  } as any)
+  const result = res.data as any
+  if (result.code === 0 && result.data) {
+    dataList.value = result.data ?? []
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取数据失败，' + result.message)
   }
   loading.value = false
 }
 
-/**
- * 监听变量，参数改变时触发数据的重新加载
- */
 watchEffect(() => {
   fetchData()
 })
 
-// 图表选项
 const options = computed(() => {
   const pieData = dataList.value
-    .filter(item => item.count > 0)
-    .map((item) => ({
-      name: item.sizeRange,
-      value: item.count,
-    }))
+    .filter((item: any) => (item.count ?? 0) > 0)
+    .map((item: any) => ({ name: item.sizeRange, value: item.count }))
   return {
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)',
-    },
-    legend: {
-      top: 'bottom',
-    },
+    color: ['#f97316', '#0d9488', '#38bdf8', '#f43f5e', '#eab308', '#8b5cf6'],
+    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+    legend: { bottom: 0, icon: 'roundRect' },
     series: [
       {
         name: '图片大小',
         type: 'pie',
-        radius: '50%',
+        radius: ['42%', '72%'],
+        center: ['50%', '46%'],
+        label: { color: '#4b5563' },
         data: pieData,
       },
     ],
   }
 })
 </script>
-
-<style scoped></style>

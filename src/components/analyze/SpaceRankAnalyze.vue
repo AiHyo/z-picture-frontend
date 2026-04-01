@@ -1,8 +1,13 @@
 <template>
-  <div class="space-rank-analyze">
-    <a-card title="空间使用排行分析">
-      <v-chart :option="options" style="height: 320px; max-width: 100%;" :loading="loading" />
-    </a-card>
+  <div class="paper-panel paper-section chart-shell">
+    <div class="chart-shell__head">
+      <div class="chart-shell__copy">
+        <span class="sketch-note">Leaderboard</span>
+        <h3>空间使用排行分析</h3>
+        <p>管理员专属视图，直接看前十名空间的体积占用。</p>
+      </div>
+    </div>
+    <v-chart :option="options" class="chart-shell__canvas" autoresize :loading="loading" />
   </div>
 </template>
 
@@ -24,64 +29,59 @@ const props = withDefaults(defineProps<Props>(), {
   queryPublic: false,
 })
 
-// 图表数据
-const dataList = ref<API.Space[]>([])
-// 加载状态
+const dataList = ref<any[]>([])
 const loading = ref(true)
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
   const res = await getSpaceRankAnalyzeUsingPost({
     queryAll: props.queryAll,
     queryPublic: props.queryPublic,
     spaceId: props.spaceId,
-    topN: 10, // 后端默认是 10
-  })
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data ?? []
+    topN: 10,
+  } as any)
+  const result = res.data as any
+  if (result.code === 0 && result.data) {
+    dataList.value = result.data ?? []
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取数据失败，' + result.message)
   }
   loading.value = false
 }
 
-/**
- * 监听变量，参数改变时触发数据的重新加载
- */
 watchEffect(() => {
   fetchData()
 })
 
-// 图表选项
 const options = computed(() => {
-  const spaceNames = dataList.value.map((item) => item.spaceName)
-  const usageData = dataList.value.map((item) => (item.totalSize / (1024 * 1024)).toFixed(2)) // 转为 MB
+  const spaceNames = dataList.value.map((item: any) => item.spaceName)
+  const usageData = dataList.value.map((item: any) => Number((((item.totalSize ?? 0) as number) / (1024 * 1024)).toFixed(2)))
 
   return {
+    color: ['#f97316'],
+    grid: { left: 16, right: 16, bottom: 24, top: 24, containLabel: true },
     tooltip: { trigger: 'axis' },
     xAxis: {
       type: 'category',
       data: spaceNames,
+      axisLabel: { color: '#4b5563', interval: 0, rotate: 20 },
+      axisLine: { lineStyle: { color: '#cbd5e1' } },
     },
     yAxis: {
       type: 'value',
       name: '空间使用量 (MB)',
+      axisLabel: { color: '#4b5563' },
+      splitLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.25)', type: 'dashed' } },
     },
     series: [
       {
         name: '空间使用量 (MB)',
         type: 'bar',
         data: usageData,
-        itemStyle: {
-          color: '#5470C6', // 自定义柱状图颜色
-        },
+        barMaxWidth: 30,
+        borderRadius: [8, 8, 0, 0],
       },
     ],
   }
 })
 </script>
-
-<style scoped></style>
-

@@ -262,7 +262,6 @@ export async function uploadPictureUsingPost(
       ...params,
     },
     data: formData,
-    requestType: 'form',
     ...(options || {}),
   })
 }
@@ -296,3 +295,6 @@ export async function uploadPictureByUrlUsingPost(
     ...(options || {}),
   })
 }
+
+
+

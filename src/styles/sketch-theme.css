@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Ma+Shan+Zheng&family=Patrick+Hand&display=swap');
-
 :root {
   --sketch-bg: #fdfbf7;
   --sketch-fg: #2d2d2d;
@@ -15,8 +13,8 @@
   --sketch-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
   --sketch-radius-md: 30px 12px 34px 14px / 14px 34px 12px 30px;
   --sketch-radius-sm: 18px 8px 22px 10px / 10px 22px 8px 18px;
-  --sketch-title-font: 'Ma Shan Zheng', 'Kalam', 'STKaiti', 'KaiTi', cursive;
-  --sketch-body-font: 'Patrick Hand', 'Segoe Print', 'STKaiti', 'KaiTi', cursive;
+  --sketch-title-font: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --sketch-body-font: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
 }
 
 html,
@@ -580,3 +578,4 @@ select {
     justify-content: center;
   }
 }
+

@@ -42,26 +42,32 @@
               </a-card-meta>
             </div>
             <template v-if="showOp" #actions>
-              <span class="picture-card__action" @click="(e) => doSearch(picture, e)">
+              <button type="button" class="picture-card__action" @click="(e) => doSearch(picture, e)">
                 <SearchOutlined />
                 搜图
-              </span>
-              <span class="picture-card__action" @click="(e) => doShare(picture, e)">
+              </button>
+              <button type="button" class="picture-card__action" @click="(e) => doShare(picture, e)">
                 <ShareAltOutlined />
                 分享
-              </span>
-              <span v-if="canEdit" class="picture-card__action" @click="(e) => doEdit(picture, e)">
+              </button>
+              <button
+                v-if="canEdit"
+                type="button"
+                class="picture-card__action"
+                @click="(e) => doEdit(picture, e)"
+              >
                 <EditOutlined />
                 编辑
-              </span>
-              <span
+              </button>
+              <button
                 v-if="canDelete"
+                type="button"
                 class="picture-card__action picture-card__action--danger"
                 @click="(e) => doDelete(picture, e)"
               >
                 <DeleteOutlined />
                 删除
-              </span>
+              </button>
             </template>
           </a-card>
         </a-list-item>
@@ -227,12 +233,23 @@ const doDelete = async (picture: API.PictureVO, e: Event) => {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 0;
   color: var(--sketch-fg);
   font-size: 0.98rem;
+  font: inherit;
+  cursor: pointer;
 }
 
 .picture-card__action--danger {
   color: var(--sketch-accent);
+}
+
+.picture-card__action:focus-visible {
+  outline: 2px solid var(--sketch-blue);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 .picture-card :deep(.ant-card-meta-title) {

@@ -5,70 +5,63 @@
       :show-upload-list="false"
       :custom-request="handleUpload"
       :before-upload="beforeUpload"
+      class="picture-upload__control"
     >
-      <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
-      <div v-else>
-        <loading-outlined v-if="loading"></loading-outlined>
-        <plus-outlined v-else></plus-outlined>
-        <div class="ant-upload-text">点击或拖拽上传图片</div>
+      <div v-if="picture?.url" class="picture-upload__preview">
+        <img :src="picture.url" alt="uploaded preview" />
+        <div class="picture-upload__mask">
+          <span class="sketch-note">Replace</span>
+          <p>点击或拖拽替换当前图片</p>
+        </div>
+      </div>
+      <div v-else class="picture-upload__empty">
+        <loading-outlined v-if="loading" />
+        <plus-outlined v-else />
+        <strong>点击或拖拽上传图片</strong>
+        <p>支持 JPG / PNG，大小不超过 2MB</p>
       </div>
     </a-upload>
   </div>
-
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
-import type { UploadProps } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 
-// 定义受控组件的 props
 interface Props {
-  // picture:   已经上传的图片信息
   picture?: API.PictureVO
-  // onSuccess: 上传成功后，把得到新图片的信息返回父组件，更新picture的值
   onSuccess?: (newPicture: API.PictureVO) => void
-  // 空间ID
   spaceId?: number
 }
 
 const props = defineProps<Props>()
 
-// Upload组件支持上传前校验和自定义请求处理逻辑。编写对应函数并传递给组件
-const beforeUpload = (file: UploadProps['fileList'][number]) => {
-  // 校验图片格式
+const beforeUpload = (file: any) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
     message.error('不支持上传该格式的图片，推荐 jpg 或 png')
   }
-  // 校验图片大小
   const isLt2M = file.size / 1024 / 1024 < 2
   if (!isLt2M) {
     message.error('不能上传超过 2M 的图片')
   }
-  return isJpgOrPng && isLt2M // 校验通过返回true，否则返回false
+  return isJpgOrPng && isLt2M
 }
 
-const loading = ref<boolean>(false)
-/**
- * 上传
- * @param file
- */
-const handleUpload = async ({ file }: any) => {
+const loading = ref(false)
+const handleUpload = async ({ file }: { file: File }) => {
   loading.value = true
   try {
-    // 上传时，如果已有picture，表示对已经上传的图片进行更新，需要记录picture的id
-    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {};
+    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
     params.spaceId = props.spaceId
-    // 上传图片
-    const res = await uploadPictureUsingPost(params, {}, file)
-    if (res.data.code === 0 && res.data.data) {
+    const res = await uploadPictureUsingPost(params as any, {}, file)
+    const result = res.data as any
+    if (result.code === 0 && result.data) {
       message.success('图片上传成功')
-      // 将上传成功的图片信息传递给父组件
-      props.onSuccess?.(res.data.data)
+      props.onSuccess?.(result.data)
     } else {
-      message.error('图片上传失败，' + res.data.message)
+      message.error('图片上传失败，' + result.message)
     }
   } catch (error) {
     message.error('图片上传失败')
@@ -76,30 +69,64 @@ const handleUpload = async ({ file }: any) => {
     loading.value = false
   }
 }
-
 </script>
 <style scoped>
-/* 需要使用:depp语法，向下传递样式，来修改 Upload 组件内置的样式 */
-.picture-upload :deep(.ant-upload) {
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 152px;
-  min-height: 152px;
+.picture-upload {
+  width: 100%;
 }
 
-.picture-upload img {
+.picture-upload__control :deep(.ant-upload) {
+  width: 100% !important;
+  min-height: 320px;
+  border: 2px dashed rgba(45, 45, 45, 0.26) !important;
+  border-radius: var(--sketch-radius-md);
+  background: linear-gradient(180deg, rgba(255, 249, 196, 0.18), rgba(255, 255, 255, 0.86));
+}
+
+.picture-upload__empty,
+.picture-upload__preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 320px;
+  padding: 24px;
+  text-align: center;
+}
+
+.picture-upload__empty strong {
+  font-family: var(--sketch-title-font);
+  font-size: 1.2rem;
+}
+
+.picture-upload__empty p,
+.picture-upload__mask p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.66);
+}
+
+.picture-upload__empty :deep(.anticon) {
+  margin-bottom: 12px;
+  font-size: 32px;
+  color: var(--sketch-blue);
+}
+
+.picture-upload__preview img {
   max-width: 100%;
   max-height: 480px;
+  border-radius: 18px;
+  object-fit: contain;
 }
 
-.ant-upload-select-picture-card i {
-  font-size: 32px;
-  color: #999;
-}
-
-.ant-upload-select-picture-card .ant-upload-text {
-  margin-top: 8px;
-  color: #666;
+.picture-upload__mask {
+  position: absolute;
+  inset: auto 16px 16px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 14px;
+  border: 2px dashed rgba(45, 45, 45, 0.18);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 255, 255, 0.9);
 }
 </style>
-

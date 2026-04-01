@@ -1,25 +1,32 @@
 <template>
   <div id="globalSider">
-    <a-layout-sider
-      v-if="loginUserStore.loginUser.id"
-      width="264"
-      breakpoint="lg"
-      collapsed-width="0"
-      class="sider-shell"
-    >
+    <a-layout-sider v-if="!isAuthPage" width="264" breakpoint="lg" collapsed-width="0" class="sider-shell">
       <div class="paper-panel sider-panel">
-        <div class="sider-head">
-          <span class="sketch-note">Side Notes</span>
-          <h3>我的工作台</h3>
-          <p>固定入口放上面，团队空间挂下面，数据和导航继续走原来的主链路。</p>
-        </div>
-        <a-menu
-          v-model:selectedKeys="current"
-          mode="inline"
-          :items="menuItems"
-          @click="doMenuClick"
-          class="sider-menu"
-        />
+        <template v-if="loginUserStore.loginUser.id">
+          <div class="sider-head">
+            <span class="sketch-note">Side Notes</span>
+            <h3>我的工作台</h3>
+            <p>固定入口放上面，团队空间挂下面，数据和导航继续走原来的主链路。</p>
+          </div>
+          <a-menu
+            v-model:selectedKeys="current"
+            mode="inline"
+            :items="menuItems"
+            @click="doMenuClick"
+            class="sider-menu"
+          />
+        </template>
+        <template v-else>
+          <div class="sider-head">
+            <span class="sketch-note">Workspace Guide</span>
+            <h3>先登录，再管理空间</h3>
+            <p>公共图库仍然能看，但个人空间、团队和批量协作入口要在登录后才真正展开。</p>
+          </div>
+          <div class="guest-actions">
+            <a-button type="primary" href="/user/login">登录</a-button>
+            <a-button href="/user/register">注册</a-button>
+          </div>
+        </template>
       </div>
     </a-layout-sider>
   </div>
@@ -27,15 +34,16 @@
 <script lang="ts" setup>
 import { computed, h, ref, watchEffect } from 'vue'
 import { PictureOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons-vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
 import { listMyTeamSpaceUsingPost } from '@/api/spaceUserController.ts'
 import { message } from 'ant-design-vue'
 
 const loginUserStore = useLoginUserStore()
+const route = useRoute()
+const isAuthPage = computed(() => route.path.startsWith('/user/'))
 
-// 固定的菜单列表
 const fixedMenuItems = [
   {
     key: '/',
@@ -54,19 +62,16 @@ const fixedMenuItems = [
   },
 ]
 
-// 路由跳转事件
+const router = useRouter()
 const doMenuClick = ({ key }: { key: string }) => {
-  router.push({path: key})
+  router.push({ path: key })
 }
 
-// 菜单项
 const teamSpaceList = ref<API.SpaceUserVO[]>([])
 const menuItems = computed(() => {
-  // 没有团队空间，只展示固定菜单
   if (teamSpaceList.value.length < 1) {
-    return fixedMenuItems;
+    return fixedMenuItems
   }
-  // 展示团队空间分组
   const teamSpaceSubMenus = teamSpaceList.value.map((spaceUser) => {
     const space = spaceUser.space
     return {
@@ -80,11 +85,9 @@ const menuItems = computed(() => {
     key: 'teamSpace',
     children: teamSpaceSubMenus,
   }
-  // 展示固定菜单, 和团队空间菜单
   return [...fixedMenuItems, teamSpaceMenuGroup]
 })
 
-// 加载团队空间列表
 const fetchTeamSpaceList = async () => {
   const res = await listMyTeamSpaceUsingPost()
   if (res.data.code === 0 && res.data.data) {
@@ -93,21 +96,17 @@ const fetchTeamSpaceList = async () => {
     message.error('加载我的团队空间失败，' + res.data.message)
   }
 }
-// 监听, 若登录 => 加载团队空间列表
+
 watchEffect(() => {
   if (loginUserStore.loginUser.id) {
     fetchTeamSpaceList()
   }
 })
 
-
-const router = useRouter()
-const current = ref<string[]>([]) // 当前要高亮的菜单项
-// 监听路由变化，更新高亮菜单项
-router.afterEach((to, from, next) => {
+const current = ref<string[]>([])
+router.afterEach((to) => {
   current.value = [to.path]
 })
-
 </script>
 
 <style scoped>
@@ -122,6 +121,7 @@ router.afterEach((to, from, next) => {
 
 #globalSider .sider-panel {
   padding: 18px;
+  min-height: 260px;
 }
 
 #globalSider .sider-head {
@@ -133,8 +133,8 @@ router.afterEach((to, from, next) => {
 #globalSider .sider-head h3 {
   margin: 0;
   font-family: var(--sketch-title-font);
-  font-size: 1.7rem;
-  line-height: 1;
+  font-size: 1.55rem;
+  line-height: 1.05;
 }
 
 #globalSider .sider-head p {
@@ -145,6 +145,12 @@ router.afterEach((to, from, next) => {
 
 #globalSider .sider-menu {
   margin-top: 6px;
+}
+
+#globalSider .guest-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 #globalSider :deep(.ant-menu-item-group-title) {

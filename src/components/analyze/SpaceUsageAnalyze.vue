@@ -1,24 +1,27 @@
 <template>
-  <div class="space-user-analyze">
-    <a-flex gap="middle">
-      <a-card title="存储空间" style="width: 50%">
-        <div style="height: 320px; text-align: center">
-          <h3>
-            {{ formatSize(data.usedSize) }} /
-            {{ data.maxSize ? formatSize(data.maxSize) : '无限制' }}
-          </h3>
-          <a-progress type="dashboard" :percent="data.sizeUsageRatio ?? 50" />
+  <div class="paper-panel paper-section usage-shell">
+    <div class="chart-shell__head usage-shell__head">
+      <div class="chart-shell__copy">
+        <span class="sketch-note">Capacity</span>
+        <h3>空间使用分析</h3>
+        <p>容量和数量拆成两块展示，避免把两个比例混成一张卡。</p>
+      </div>
+    </div>
+
+    <a-spin :spinning="loading">
+      <div class="usage-grid">
+        <div class="usage-card">
+          <span class="sketch-note">Storage</span>
+          <strong>{{ formatSize(data.usedSize) }} / {{ data.maxSize ? formatSize(data.maxSize) : '无限制' }}</strong>
+          <a-progress type="dashboard" :percent="data.sizeUsageRatio ?? 0" :stroke-color="{ '0%': '#f97316', '100%': '#fb923c' }" />
         </div>
-      </a-card>
-      <a-card title="图片数量" style="width: 50%">
-        <div style="height: 320px; text-align: center">
-          <h3>
-            {{ data.usedCount }} / {{ data.maxCount ?? '无限制' }}
-          </h3>
-          <a-progress type="dashboard" :percent="data.countUsageRatio ?? 50" />
+        <div class="usage-card">
+          <span class="sketch-note">Count</span>
+          <strong>{{ data.usedCount ?? 0 }} / {{ data.maxCount ?? '无限制' }}</strong>
+          <a-progress type="dashboard" :percent="data.countUsageRatio ?? 0" :stroke-color="{ '0%': '#0d9488', '100%': '#14b8a6' }" />
         </div>
-      </a-card>
-    </a-flex>
+      </div>
+    </a-spin>
   </div>
 </template>
 
@@ -39,31 +42,61 @@ const props = withDefaults(defineProps<Props>(), {
   queryPublic: false,
 })
 
-// 图表数据
-const data = ref<API.SpaceUsageAnalyzeResponse>({})
-// 加载状态
+const data = ref<Record<string, any>>({})
 const loading = ref(true)
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
   const res = await getSpaceUsageAnalyzeUsingPost({
     queryAll: props.queryAll,
     queryPublic: props.queryPublic,
     spaceId: props.spaceId,
-  })
-  if (res.data.code === 0 && res.data.data) {
-    data.value = res.data.data
+  } as any)
+  const result = res.data as any
+  if (result.code === 0 && result.data) {
+    data.value = result.data
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取数据失败，' + result.message)
   }
   loading.value = false
 }
-// 监听变量，参数改变时触发数据的重新加载
+
 watchEffect(() => {
   fetchData()
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.usage-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.usage-card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 18px;
+  border: 2px dashed rgba(45, 45, 45, 0.22);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 255, 255, 0.72);
+  text-align: center;
+}
+
+.usage-card strong {
+  font-family: var(--sketch-title-font);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 640px) {
+  .usage-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

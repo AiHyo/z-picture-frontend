@@ -11,33 +11,19 @@ import BasicLayout from '@/layouts/BasicLayout.vue'
 
 const theme = {
   token: {
-    colorPrimary: '#ff4d4d',
-    colorInfo: '#ff4d4d',
-    colorSuccess: '#2d5da1',
+    colorPrimary: '#f97316',
+    colorInfo: '#f97316',
+    colorSuccess: '#0d9488',
     colorText: '#2d2d2d',
     colorTextSecondary: 'rgba(45, 45, 45, 0.72)',
     colorBgBase: '#fdfbf7',
     colorBgContainer: '#fffdf8',
     colorBorder: '#2d2d2d',
     borderRadius: 18,
-    fontFamily: "'Patrick Hand', 'Segoe Print', 'STKaiti', 'KaiTi', cursive",
+    fontFamily: "'Plus Jakarta Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif",
   },
 }
-
-// 测试
-import { healthUsingGet } from '@/api/mainController.ts'
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-healthUsingGet().then(res => {
-  console.log(res)
-})
-
-const loginUserStore = useLoginUserStore();
-loginUserStore.fetchLoginUser()
-
-
 </script>
-
-
 
 <style scoped>
 #app {

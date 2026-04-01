@@ -136,12 +136,16 @@ const tagList = ref<string[]>([])
 const selectedTagList = ref<boolean[]>([])
 const selectedTagCount = computed(() => selectedTagList.value.filter(Boolean).length)
 const getTagCategoryOptions = async () => {
-  const res = await listPictureTagCategoryUsingGet()
-  if (res.data.code === 0 && res.data.data) {
-    categoryList.value = res.data.data.categoryList ?? []
-    tagList.value = res.data.data.tagList ?? []
-  } else {
-    message.error('加载分类标签失败，' + res.data.message)
+  try {
+    const res = await listPictureTagCategoryUsingGet()
+    if (res.data.code === 0 && res.data.data) {
+      categoryList.value = res.data.data.categoryList ?? []
+      tagList.value = res.data.data.tagList ?? []
+    } else {
+      message.error('加载分类标签失败，' + res.data.message)
+    }
+  } catch (error) {
+    console.error('加载分类标签失败', error)
   }
 }
 onMounted(() => {
@@ -165,14 +169,21 @@ const fetchData = async () => {
       params.tags.push(tagList.value[index])
     }
   })
-  const res = await listPictureVoByPageUsingPost(params)
-  if (res.data.data) {
-    dataList.value = res.data.data.records ?? []
-    total.value = res.data.data.total ?? 0
-  } else {
-    message.error('获取数据失败，' + res.data.message)
+  try {
+    const res = await listPictureVoByPageUsingPost(params)
+    if (res.data.data) {
+      dataList.value = res.data.data.records ?? []
+      total.value = res.data.data.total ?? 0
+    } else {
+      message.error('获取数据失败，' + res.data.message)
+    }
+  } catch (error) {
+    console.error('加载首页图片失败', error)
+    dataList.value = []
+    total.value = 0
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 onMounted(() => {
   fetchData()

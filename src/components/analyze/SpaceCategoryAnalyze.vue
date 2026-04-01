@@ -1,8 +1,13 @@
 <template>
-  <div class="space-category-analyze">
-    <a-card title="空间图片分类分析">
-      <v-chart :option="options" style="height: 320px; max-width: 100%;" :loading="loading" />
-    </a-card>
+  <div class="paper-panel paper-section chart-shell">
+    <div class="chart-shell__head">
+      <div class="chart-shell__copy">
+        <span class="sketch-note">Category Mix</span>
+        <h3>空间图片分类分析</h3>
+        <p>数量和体积并列展示，避免只看图片张数而忽略实际占用。</p>
+      </div>
+    </div>
+    <v-chart :option="options" class="chart-shell__canvas" autoresize :loading="loading" />
   </div>
 </template>
 
@@ -24,70 +29,63 @@ const props = withDefaults(defineProps<Props>(), {
   queryPublic: false,
 })
 
-// 图表数据
-const dataList = ref<API.SpaceCategoryAnalyzeResponse>([])
-// 加载状态
+const dataList = ref<any[]>([])
 const loading = ref(true)
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
   const res = await getSpaceCategoryAnalyzeUsingPost({
     queryAll: props.queryAll,
     queryPublic: props.queryPublic,
     spaceId: props.spaceId,
-  })
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data ?? []
+  } as any)
+  const result = res.data as any
+  if (result.code === 0 && result.data) {
+    dataList.value = result.data ?? []
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取数据失败，' + result.message)
   }
   loading.value = false
 }
 
-/**
- * 监听变量，参数改变时触发数据的重新加载
- */
 watchEffect(() => {
   fetchData()
 })
 
-// 图表选项
 const options = computed(() => {
-  const categories = dataList.value.map((item) => item.category)
-  const countData = dataList.value.map((item) => item.count)
-  const sizeData = dataList.value.map((item) => (item.totalSize / (1024 * 1024)).toFixed(2)) // 转为 MB
+  const categories = dataList.value.map((item: any) => item.category || '未分类')
+  const countData = dataList.value.map((item: any) => item.count)
+  const sizeData = dataList.value.map((item: any) => Number((((item.totalSize ?? 0) as number) / (1024 * 1024)).toFixed(2)))
 
   return {
+    color: ['#f97316', '#0d9488'],
+    grid: { left: 16, right: 16, bottom: 28, top: 32, containLabel: true },
     tooltip: { trigger: 'axis' },
-    legend: { data: ['图片数量', '图片总大小'], top: 'bottom' },
-    xAxis: { type: 'category', data: categories },
+    legend: { data: ['图片数量', '图片总大小'], top: 0 },
+    xAxis: {
+      type: 'category',
+      data: categories,
+      axisLabel: { color: '#4b5563' },
+      axisLine: { lineStyle: { color: '#cbd5e1' } },
+    },
     yAxis: [
       {
         type: 'value',
         name: '图片数量',
-        axisLine: { show: true, lineStyle: { color: '#5470C6' } }, // 左轴颜色
+        axisLabel: { color: '#4b5563' },
+        splitLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.25)', type: 'dashed' } },
       },
       {
         type: 'value',
         name: '图片总大小 (MB)',
         position: 'right',
-        axisLine: { show: true, lineStyle: { color: '#91CC75' } }, // 右轴颜色
-        splitLine: {
-          lineStyle: {
-            color: '#91CC75', // 调整网格线颜色
-            type: 'dashed', // 线条样式：可选 'solid', 'dashed', 'dotted'
-          },
-        },
+        axisLabel: { color: '#4b5563' },
       },
     ],
     series: [
-      { name: '图片数量', type: 'bar', data: countData, yAxisIndex: 0 },
-      { name: '图片总大小', type: 'bar', data: sizeData, yAxisIndex: 1 },
+      { name: '图片数量', type: 'bar', data: countData, yAxisIndex: 0, barMaxWidth: 28, borderRadius: [8, 8, 0, 0] },
+      { name: '图片总大小', type: 'bar', data: sizeData, yAxisIndex: 1, barMaxWidth: 28, borderRadius: [8, 8, 0, 0] },
     ],
   }
 })
 </script>
-
-<style scoped></style>

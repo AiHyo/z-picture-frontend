@@ -4,35 +4,38 @@
     v-model:visible="visible"
     title="AI 扩图"
     :footer="false"
+    width="980px"
     @cancel="closeModal"
   >
-    <a-row gutter="16">
-      <a-col span="12">
+    <p class="modal-note">扩图任务与轮询逻辑保持原样，但弹窗现在会更明确地区分原图、结果和应用动作。</p>
+    <div class="out-painting-grid">
+      <div class="out-painting-panel">
+        <span class="sketch-note">Source</span>
         <h4>原始图片</h4>
-        <img :src="picture?.url" :alt="picture?.name" style="max-width: 100%" />
-      </a-col>
-      <a-col span="12">
+        <div class="out-painting-frame">
+          <img :src="picture?.url" :alt="picture?.name" />
+        </div>
+      </div>
+      <div class="out-painting-panel">
+        <span class="sketch-note">Result</span>
         <h4>扩图结果</h4>
-        <img
-          v-if="resultImageUrl"
-          :src="resultImageUrl"
-          :alt="picture?.name"
-          style="max-width: 100%"
-        />
-      </a-col>
-    </a-row>
-    <div style="margin-bottom: 16px" />
-    <a-flex justify="center" gap="16">
-      <a-button type="primary" :loading="!!taskId" ghost @click="createTask">生成图片</a-button>
-      <a-button v-if="resultImageUrl" type="primary" :loading="uploadLoading" @click="handleUpload">
-        应用结果
-      </a-button>
-    </a-flex>
+        <div class="out-painting-frame out-painting-frame--result">
+          <img v-if="resultImageUrl" :src="resultImageUrl" :alt="picture?.name" />
+          <div v-else class="out-painting-empty">生成后结果会显示在这里</div>
+        </div>
+      </div>
+    </div>
+    <div class="out-painting-actions">
+      <a-flex justify="center" gap="16" wrap>
+        <a-button type="primary" :loading="!!taskId" ghost @click="createTask">生成图片</a-button>
+        <a-button v-if="resultImageUrl" type="primary" :loading="uploadLoading" @click="handleUpload">应用结果</a-button>
+      </a-flex>
+    </div>
   </a-modal>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import {
   createPictureOutPaintingTaskUsingPost,
   getPictureOutPaintingTaskUsingGet,
@@ -47,37 +50,20 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-const resultImageUrl = ref<string>('')
+const resultImageUrl = ref('')
 const taskId = ref<string>()
+const visible = ref(false)
+const uploadLoading = ref(false)
+let pollingTimer: ReturnType<typeof setInterval> | null = null
 
-// 创建任务
-const createTask = async () => {
-  if (!props.picture?.id) {
-    return
+const clearPolling = () => {
+  if (pollingTimer) {
+    clearInterval(pollingTimer)
+    pollingTimer = null
   }
-  const res = await createPictureOutPaintingTaskUsingPost({
-    pictureId: props.picture.id,
-    // 根据需要设置扩图参数
-    parameters: {
-      xScale: 2,
-      yScale: 2,
-    },
-  })
-  if (res.data.code === 0 && res.data.data) {
-    message.success('创建任务成功，请耐心等待，不要退出界面')
-    console.log(res.data.data.output.taskId)
-    taskId.value = res.data.data.output.taskId
-    // 开启轮询
-    startPolling()
-  } else {
-    message.error('图片任务失败，' + res.data?.data?.output?.message)
-  }
+  taskId.value = undefined
 }
 
-// 轮询定时器
-let pollingTimer: NodeJS.Timeout = null
-
-// 开始轮询
 const startPolling = () => {
   if (!taskId.value) {
     return
@@ -85,45 +71,45 @@ const startPolling = () => {
 
   pollingTimer = setInterval(async () => {
     try {
-      const res = await getPictureOutPaintingTaskUsingGet({
-        taskId: taskId.value,
-      })
-      if (res.data.code === 0 && res.data.data) {
-        const taskResult = res.data.data.output
+      const res = await getPictureOutPaintingTaskUsingGet({ taskId: taskId.value })
+      const result = res.data as any
+      const taskResult = result.data?.output as any
+      if (result.code === 0 && taskResult) {
         if (taskResult.taskStatus === 'SUCCEEDED') {
           message.success('扩图任务执行成功')
-          resultImageUrl.value = taskResult.outputImageUrl
-          // 清理轮询
+          resultImageUrl.value = taskResult.outputImageUrl || ''
           clearPolling()
         } else if (taskResult.taskStatus === 'FAILED') {
-          // 弹出详细的报错信息
-          message.error('扩图任务执行失败' +  res.data?.data?.output?.message)
-          // 清理轮询
+          message.error('扩图任务执行失败' + (taskResult.message || ''))
           clearPolling()
         }
       }
     } catch (error) {
       console.error('扩图任务轮询失败', error)
-      message.error('扩图任务轮询失败，' + error.message)
-      // 清理轮询
+      message.error('扩图任务轮询失败，' + (error as Error).message)
       clearPolling()
     }
-  }, 3000) // 每 3 秒轮询一次
+  }, 3000)
 }
 
-// 清理轮询
-const clearPolling = () => {
-  if (pollingTimer) {
-    clearInterval(pollingTimer)
-    pollingTimer = null
-    taskId.value = null
+const createTask = async () => {
+  if (!props.picture?.id) {
+    return
+  }
+  const res = await createPictureOutPaintingTaskUsingPost({
+    pictureId: props.picture.id,
+    parameters: { xScale: 2, yScale: 2 },
+  } as any)
+  const result = res.data as any
+  if (result.code === 0 && result.data) {
+    message.success('创建任务成功，请耐心等待，不要退出界面')
+    taskId.value = result.data.output?.taskId
+    startPolling()
+  } else {
+    message.error('图片任务失败，' + (result.data?.output?.message || result.message || ''))
   }
 }
 
-// 是否正在上传
-const uploadLoading = ref(false)
-
-// 上传图片
 const handleUpload = async () => {
   uploadLoading.value = true
   try {
@@ -132,45 +118,83 @@ const handleUpload = async () => {
       spaceId: props.spaceId,
     }
     params.id = props.picture?.id
-    const res = await uploadPictureByUrlUsingPost(params)
-    if (res.data.code === 0 && res.data.data) {
+    const res = await uploadPictureByUrlUsingPost(params as any)
+    const result = res.data as any
+    if (result.code === 0 && result.data) {
       message.success('图片上传成功')
-      // 将上传成功的图片信息传递给父组件
-      props.onSuccess?.(res.data.data)
-      // 关闭弹窗
+      props.onSuccess?.(result.data)
       closeModal()
     } else {
-      message.error('图片上传失败，' + res.data.message)
+      message.error('图片上传失败，' + result.message)
     }
   } catch (error) {
     console.error('图片上传失败', error)
-    message.error('图片上传失败，' + error.message)
+    message.error('图片上传失败，' + (error as Error).message)
   }
   uploadLoading.value = false
 }
 
-// 是否可见
-const visible = ref(false)
-
-// 打开弹窗
 const openModal = () => {
   visible.value = true
 }
 
-// 关闭弹窗
 const closeModal = () => {
   visible.value = false
+  clearPolling()
 }
 
-// 暴露函数给父组件
-defineExpose({
-  openModal,
+defineExpose({ openModal })
+
+onUnmounted(() => {
+  clearPolling()
 })
 </script>
 
-<style>
-.image-out-painting {
-  text-align: center;
+<style scoped>
+.out-painting-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.out-painting-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.out-painting-panel h4 {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: 1.3rem;
+}
+
+.out-painting-frame {
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  padding: 16px;
+  border: 2px dashed rgba(45, 45, 45, 0.22);
+  border-radius: var(--sketch-radius-md);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.out-painting-frame img {
+  max-width: 100%;
+  max-height: 360px;
+  border-radius: 18px;
+}
+
+.out-painting-empty {
+  color: rgba(45, 45, 45, 0.66);
+}
+
+.out-painting-actions {
+  margin-top: 18px;
+}
+
+@media (max-width: 768px) {
+  .out-painting-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
-

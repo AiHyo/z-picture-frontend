@@ -1,8 +1,13 @@
 <template>
-  <div class="space-tag-analyze">
-    <a-card title="空间图片标签分析">
-      <v-chart :option="options" style="height: 320px; max-width: 100%" :loading="loading" />
-    </a-card>
+  <div class="paper-panel paper-section chart-shell">
+    <div class="chart-shell__head">
+      <div class="chart-shell__copy">
+        <span class="sketch-note">Tag Cloud</span>
+        <h3>空间图片标签分析</h3>
+        <p>颜色稳定，不再每次刷新随机乱跳。词频才是主角，不是噪声。</p>
+      </div>
+    </div>
+    <v-chart :option="options" class="chart-shell__canvas" autoresize :loading="loading" />
   </div>
 </template>
 
@@ -25,59 +30,52 @@ const props = withDefaults(defineProps<Props>(), {
   queryPublic: false,
 })
 
-// 图表数据
-const dataList = ref<API.SpaceCategoryAnalyzeResponse>([])
-// 加载状态
+const palette = ['#f97316', '#0d9488', '#ef4444', '#38bdf8', '#eab308', '#8b5cf6']
+const dataList = ref<any[]>([])
 const loading = ref(true)
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
   const res = await getSpaceTagAnalyzeUsingPost({
     queryAll: props.queryAll,
     queryPublic: props.queryPublic,
     spaceId: props.spaceId,
-  })
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data ?? []
+  } as any)
+  const result = res.data as any
+  if (result.code === 0 && result.data) {
+    dataList.value = result.data ?? []
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取数据失败，' + result.message)
   }
   loading.value = false
 }
 
-/**
- * 监听变量，参数改变时触发数据的重新加载
- */
 watchEffect(() => {
   fetchData()
 })
 
-// 图表选项
-const options =computed(() => {
-  const tagData = dataList.value.map((item) => ({
-    name: item.tag,
+const options = computed(() => {
+  const tagData = dataList.value.map((item: any) => ({
+    name: item.tag || '未命名标签',
     value: item.count,
   }))
 
   return {
     tooltip: {
       trigger: 'item',
-      formatter: (params: any) => `${params.name}: ${params.value} 次`,
+      formatter: (params: { name: string; value: number }) => `${params.name}: ${params.value} 次`,
     },
     series: [
       {
         type: 'wordCloud',
         gridSize: 10,
-        sizeRange: [12, 50], // 字体大小范围
-        rotationRange: [-90, 90],
+        sizeRange: [14, 42],
+        rotationRange: [-25, 25],
         shape: 'circle',
         textStyle: {
-          color: () =>
-            `rgb(${Math.round(Math.random() * 255)}, ${Math.round(
-              Math.random() * 255,
-            )}, ${Math.round(Math.random() * 255)})`, // 随机颜色
+          fontFamily: 'Plus Jakarta Sans',
+          fontWeight: 700,
+          color: (params: { dataIndex: number }) => palette[params.dataIndex % palette.length],
         },
         data: tagData,
       },
@@ -85,5 +83,3 @@ const options =computed(() => {
   }
 })
 </script>
-
-<style scoped></style>
