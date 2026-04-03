@@ -23,7 +23,7 @@ import { uploadPictureByUrlUsingPost } from '@/api/pictureController.ts'
 interface Props {
   picture?: API.PictureVO
   onSuccess?: (newPicture: API.PictureVO) => void
-  spaceId?: number
+  spaceId?: string | number
 }
 
 const props = defineProps<Props>()
@@ -57,6 +57,7 @@ const handleUpload = async () => {
 .url-picture-upload {
   display: grid;
   gap: 16px;
+  --url-upload-preview-height: clamp(240px, 48vh, 320px);
 }
 
 .url-picture-upload__bar {
@@ -66,19 +67,27 @@ const handleUpload = async () => {
 }
 
 .url-picture-upload__preview {
-  min-height: 320px;
+  display: grid;
+  align-items: center;
+  min-height: var(--url-upload-preview-height);
+  height: var(--url-upload-preview-height);
+  max-height: var(--url-upload-preview-height);
   padding: 16px;
   border: 2px dashed rgba(45, 45, 45, 0.22);
   border-radius: var(--sketch-radius-md);
   background: rgba(255, 255, 255, 0.72);
+  overflow: hidden;
 }
 
 .url-picture-upload__preview img {
   display: block;
+  width: 100%;
+  height: 100%;
   max-width: 100%;
-  max-height: 420px;
+  max-height: 100%;
   margin: 0 auto;
   border-radius: 18px;
+  object-fit: contain;
 }
 
 .url-picture-upload__empty {
@@ -86,7 +95,7 @@ const handleUpload = async () => {
   justify-items: center;
   align-content: center;
   gap: 10px;
-  min-height: 286px;
+  min-height: 100%;
   text-align: center;
 }
 
@@ -96,6 +105,10 @@ const handleUpload = async () => {
 }
 
 @media (max-width: 640px) {
+  .url-picture-upload {
+    --url-upload-preview-height: clamp(220px, 42vh, 280px);
+  }
+
   .url-picture-upload__bar {
     grid-template-columns: 1fr;
   }

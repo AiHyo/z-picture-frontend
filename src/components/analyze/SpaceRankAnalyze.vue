@@ -21,7 +21,7 @@ import { message } from 'ant-design-vue'
 interface Props {
   queryAll?: boolean
   queryPublic?: boolean
-  spaceId?: number
+  spaceId?: string | number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -55,7 +55,9 @@ watchEffect(() => {
 
 const options = computed(() => {
   const spaceNames = dataList.value.map((item: any) => item.spaceName)
-  const usageData = dataList.value.map((item: any) => Number((((item.totalSize ?? 0) as number) / (1024 * 1024)).toFixed(2)))
+  const usageData = dataList.value.map((item: any) =>
+    Number((((item.totalSize ?? 0) as number) / (1024 * 1024)).toFixed(2)),
+  )
 
   return {
     color: ['#f97316'],

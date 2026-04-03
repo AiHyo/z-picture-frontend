@@ -1,13 +1,15 @@
 <template>
   <a-modal
     class="image-out-painting"
-    v-model:visible="visible"
+    v-model:open="visible"
     title="AI 扩图"
     :footer="false"
     width="980px"
     @cancel="closeModal"
   >
-    <p class="modal-note">扩图任务与轮询逻辑保持原样，但弹窗现在会更明确地区分原图、结果和应用动作。</p>
+    <p class="modal-note">
+      扩图任务与轮询逻辑保持原样，但弹窗现在会更明确地区分原图、结果和应用动作。
+    </p>
     <div class="out-painting-grid">
       <div class="out-painting-panel">
         <span class="sketch-note">Source</span>
@@ -28,7 +30,13 @@
     <div class="out-painting-actions">
       <a-flex justify="center" gap="16" wrap>
         <a-button type="primary" :loading="!!taskId" ghost @click="createTask">生成图片</a-button>
-        <a-button v-if="resultImageUrl" type="primary" :loading="uploadLoading" @click="handleUpload">应用结果</a-button>
+        <a-button
+          v-if="resultImageUrl"
+          type="primary"
+          :loading="uploadLoading"
+          @click="handleUpload"
+          >应用结果</a-button
+        >
       </a-flex>
     </div>
   </a-modal>
@@ -45,7 +53,7 @@ import { message } from 'ant-design-vue'
 
 interface Props {
   picture?: API.PictureVO
-  spaceId?: number
+  spaceId?: string | number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 const props = defineProps<Props>()

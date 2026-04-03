@@ -1,19 +1,22 @@
 <template>
   <div id="addPicturePage" class="page-shell add-picture-page">
-    <section class="page-head">
-      <span class="sketch-note">{{ route.query?.id ? 'Edit Picture' : 'Create Picture' }}</span>
-      <h1 class="page-head__title">{{ route.query?.id ? '编辑图片' : '创建图片' }}</h1>
-      <p class="page-head__desc">
-        上传、裁剪、AI 扩图和保存依旧沿用原有逻辑。这里重构的是信息排布，让创建流程看起来像创作工作台，而不是一组分散的表单块。
-      </p>
-    </section>
-
     <section class="editor-layout">
       <div class="editor-main">
         <div class="paper-panel upload-panel">
           <div class="upload-panel__head">
-            <span class="sketch-note">Upload Entry</span>
-            <p>保留文件上传和 URL 上传两条入口，避免把不同输入形态混成一团。</p>
+            <div class="upload-panel__intro page-head page-head--compact">
+              <span class="sketch-note">{{
+                route.query?.id ? 'Edit Picture' : 'Create Picture'
+              }}</span>
+              <h1 class="page-head__title">{{ route.query?.id ? '编辑图片' : '创建图片' }}</h1>
+              <p class="page-head__desc">先上传，再补信息；裁剪和扩图仍走原有流程。</p>
+            </div>
+            <div class="upload-panel__meta">
+              <span class="upload-meta-pill">双通道上传</span>
+              <span v-if="spaceId" class="upload-meta-pill upload-meta-pill--accent"
+                >保存至空间 #{{ spaceId }}</span
+              >
+            </div>
           </div>
           <a-tabs v-model:activeKey="uploadType">
             <a-tab-pane key="file" tab="文件上传">
@@ -64,12 +67,9 @@
             </a-form-item>
             <div class="form-grid">
               <a-form-item label="分类" name="category">
-                <a-auto-complete
-                  v-model:value="pictureForm.category"
-                  :options="categoryOptions"
-                  placeholder="请输入分类"
-                  allowClear
-                />
+                <a-auto-complete v-model:value="pictureForm.category" :options="categoryOptions">
+                  <a-input placeholder="请输入分类" allow-clear />
+                </a-auto-complete>
               </a-form-item>
               <a-form-item label="标签" name="tags">
                 <a-select
@@ -131,13 +131,12 @@ import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 
 const uploadType = ref<'file' | 'url'>('file') // 上传方式
 const route = useRoute()
-const toNumber = (value: unknown): number | undefined => {
+const toRouteId = (value: unknown): string | undefined => {
   const raw = Array.isArray(value) ? value[0] : value
   if (raw === undefined || raw === null || raw === '') {
     return undefined
   }
-  const num = Number(raw)
-  return Number.isNaN(num) ? undefined : num
+  return String(raw)
 }
 
 // 定义变量，接收上传的图片和填写的表单信息
@@ -149,20 +148,18 @@ const onSuccess = (newPicture: API.PictureVO) => {
 }
 
 // 必须使用computed,及时更新
-const spaceId = computed(() => {
-  return toNumber(route.query?.spaceId)
-})
-const currentPictureId = computed(() => toNumber(route.query?.id))
+const spaceId = computed<string | undefined>(() => toRouteId(route.query?.spaceId))
+const currentPictureId = computed<string | undefined>(() => toRouteId(route.query?.id))
 
 // 提交表单：实际调用的是【修改图片接口】
 const router = useRouter()
 const handleSubmit = async (values: any) => {
-  const pictureId = picture.value?.id ? Number(picture.value.id) : undefined
+  const pictureId = picture.value?.id as any
   if (!pictureId) {
     return // 没有图片,直接返回
   }
   const res = await editPictureUsingPost({
-    id: pictureId,
+    id: pictureId as any,
     ...values,
   })
   if (res.data.code === 0 && res.data.data) {
@@ -267,39 +264,65 @@ watchEffect(() => {
 
 <style>
 .add-picture-page {
-  gap: 22px;
+  gap: 12px;
 }
 
 .editor-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(250px, 0.8fr);
-  gap: 20px;
+  gap: 16px;
 }
 
 .editor-main {
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
 .upload-panel,
 .form-panel,
 .side-note {
-  padding: 24px;
+  padding: 18px;
 }
 
 .upload-panel__head {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 14px;
+  align-items: start;
+  margin-bottom: 8px;
 }
 
-.upload-panel__head p {
-  margin: 0;
-  color: rgba(45, 45, 45, 0.68);
+.upload-panel__intro {
+  flex: 1 1 320px;
+}
+
+.upload-panel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.upload-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px dashed rgba(45, 45, 45, 0.18);
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 255, 255, 0.74);
+  color: rgba(45, 45, 45, 0.72);
+  font-size: 0.82rem;
+}
+
+.upload-meta-pill--accent {
+  color: var(--sketch-blue);
+  background: rgba(13, 148, 136, 0.08);
 }
 
 .edit-bar {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
@@ -315,23 +338,23 @@ watchEffect(() => {
 
 .editor-side {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   align-content: start;
 }
 
 .side-note {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .side-note strong {
   font-family: var(--sketch-title-font);
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 
 .side-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin: 0;
   padding-left: 18px;
 }
@@ -346,7 +369,7 @@ watchEffect(() => {
   .upload-panel,
   .form-panel,
   .side-note {
-    padding: 18px;
+    padding: 14px;
   }
 
   .form-grid {

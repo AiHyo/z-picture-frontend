@@ -21,7 +21,7 @@ import { message } from 'ant-design-vue'
 interface Props {
   queryAll?: boolean
   queryPublic?: boolean
-  spaceId?: number
+  spaceId?: string | number
 }
 
 const props = withDefaults(defineProps<Props>(), {

@@ -51,19 +51,16 @@ import { getPictureVoByIdUsingGet, searchPictureByPictureUsingPost } from '@/api
 import { message } from 'ant-design-vue'
 
 const route = useRoute()
-const toNumber = (value: unknown): number | undefined => {
+const toRouteId = (value: unknown): string | undefined => {
   const raw = Array.isArray(value) ? value[0] : value
   if (raw === undefined || raw === null || raw === '') {
     return undefined
   }
-  const num = Number(raw)
-  return Number.isNaN(num) ? undefined : num
+  return String(raw)
 }
 
 // 图片 id
-const pictureId = computed(() => {
-  return toNumber(route.query?.pictureId)
-})
+const pictureId = computed<any>(() => toRouteId(route.query?.pictureId))
 
 const picture = ref<API.PictureVO>({})
 
@@ -72,7 +69,7 @@ const getOldPicture = async () => {
   const id = pictureId.value
   if (id) {
     const res = await getPictureVoByIdUsingGet({
-      id,
+      id: id as any,
     })
     if (res.data.code === 0 && res.data.data) {
       const data = res.data.data
@@ -92,7 +89,7 @@ const fetchData = async () => {
     return
   }
   const res = await searchPictureByPictureUsingPost({
-    pictureId: pictureId.value,
+    pictureId: pictureId.value as any,
   })
   if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data ?? []

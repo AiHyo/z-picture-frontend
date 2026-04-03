@@ -6,10 +6,11 @@
         <h3>空间图片用户分析</h3>
         <p>时间维度和用户筛选放在头部，不把控制器和图表切成两张分离卡片。</p>
       </div>
-      <a-space wrap>
+      <a-space wrap class="chart-shell__tools">
         <a-segmented v-model:value="timeDimension" :options="timeDimensionOptions" />
         <a-input-search
           v-if="isAdmin"
+          class="chart-search"
           placeholder="请输入用户 id"
           enter-button="搜索用户"
           @search="doSearch"
@@ -31,7 +32,7 @@ import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 interface Props {
   queryAll?: boolean
   queryPublic?: boolean
-  spaceId?: number
+  spaceId?: string | number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -115,3 +116,13 @@ const options = computed(() => {
   }
 })
 </script>
+
+<style scoped>
+.chart-shell__tools {
+  justify-content: flex-end;
+}
+
+.chart-search {
+  width: min(100%, 18rem);
+}
+</style>

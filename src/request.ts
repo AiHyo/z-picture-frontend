@@ -1,9 +1,18 @@
 import axios from 'axios'
 import { message } from 'ant-design-vue'
 
+const getApiBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8123'
+  }
+  const hostname = window.location.hostname
+  const normalizedHost = hostname.includes(':') && !hostname.startsWith('[') ? `[${hostname}]` : hostname
+  return `${window.location.protocol}//${normalizedHost}:8123`
+}
+
 // 创建 Axios 实例
 const myAxios = axios.create({
-  baseURL: 'http://localhost:8123',
+  baseURL: getApiBaseUrl(),
   timeout: 60000,
   withCredentials: true,// 否则发请求时无法携带 cookie
 })

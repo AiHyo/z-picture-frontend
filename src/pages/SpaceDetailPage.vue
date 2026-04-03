@@ -1,40 +1,34 @@
 <template>
   <div id="spaceDetailPage" class="page-shell space-page">
     <section class="paper-panel space-hero">
-      <div class="space-hero__copy page-head">
+      <div class="space-hero__copy page-head page-head--compact">
         <span class="sketch-note">{{ spaceTypeText }}</span>
         <h1 class="page-head__title">{{ space.spaceName ?? '空间看板' }}</h1>
         <p class="page-head__desc">
-          这是你真正高频操作的工作区。上传、批量编辑、成员管理、空间分析和图片筛选都保留原来的逻辑，只把信息层级重新整理清楚。
+          上传、筛选、批量编辑和协作都保留，但首屏优先把真正有用的图库内容往前推。
         </p>
-        <div class="note-grid">
-          <div class="note-chip">
+        <div class="compact-stat-row">
+          <div class="compact-stat-chip">
             <strong>{{ `${usagePercent}%` }}</strong>
             <span>空间占用</span>
           </div>
-          <div class="note-chip">
+          <div class="compact-stat-chip">
             <strong>{{ dataList.length }}</strong>
             <span>当前页图片</span>
-          </div>
-          <div class="note-chip">
-            <strong>{{ formatSize(space.totalSize) }}</strong>
-            <span>已用容量</span>
-          </div>
-          <div class="note-chip">
-            <strong>{{ formatSize(space.maxSize) }}</strong>
-            <span>总容量</span>
           </div>
         </div>
       </div>
 
       <div class="space-hero__side">
         <div class="quota-panel">
-          <a-tooltip :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`">
-            <a-progress type="circle" :size="92" :percent="usagePercent" />
+          <a-tooltip
+            :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
+          >
+            <a-progress type="circle" :size="72" :percent="usagePercent" />
           </a-tooltip>
           <div class="quota-copy">
             <strong>容量进度</strong>
-            <p>在这里监控空间使用情况，避免协作和上传快到上限时才发现。</p>
+            <p>容量信息保留，但说明区不再膨胀。</p>
           </div>
         </div>
 
@@ -42,7 +36,7 @@
           <a-button
             v-if="canUploadPicture"
             type="primary"
-            :href="`/add_picture?spaceId=${id}`"
+            :href="`/add_picture?spaceId=${spaceId}`"
             target="_blank"
           >
             + 创建图片
@@ -55,7 +49,7 @@
             type="primary"
             ghost
             :icon="h(TeamOutlined)"
-            :href="`/spaceUserManage/${id}`"
+            :href="`/spaceUserManage/${spaceId}`"
             target="_blank"
           >
             成员管理
@@ -65,36 +59,66 @@
             type="primary"
             ghost
             :icon="h(BarChartOutlined)"
-            :href="`/space_analyze?spaceId=${id}`"
+            :href="`/space_analyze?spaceId=${spaceId}`"
             target="_blank"
           >
             空间分析
           </a-button>
         </div>
+
+        <div v-if="showNoticeRail" class="notice-rail">
+          <div class="notice-rail__head">
+            <div class="table-cell-stack table-cell-stack--tight">
+              <span class="sketch-note">Team Notice</span>
+              <strong>空间公告</strong>
+            </div>
+            <a-space>
+              <a-button size="small" @click="openNoticeModal">查看全部</a-button>
+              <a-button
+                v-if="canManageSpaceUser"
+                size="small"
+                type="primary"
+                ghost
+                @click="openCreateNotice"
+              >
+                发布
+              </a-button>
+            </a-space>
+          </div>
+          <div v-if="noticeLoading" class="notice-rail__empty">公告加载中...</div>
+          <div v-else-if="noticeList.length" class="notice-rail__summary">
+            <div class="notice-preview-card__head">
+              <strong>{{ noticeList[0]?.title || '未命名公告' }}</strong>
+              <a-tag v-if="noticeList[0]?.isPinned === 1" color="orange">置顶</a-tag>
+            </div>
+            <p>{{ noticeList[0]?.content }}</p>
+            <small>共 {{ noticeList.length }} 条公告，完整列表放进弹窗。</small>
+          </div>
+          <div v-else class="notice-rail__empty">团队空间暂时还没有公告。</div>
+        </div>
       </div>
     </section>
 
     <section class="paper-panel filter-shell">
-      <div class="filter-shell__head">
-        <span class="sketch-note">Filter Workshop</span>
-        <p>关键词、分类、标签、时间范围保留原来的查询结构；颜色筛选仍然独立，避免主链路被莫名其妙搅浑。</p>
-      </div>
-      <PictureSearchForm :on-search="onSearch" />
-      <div class="color-shell">
-        <a-form-item label="按颜色搜索" class="color-shell__picker">
-          <color-picker format="hex" @pureColorChange="onColorChange" />
-        </a-form-item>
-        <p>颜色搜索和其他条件解耦，这一点设计上也该明确，不然用户根本不知道自己在走哪条筛选路径。</p>
+      <div class="filter-shell__bar">
+        <div class="filter-shell__copy">
+          <span class="sketch-note">Filter Workshop</span>
+          <span class="filter-shell__summary"
+            >已激活 {{ activeFilterCount }} 项筛选，需要时再打开关键词、标签、分类和颜色筛选。</span
+          >
+        </div>
+        <a-button size="small" class="toolbar-toggle" @click="openFilterModal">
+          {{ `筛选面板${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
+        </a-button>
       </div>
     </section>
 
     <section class="gallery-section">
       <div class="gallery-section__head">
-        <div>
+        <div class="gallery-section__title">
           <span class="sketch-note">Space Gallery</span>
           <h2>空间内共 {{ total }} 条图片记录</h2>
         </div>
-        <p>这里保留卡片级操作入口，支持继续分享、编辑、删除和以图搜图。</p>
       </div>
       <PictureList
         :dataList="dataList"
@@ -115,6 +139,110 @@
       />
     </div>
 
+    <a-modal
+      v-model:open="filterModalVisible"
+      title="筛选面板"
+      width="920px"
+      :footer="null"
+      @cancel="closeFilterModal"
+    >
+      <div class="filter-modal">
+        <PictureSearchForm :on-search="onSearch" />
+        <div class="color-shell">
+          <a-form-item label="按颜色搜索" class="color-shell__picker">
+            <color-picker format="hex" @pureColorChange="onColorChange" />
+          </a-form-item>
+          <p>颜色搜索仍单独处理，避免和主筛选互相污染。</p>
+        </div>
+        <div class="filter-modal__actions">
+          <span class="toolbar-panel__summary">已激活 {{ activeFilterCount }} 项筛选</span>
+          <a-button type="primary" @click="closeFilterModal">完成</a-button>
+        </div>
+      </div>
+    </a-modal>
+
+    <a-modal
+      v-model:open="noticeModalVisible"
+      title="空间公告"
+      width="980px"
+      :footer="null"
+      @cancel="closeNoticeModal"
+    >
+      <div class="notice-modal">
+        <div class="notice-modal__list">
+          <div class="notice-modal__head">
+            <div class="table-cell-stack table-cell-stack--tight">
+              <strong>公告列表</strong>
+              <small>默认按置顶和发布时间排序。</small>
+            </div>
+            <a-button v-if="canManageSpaceUser" type="primary" ghost @click="openCreateNotice"
+              >新建公告</a-button
+            >
+          </div>
+          <div v-if="noticeLoading" class="notice-rail__empty">公告加载中...</div>
+          <div v-else-if="noticeList.length" class="notice-modal__cards">
+            <article v-for="notice in noticeList" :key="notice.id" class="notice-modal-card">
+              <div class="notice-modal-card__head">
+                <div class="table-cell-stack table-cell-stack--tight">
+                  <div class="notice-modal-card__title">
+                    <strong>{{ notice.title || '未命名公告' }}</strong>
+                    <a-tag v-if="notice.isPinned === 1" color="orange">置顶</a-tag>
+                  </div>
+                  <small>
+                    {{ notice.user?.userName || '未知发布者' }} ·
+                    {{ dayjs(notice.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+                  </small>
+                </div>
+                <a-space v-if="canManageSpaceUser">
+                  <a-button size="small" @click="startEditNotice(notice)">编辑</a-button>
+                  <a-button size="small" danger @click="removeNotice(notice.id)">删除</a-button>
+                </a-space>
+              </div>
+              <p>{{ notice.content }}</p>
+            </article>
+          </div>
+          <div v-else class="notice-rail__empty">目前还没有公告。</div>
+        </div>
+
+        <div v-if="canManageSpaceUser" class="notice-modal__form">
+          <div class="table-cell-stack table-cell-stack--tight">
+            <strong>{{ editingNoticeId ? '编辑公告' : '发布公告' }}</strong>
+            <small>这里只保留最小必要字段：标题、内容、置顶。</small>
+          </div>
+          <a-form layout="vertical">
+            <a-form-item label="公告标题" required>
+              <a-input
+                v-model:value="noticeForm.title"
+                :maxlength="60"
+                show-count
+                placeholder="请输入公告标题"
+              />
+            </a-form-item>
+            <a-form-item label="公告内容" required>
+              <a-textarea
+                v-model:value="noticeForm.content"
+                :rows="8"
+                :maxlength="1000"
+                show-count
+                placeholder="请输入公告内容"
+              />
+            </a-form-item>
+            <a-form-item label="置顶公告">
+              <a-switch :checked="noticeForm.isPinned === 1" @change="toggleNoticePinned" />
+            </a-form-item>
+            <div class="notice-modal__actions">
+              <a-space>
+                <a-button v-if="editingNoticeId" @click="resetNoticeForm">取消编辑</a-button>
+                <a-button type="primary" :loading="noticeSubmitting" @click="submitNotice">
+                  {{ editingNoticeId ? '保存修改' : '发布公告' }}
+                </a-button>
+              </a-space>
+            </div>
+          </a-form>
+        </div>
+      </div>
+    </a-modal>
+
     <BatchEditPictureModal
       ref="batchEditPictureModalRef"
       :spaceId="spaceId"
@@ -125,13 +253,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, onMounted, ref, watch } from 'vue'
+import { computed, h, onMounted, reactive, ref, watch } from 'vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { message } from 'ant-design-vue'
 import {
   listPictureVoByPageUsingPost,
   searchPictureByColorUsingPost,
 } from '@/api/pictureController.ts'
+import {
+  addSpaceNoticeUsingPost,
+  deleteSpaceNoticeUsingPost,
+  editSpaceNoticeUsingPost,
+  listSpaceNoticeUsingPost,
+} from '@/api/spaceNoticeController.ts'
 import { formatSize } from '@/utils'
 import PictureList from '@/components/PictureList.vue'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
@@ -140,21 +274,23 @@ import 'vue3-colorpicker/style.css'
 import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
 import { EditOutlined, BarChartOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '../constants/space.ts'
+import dayjs from 'dayjs'
 
 interface Props {
   id: string | number
 }
+
 const props = defineProps<Props>()
-const spaceId = computed(() => Number(props.id))
-watch( // 监听空间id变化，重新获取数据
+const spaceId = computed<string | number>(() => props.id)
+
+watch(
   () => props.id,
-  (newSpaceId) => {
+  () => {
     fetchSpaceDetail()
     fetchData()
   },
 )
 
-// -------- 获取空间详情 --------
 const space = ref<API.SpaceVO>({})
 const spaceTypeText = computed(() => SPACE_TYPE_MAP[Number(space.value.spaceType)] ?? '空间')
 const usagePercent = computed(() => {
@@ -165,6 +301,39 @@ const usagePercent = computed(() => {
   }
   return Number(((totalSize * 100) / maxSize).toFixed(1))
 })
+
+const dataList = ref<API.PictureVO[]>([])
+const total = ref(0)
+const loading = ref(true)
+const searchParams = ref<API.PictureQueryRequest>({
+  current: 1,
+  pageSize: 12,
+  sortField: 'createTime',
+  sortOrder: 'descend',
+})
+const filterModalVisible = ref(false)
+const activeFilterCount = computed(() => {
+  const params = searchParams.value
+  let count = 0
+  if (params.searchText) count += 1
+  if (params.category) count += 1
+  if (params.tags?.length) count += 1
+  if (params.name) count += 1
+  if (params.introduction) count += 1
+  if (params.picWidth) count += 1
+  if (params.picHeight) count += 1
+  if (params.picFormat) count += 1
+  if (params.startEditTime || params.endEditTime) count += 1
+  return count
+})
+const openFilterModal = () => {
+  filterModalVisible.value = true
+}
+
+const closeFilterModal = () => {
+  filterModalVisible.value = false
+}
+
 const fetchSpaceDetail = async () => {
   try {
     const res = await getSpaceVoByIdUsingGet({
@@ -172,6 +341,11 @@ const fetchSpaceDetail = async () => {
     })
     if (res.data.code === 0 && res.data.data) {
       space.value = res.data.data
+      if (Number(res.data.data.spaceType) === 1) {
+        fetchNoticeList()
+      } else {
+        noticeList.value = []
+      }
     } else {
       message.error('获取空间详情失败，' + res.data.message)
     }
@@ -179,51 +353,37 @@ const fetchSpaceDetail = async () => {
     message.error('获取空间详情失败：' + e.message)
   }
 }
-onMounted(() => {
-  fetchSpaceDetail()
-})
 
-// 定义数据
-const dataList = ref<API.PictureVO[]>([])
-const total = ref(0)
-const loading = ref(true)
-// 搜索条件
-const searchParams = ref<API.PictureQueryRequest>({
-  current: 1,
-  pageSize: 12,
-  sortField: 'createTime',
-  sortOrder: 'descend',
-})
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
-  const params = {
-    spaceId: spaceId.value,
-    ...searchParams.value,
+  try {
+    const params = {
+      spaceId: spaceId.value,
+      ...searchParams.value,
+    }
+    const res = await listPictureVoByPageUsingPost(params)
+    if (res.data.code === 0 && res.data.data) {
+      dataList.value = res.data.data.records ?? []
+      total.value = Number(res.data.data.total ?? 0)
+    } else {
+      message.error('获取数据失败，' + res.data.message)
+    }
+  } finally {
+    loading.value = false
   }
-  const res = await listPictureVoByPageUsingPost(params)
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data.records ?? []
-    total.value = res.data.data.total ?? 0
-  } else {
-    message.error('获取数据失败，' + res.data.message)
-  }
-  loading.value = false
 }
+
 onMounted(() => {
-  // 页面加载时获取数据，请求一次
+  fetchSpaceDetail()
   fetchData()
 })
 
-// 分页参数
 const onPageChange = (page: number, pageSize: number) => {
   searchParams.value.current = page
   searchParams.value.pageSize = pageSize
   fetchData()
 }
 
-// 搜索方法, 由子组件调用
 const onSearch = (newSearchParams: API.PictureQueryRequest) => {
   searchParams.value = {
     ...searchParams.value,
@@ -235,105 +395,233 @@ const onSearch = (newSearchParams: API.PictureQueryRequest) => {
 
 const onColorChange = async (color: string) => {
   loading.value = true
-  const res = await searchPictureByColorUsingPost({
-    picColor: color,
-    spaceId: spaceId.value,
-  })
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data
-    total.value = res.data.data.length
-  } else {
-    message.error('获取数据失败，' + res.data.message)
+  try {
+    const res = await searchPictureByColorUsingPost({
+      picColor: color,
+      spaceId: spaceId.value,
+    })
+    if (res.data.code === 0 && res.data.data) {
+      dataList.value = res.data.data
+      total.value = res.data.data.length
+    } else {
+      message.error('获取数据失败，' + res.data.message)
+    }
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
+const batchEditPictureModalRef = ref()
 const doBatchEdit = () => {
   batchEditPictureModalRef.value?.openModal()
 }
 
-// 分享弹窗引用
-const batchEditPictureModalRef = ref()
-// 批量编辑图片成功后，刷新列表
 const onBatchEditPictureSuccess = () => {
   fetchData()
 }
 
-// 通用权限检查函数
 function createPermissionChecker(permission: string) {
   return computed(() => {
     return (space.value.permissionList ?? []).includes(permission)
   })
 }
 
-// 定义权限检查
 const canManageSpaceUser = createPermissionChecker(SPACE_PERMISSION_ENUM.SPACE_USER_MANAGE)
 const canUploadPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_UPLOAD)
 const canEditPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
-const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
+const canViewPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_VIEW)
+const showNoticeRail = computed(
+  () => Number(space.value.spaceType) === 1 && (canManageSpaceUser.value || canViewPicture.value),
+)
+
+const noticeList = ref<API.SpaceNoticeVO[]>([])
+const noticeLoading = ref(false)
+const noticeSubmitting = ref(false)
+const noticeModalVisible = ref(false)
+const editingNoticeId = ref<number>()
+const noticeForm = reactive<API.SpaceNoticeEditRequest>({
+  title: '',
+  content: '',
+  isPinned: 0,
+  spaceId: undefined,
+})
+
+const resetNoticeForm = () => {
+  editingNoticeId.value = undefined
+  noticeForm.title = ''
+  noticeForm.content = ''
+  noticeForm.isPinned = 0
+  noticeForm.spaceId = spaceId.value
+}
+
+const fetchNoticeList = async () => {
+  if (!spaceId.value || Number(space.value.spaceType) !== 1) {
+    return
+  }
+  noticeLoading.value = true
+  try {
+    const res = await listSpaceNoticeUsingPost({ spaceId: spaceId.value })
+    if (res.data.code === 0 && res.data.data) {
+      noticeList.value = res.data.data
+    } else {
+      message.error('加载公告失败，' + res.data.message)
+    }
+  } finally {
+    noticeLoading.value = false
+  }
+}
+
+const openNoticeModal = () => {
+  noticeModalVisible.value = true
+  fetchNoticeList()
+}
+
+const closeNoticeModal = () => {
+  noticeModalVisible.value = false
+  resetNoticeForm()
+}
+
+const openCreateNotice = () => {
+  noticeModalVisible.value = true
+  resetNoticeForm()
+}
+
+const startEditNotice = (notice: API.SpaceNoticeVO) => {
+  noticeModalVisible.value = true
+  editingNoticeId.value = notice.id
+  noticeForm.title = notice.title
+  noticeForm.content = notice.content
+  noticeForm.isPinned = notice.isPinned ?? 0
+  noticeForm.spaceId = notice.spaceId ?? spaceId.value
+}
+
+const toggleNoticePinned = (checked: boolean) => {
+  noticeForm.isPinned = checked ? 1 : 0
+}
+
+const submitNotice = async () => {
+  if (!spaceId.value || !noticeForm.title || !noticeForm.content) {
+    message.warning('请先填写公告标题和内容')
+    return
+  }
+  noticeSubmitting.value = true
+  try {
+    const payload = {
+      ...noticeForm,
+      id: editingNoticeId.value,
+      spaceId: spaceId.value,
+    }
+    const res = editingNoticeId.value
+      ? await editSpaceNoticeUsingPost(payload as API.SpaceNoticeEditRequest)
+      : await addSpaceNoticeUsingPost(payload as API.SpaceNoticeAddRequest)
+    if (res.data.code === 0) {
+      message.success(editingNoticeId.value ? '公告已更新' : '公告已发布')
+      resetNoticeForm()
+      fetchNoticeList()
+    } else {
+      message.error('公告提交失败，' + res.data.message)
+    }
+  } finally {
+    noticeSubmitting.value = false
+  }
+}
+
+const removeNotice = async (id?: number) => {
+  if (!id) {
+    return
+  }
+  const res = await deleteSpaceNoticeUsingPost({ id })
+  if (res.data.code === 0) {
+    message.success('公告已删除')
+    if (editingNoticeId.value === id) {
+      resetNoticeForm()
+    }
+    fetchNoticeList()
+  } else {
+    message.error('删除公告失败，' + res.data.message)
+  }
+}
 </script>
 
 <style scoped>
 .space-page {
-  gap: 22px;
+  gap: 12px;
 }
 
 .space-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
-  gap: 24px;
-  padding: 28px;
+  gap: 14px;
+  padding: 16px;
 }
 
 .space-hero__copy {
-  gap: 16px;
+  gap: 8px;
 }
 
 .space-hero__side {
   display: grid;
-  gap: 18px;
+  gap: 10px;
   align-content: start;
 }
 
 .quota-panel {
   display: grid;
-  justify-items: center;
-  gap: 16px;
-  padding: 20px;
+  grid-template-columns: auto 1fr;
+  justify-items: start;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
   border: 2px dashed rgba(45, 45, 45, 0.22);
   border-radius: var(--sketch-radius-md);
   background: rgba(255, 255, 255, 0.76);
 }
 
 .quota-copy {
-  text-align: center;
+  text-align: left;
 }
 
 .quota-copy strong {
   display: block;
   font-family: var(--sketch-title-font);
-  font-size: 1.3rem;
+  font-size: 1rem;
 }
 
 .quota-copy p {
-  margin: 8px 0 0;
+  margin: 2px 0 0;
   color: rgba(45, 45, 45, 0.68);
-  line-height: 1.5;
+  line-height: 1.2;
+  font-size: 0.8rem;
 }
 
 .filter-shell {
-  padding: 24px;
+  padding: 12px 16px;
 }
 
-.filter-shell__head {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 14px;
+.filter-shell__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 12px;
+  align-items: center;
 }
 
-.filter-shell__head p {
-  margin: 0;
+.filter-shell__copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+}
+
+.filter-shell__summary {
   color: rgba(45, 45, 45, 0.68);
+  font-size: 0.8rem;
+}
+
+.filter-modal {
+  display: grid;
+  gap: 12px;
 }
 
 .color-shell {
@@ -341,8 +629,8 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
   flex-wrap: wrap;
   gap: 12px 18px;
   align-items: center;
-  margin-top: 18px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 2px dashed rgba(45, 45, 45, 0.18);
 }
 
@@ -358,39 +646,183 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
 
 .gallery-section {
   display: grid;
-  gap: 18px;
+  gap: 8px;
 }
 
 .gallery-section__head {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px 24px;
-  align-items: end;
+  gap: 6px 12px;
+  align-items: center;
+}
+
+.gallery-section__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
 }
 
 .gallery-section__head h2 {
-  margin: 8px 0 0;
+  margin: 0;
   font-family: var(--sketch-title-font);
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-size: clamp(1.18rem, 1.55vw, 1.5rem);
 }
 
-.gallery-section__head p {
+.notice-rail {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 2px dashed rgba(45, 45, 45, 0.2);
+  border-radius: var(--sketch-radius-md);
+  background: rgba(255, 252, 237, 0.78);
+}
+
+.notice-rail__head,
+.notice-preview-card__head,
+.notice-modal-card__head,
+.notice-modal__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.notice-preview-list,
+.notice-modal__cards {
+  display: grid;
+  gap: 10px;
+}
+
+.notice-rail__summary {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: var(--sketch-radius-sm);
+  border: 1px dashed rgba(45, 45, 45, 0.14);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.notice-rail__summary p,
+.notice-rail__summary small {
   margin: 0;
-  max-width: 34ch;
-  color: rgba(45, 45, 45, 0.68);
+  color: rgba(45, 45, 45, 0.72);
+  line-height: 1.35;
+}
+
+.notice-rail__summary p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.notice-preview-card,
+.notice-modal-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--sketch-radius-sm);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(45, 45, 45, 0.12);
+}
+
+.notice-preview-card p,
+.notice-modal-card p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.74);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notice-rail__empty {
+  color: rgba(45, 45, 45, 0.66);
+  font-size: 0.94rem;
+}
+
+.notice-modal {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.78fr);
+  gap: 18px;
+}
+
+.notice-modal__list,
+.notice-modal__form {
+  display: grid;
+  gap: 14px;
+}
+
+.notice-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.notice-modal-card__title {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 @media (max-width: 960px) {
-  .space-hero {
+  .space-hero,
+  .notice-modal {
     grid-template-columns: 1fr;
-    padding: 22px;
+  }
+
+  .space-hero {
+    padding: 18px;
   }
 }
 
 @media (max-width: 640px) {
   .filter-shell {
-    padding: 18px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .space-page .space-hero {
+    order: 1;
+  }
+
+  .space-page .space-hero .compact-stat-row,
+  .space-page .space-hero .page-head__desc,
+  .space-page .quota-copy p {
+    display: none;
+  }
+
+  .space-page .quota-panel {
+    grid-template-columns: auto 1fr;
+    justify-items: start;
+    align-items: center;
+  }
+
+  .space-page .space-hero__side .sketch-actions .ant-btn {
+    height: 34px;
+    padding-inline: 10px;
+    font-size: 0.9rem;
+  }
+
+  .space-page .notice-preview-card p {
+    -webkit-line-clamp: 1;
+  }
+
+  .space-page .gallery-section {
+    order: 2;
+  }
+
+  .space-page .pagination-shell {
+    order: 3;
+  }
+
+  .space-page .filter-shell {
+    order: 4;
   }
 }
 </style>

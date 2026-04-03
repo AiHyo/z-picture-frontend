@@ -1,9 +1,9 @@
 export default class PictureEditWebSocket {
-  private pictureId: number
+  private pictureId: string | number
   private socket: WebSocket | null
   private eventHandlers: any
 
-  constructor(pictureId: number) {
+  constructor(pictureId: string | number) {
     this.pictureId = pictureId // 当前编辑的图片 ID
     this.socket = null // WebSocket 实例
     this.eventHandlers = {} // 自定义事件处理器
@@ -13,7 +13,7 @@ export default class PictureEditWebSocket {
    * 初始化 WebSocket 连接
    */
   connect() {
-    const DEV_BASE_URL = "ws://localhost:8123";
+    const DEV_BASE_URL = 'ws://localhost:8123'
     const url = `${DEV_BASE_URL}/api/ws/picture/edit?pictureId=${this.pictureId}`
     this.socket = new WebSocket(url)
 
@@ -44,7 +44,6 @@ export default class PictureEditWebSocket {
 
     // 监听错误事件
     this.socket.onerror = (error) => {
-      console.error('WebSocket 发生错误:', error)
       this.triggerEvent('error', error)
     }
   }
@@ -68,7 +67,7 @@ export default class PictureEditWebSocket {
       this.socket.send(JSON.stringify(message))
       console.log('消息已发送:', message)
     } else {
-      console.error('WebSocket 未连接，无法发送消息:', message)
+      this.triggerEvent('error', new Error('WebSocket 未连接'))
     }
   }
 

@@ -75,6 +75,15 @@
         <div class="sketch-actions detail-actions">
           <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit">编辑</a-button>
           <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete">删除</a-button>
+          <a-button
+            v-if="canReportPicture"
+            danger
+            ghost
+            :disabled="!loginUserStore.loginUser.id"
+            @click="openReportModal"
+          >
+            举报图片
+          </a-button>
           <a-button type="primary" @click="doDownload">
             <template #icon>
               <DownloadOutlined />
@@ -90,19 +99,56 @@
         </div>
       </a-card>
     </section>
+    <a-modal
+      v-model:open="reportModalVisible"
+      title="举报图片"
+      width="640px"
+      :confirm-loading="reportSubmitting"
+      ok-text="提交举报"
+      cancel-text="取消"
+      @ok="submitReport"
+      @cancel="closeReportModal"
+    >
+      <div class="report-modal">
+        <p class="report-modal__note">仅公共图库图片支持举报。重复待处理举报会被后端拦住，这里不做假兜底。</p>
+        <a-form layout="vertical">
+          <a-form-item label="举报类型" required>
+            <a-select
+              v-model:value="reportForm.reportReasonType"
+              :options="reportReasonOptions"
+              placeholder="请选择举报类型"
+            />
+          </a-form-item>
+          <a-form-item label="补充说明">
+            <a-textarea
+              v-model:value="reportForm.reportReasonText"
+              :rows="4"
+              :maxlength="300"
+              show-count
+              placeholder="可以补充具体原因，便于管理员处理"
+            />
+          </a-form-item>
+        </a-form>
+      </div>
+    </a-modal>
     <ShareModal ref="shareModalRef" :link="shareLink" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, h } from 'vue'
-import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
+import { computed, onMounted, reactive, ref, h } from 'vue'
+import {
+  addPictureReportUsingPost,
+  deletePictureUsingPost,
+  getPictureVoByIdUsingGet,
+} from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { downloadImage, formatSize } from '@/utils'
 import { EditOutlined, DeleteOutlined, DownloadOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
 import router, { toHexColor } from '@/router'
 import ShareModal from '@/components/ShareModal.vue'
 import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 // const props = defineProps<{
 //   id: string | number
@@ -112,13 +158,29 @@ interface props {
 }
 
 const props = defineProps<props>()
-const pictureId = computed(() => Number(props.id))
+const pictureId = computed(() => props.id)
 const picture = ref<API.PictureVO>({})
+const loginUserStore = useLoginUserStore()
+
+const reportReasonOptions = [
+  { label: '侵权盗图', value: 'copyright' },
+  { label: '违规违禁', value: 'illegal' },
+  { label: '低俗不适', value: 'inappropriate' },
+  { label: '广告引流', value: 'spam' },
+  { label: '其他问题', value: 'other' },
+]
+
+const reportModalVisible = ref(false)
+const reportSubmitting = ref(false)
+const reportForm = reactive<API.PictureReportAddRequest>({
+  reportReasonType: reportReasonOptions[0].value,
+  reportReasonText: '',
+})
 // 获取图片详情
 const fetchPictureDetail = async () => {
   try {
     const res = await getPictureVoByIdUsingGet({
-      id: pictureId.value,
+      id: pictureId.value as any,
     })
     if (res.data.code === 0 && res.data.data) {
       picture.value = res.data.data
@@ -186,7 +248,7 @@ const doDownload = () => {
 const shareModalRef = ref()
 const shareLink = ref('')
 // 分享
-const doShare = (picture: API.PictureVO, e: Event) => {
+const doShare = () => {
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${props.id}`
   if (shareModalRef.value) {
     shareModalRef.value.openModal()
@@ -202,6 +264,58 @@ function createPermissionChecker(permission: string) {
 // 定义权限检查
 const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
 const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
+const canReportPicture = computed(() => !!picture.value.id && !picture.value.spaceId)
+
+const resetReportForm = () => {
+  reportForm.reportReasonType = reportReasonOptions[0].value
+  reportForm.reportReasonText = ''
+}
+
+const openReportModal = () => {
+  if (!picture.value.id) {
+    message.warning('图片详情还在加载，请稍后再试')
+    return
+  }
+  if (!loginUserStore.loginUser.id) {
+    message.warning('请先登录后再举报')
+    return
+  }
+  resetReportForm()
+  reportModalVisible.value = true
+}
+
+const closeReportModal = () => {
+  reportModalVisible.value = false
+  resetReportForm()
+}
+
+const submitReport = async () => {
+  if (!picture.value.id) {
+    return
+  }
+  if (!reportForm.reportReasonType) {
+    message.warning('请选择举报类型')
+    return
+  }
+  reportSubmitting.value = true
+  try {
+    const res = await addPictureReportUsingPost({
+      pictureId: picture.value.id,
+      reportReasonType: reportForm.reportReasonType,
+      reportReasonText: reportForm.reportReasonText,
+    })
+    if (res.data.code === 0) {
+      message.success('举报已提交')
+      closeReportModal()
+    } else {
+      message.error('举报提交失败，' + res.data.message)
+    }
+  } catch (error) {
+    message.error('举报提交失败，' + (error as Error).message)
+  } finally {
+    reportSubmitting.value = false
+  }
+}
 
 
 
@@ -269,6 +383,17 @@ const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 
 .detail-actions {
   margin-top: 18px;
+}
+
+.report-modal {
+  display: grid;
+  gap: 12px;
+}
+
+.report-modal__note {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.68);
+  line-height: 1.5;
 }
 
 .color-chip {

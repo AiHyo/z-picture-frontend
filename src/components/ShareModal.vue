@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model:visible="visible" :title="props.title" :footer="false" @cancel="closeModal">
+  <a-modal v-model:open="visible" :title="props.title" :footer="false" @cancel="closeModal">
     <div class="share-modal">
       <div class="share-modal__block">
         <span class="sketch-note">Share Link</span>

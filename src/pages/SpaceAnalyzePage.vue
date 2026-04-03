@@ -1,31 +1,25 @@
 <template>
   <div id="spaceAnalyzePage" class="page-shell space-analyze-page">
-    <section class="page-head">
-      <span class="sketch-note">Insight Board</span>
-      <h1 class="page-head__title">空间图库分析</h1>
-      <p class="page-head__desc">
-        统计接口、管理员权限和筛选范围都保留原样。我只把这页整理成一个真正可读的分析驾驶舱，而不是一排默认卡片。
-      </p>
-    </section>
-
-    <section class="paper-panel paper-section analyze-hero">
-      <div class="analyze-hero__copy">
-        <span class="sketch-note">Scope</span>
-        <h2>{{ scopeTitle }}</h2>
-        <p>{{ scopeDescription }}</p>
-      </div>
-      <div class="admin-overview">
-        <div class="admin-stat">
-          <strong>{{ queryAll ? '全空间' : queryPublic ? '公共空间' : '单空间' }}</strong>
-          <span>分析范围</span>
+    <section class="paper-panel paper-section toolbar-panel">
+      <div class="toolbar-panel__main">
+        <div class="page-head page-head--compact">
+          <span class="sketch-note">Insight Board</span>
+          <h1 class="page-head__title">空间图库分析</h1>
+          <p class="page-head__desc">{{ scopeDescription }}</p>
         </div>
-        <div class="admin-stat">
-          <strong>{{ isAdmin ? 6 : 5 }}</strong>
-          <span>可见分析模块</span>
-        </div>
-        <div class="admin-stat" v-if="spaceId">
-          <strong>{{ spaceId }}</strong>
-          <span>目标空间 ID</span>
+        <div class="compact-stat-row analyze-toolbar__stats">
+          <div class="compact-stat-chip">
+            <strong>{{ scopeTitle }}</strong>
+            <span>分析范围</span>
+          </div>
+          <div class="compact-stat-chip">
+            <strong>{{ isAdmin ? 6 : 5 }}</strong>
+            <span>可见模块</span>
+          </div>
+          <div class="compact-stat-chip" v-if="spaceId">
+            <strong>{{ spaceId }}</strong>
+            <span>目标空间</span>
+          </div>
         </div>
       </div>
     </section>
@@ -36,7 +30,12 @@
       <SpaceTagAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
       <SpaceSizeAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
       <SpaceUserAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
-      <SpaceRankAnalyze v-if="isAdmin" :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
+      <SpaceRankAnalyze
+        v-if="isAdmin"
+        :spaceId="spaceId"
+        :queryAll="queryAll"
+        :queryPublic="queryPublic"
+      />
     </section>
   </div>
 </template>
@@ -54,16 +53,15 @@ import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 const route = useRoute()
 
-const toNumber = (value: unknown): number | undefined => {
+const toRouteId = (value: unknown): string | undefined => {
   const raw = Array.isArray(value) ? value[0] : value
   if (raw === undefined || raw === null || raw === '') {
     return undefined
   }
-  const num = Number(raw)
-  return Number.isNaN(num) ? undefined : num
+  return String(raw)
 }
 
-const spaceId = computed(() => toNumber(route.query?.spaceId))
+const spaceId = computed<string | undefined>(() => toRouteId(route.query?.spaceId))
 const queryAll = computed(() => !!route.query?.queryAll)
 const queryPublic = computed(() => !!route.query?.queryPublic)
 
@@ -99,42 +97,40 @@ const scopeDescription = computed(() => {
 
 <style scoped>
 .space-analyze-page {
-  gap: 22px;
+  gap: 14px;
 }
 
-.analyze-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-  gap: 20px;
-  align-items: center;
-}
-
-.analyze-hero__copy {
-  display: grid;
-  gap: 10px;
-}
-
-.analyze-hero__copy h2 {
-  margin: 0;
-  font-family: var(--sketch-title-font);
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-}
-
-.analyze-hero__copy p {
-  margin: 0;
-  color: rgba(45, 45, 45, 0.68);
+.analyze-toolbar__stats {
+  justify-content: flex-end;
 }
 
 .analyze-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 @media (max-width: 960px) {
-  .analyze-hero,
   .analyze-grid {
     grid-template-columns: 1fr;
+  }
+
+  .analyze-toolbar__stats {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .space-analyze-page .analyze-grid {
+    order: 1;
+  }
+
+  .space-analyze-page .toolbar-panel {
+    order: 2;
+  }
+
+  .space-analyze-page .analyze-toolbar__stats {
+    display: none;
   }
 }
 </style>

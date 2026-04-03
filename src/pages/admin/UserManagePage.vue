@@ -1,14 +1,11 @@
 <template>
   <div id="userManagePage" class="page-shell admin-page">
-    <section class="page-head">
-      <span class="sketch-note">Admin Console</span>
-      <h1 class="page-head__title">用户管理</h1>
-      <p class="page-head__desc">
-        这页真正要解决的是后台审查效率，不是展示更多花哨字段。所以我保留原有搜索和删除逻辑，只把密度和层次整理干净。
-      </p>
-    </section>
-
-    <section class="paper-panel paper-section">
+    <section class="paper-panel paper-section toolbar-panel">
+      <div class="page-head page-head--compact">
+        <span class="sketch-note">Admin Console</span>
+        <h1 class="page-head__title">用户管理</h1>
+        <p class="page-head__desc">账号与角色信息保留，首屏优先暴露用户表。</p>
+      </div>
       <div class="admin-overview">
         <div class="admin-stat">
           <strong>{{ total }}</strong>
@@ -23,30 +20,28 @@
           <span>当前页记录</span>
         </div>
       </div>
-    </section>
-
-    <section class="paper-panel paper-section">
-      <div class="panel-intro">
-        <span class="sketch-note">Query Filters</span>
-        <p>账号和用户名足够了。更多条件只会让后台表单继续发散。</p>
+      <div class="toolbar-panel__filters">
+        <div class="toolbar-panel__filter-bar">
+          <p class="toolbar-panel__summary">账号和用户名已经足够，不再铺更多无效条件。</p>
+        </div>
+        <a-form layout="inline" :model="searchParams" @finish="doSearch">
+          <a-form-item label="账号">
+            <a-input v-model:value="searchParams.userAccount" placeholder="输入账号" allow-clear />
+          </a-form-item>
+          <a-form-item label="用户名">
+            <a-input v-model:value="searchParams.userName" placeholder="输入用户名" allow-clear />
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" html-type="submit">搜索</a-button>
+          </a-form-item>
+        </a-form>
       </div>
-      <a-form layout="inline" :model="searchParams" @finish="doSearch">
-        <a-form-item label="账号">
-          <a-input v-model:value="searchParams.userAccount" placeholder="输入账号" allow-clear />
-        </a-form-item>
-        <a-form-item label="用户名">
-          <a-input v-model:value="searchParams.userName" placeholder="输入用户名" allow-clear />
-        </a-form-item>
-        <a-form-item>
-          <a-button type="primary" html-type="submit">搜索</a-button>
-        </a-form-item>
-      </a-form>
     </section>
 
-    <section class="paper-panel paper-section">
-      <div class="panel-intro">
+    <section class="paper-panel paper-section table-panel">
+      <div class="table-panel__head">
         <span class="sketch-note">Records</span>
-        <p>头像、角色和时间信息做了分层，删除行为保持不变。</p>
+        <p>头像、角色和时间信息保留，表格直接进入可视区。</p>
       </div>
       <a-table
         :columns="columns"
@@ -116,7 +111,7 @@ const fetchData = async () => {
   })
   if (res.data.data) {
     dataList.value = res.data.data.records ?? []
-    total.value = res.data.data.total ?? 0
+    total.value = Number(res.data.data.total ?? 0)
   } else {
     message.error('获取数据失败，' + res.data.message)
   }
@@ -158,6 +153,24 @@ onMounted(() => {
 
 <style scoped>
 .admin-page {
-  gap: 22px;
+  gap: 14px;
+}
+
+@media (max-width: 768px) {
+  .admin-page .table-panel {
+    order: 1;
+  }
+
+  .admin-page .toolbar-panel {
+    order: 2;
+  }
+
+  .admin-page :deep(.admin-overview) {
+    display: none;
+  }
+
+  .admin-page :deep(.toolbar-panel__hint) {
+    display: none;
+  }
 }
 </style>

@@ -32,7 +32,7 @@ import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 interface Props {
   picture?: API.PictureVO
   onSuccess?: (newPicture: API.PictureVO) => void
-  spaceId?: number
+  spaceId?: string | number
 }
 
 const props = defineProps<Props>()
@@ -73,14 +73,17 @@ const handleUpload = async ({ file }: { file: File }) => {
 <style scoped>
 .picture-upload {
   width: 100%;
+  --upload-stage-height: clamp(240px, 48vh, 320px);
 }
 
 .picture-upload__control :deep(.ant-upload) {
   width: 100% !important;
-  min-height: 320px;
+  min-height: var(--upload-stage-height);
+  max-height: var(--upload-stage-height);
   border: 2px dashed rgba(45, 45, 45, 0.26) !important;
   border-radius: var(--sketch-radius-md);
   background: linear-gradient(180deg, rgba(255, 249, 196, 0.18), rgba(255, 255, 255, 0.86));
+  overflow: hidden;
 }
 
 .picture-upload__empty,
@@ -89,9 +92,12 @@ const handleUpload = async ({ file }: { file: File }) => {
   display: grid;
   place-items: center;
   width: 100%;
-  min-height: 320px;
-  padding: 24px;
+  min-height: var(--upload-stage-height);
+  height: var(--upload-stage-height);
+  max-height: var(--upload-stage-height);
+  padding: 16px;
   text-align: center;
+  overflow: hidden;
 }
 
 .picture-upload__empty strong {
@@ -112,8 +118,10 @@ const handleUpload = async ({ file }: { file: File }) => {
 }
 
 .picture-upload__preview img {
+  width: 100%;
+  height: 100%;
   max-width: 100%;
-  max-height: 480px;
+  max-height: 100%;
   border-radius: 18px;
   object-fit: contain;
 }
@@ -128,5 +136,11 @@ const handleUpload = async ({ file }: { file: File }) => {
   border: 2px dashed rgba(45, 45, 45, 0.18);
   border-radius: var(--sketch-radius-sm);
   background: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 640px) {
+  .picture-upload {
+    --upload-stage-height: clamp(220px, 42vh, 280px);
+  }
 }
 </style>

@@ -12,13 +12,24 @@
       <div class="usage-grid">
         <div class="usage-card">
           <span class="sketch-note">Storage</span>
-          <strong>{{ formatSize(data.usedSize) }} / {{ data.maxSize ? formatSize(data.maxSize) : '无限制' }}</strong>
-          <a-progress type="dashboard" :percent="data.sizeUsageRatio ?? 0" :stroke-color="{ '0%': '#f97316', '100%': '#fb923c' }" />
+          <strong
+            >{{ formatSize(data.usedSize) }} /
+            {{ data.maxSize ? formatSize(data.maxSize) : '无限制' }}</strong
+          >
+          <a-progress
+            type="dashboard"
+            :percent="data.sizeUsageRatio ?? 0"
+            :stroke-color="{ '0%': '#f97316', '100%': '#fb923c' }"
+          />
         </div>
         <div class="usage-card">
           <span class="sketch-note">Count</span>
           <strong>{{ data.usedCount ?? 0 }} / {{ data.maxCount ?? '无限制' }}</strong>
-          <a-progress type="dashboard" :percent="data.countUsageRatio ?? 0" :stroke-color="{ '0%': '#0d9488', '100%': '#14b8a6' }" />
+          <a-progress
+            type="dashboard"
+            :percent="data.countUsageRatio ?? 0"
+            :stroke-color="{ '0%': '#0d9488', '100%': '#14b8a6' }"
+          />
         </div>
       </div>
     </a-spin>
@@ -34,7 +45,7 @@ import { formatSize } from '@/utils'
 interface Props {
   queryAll?: boolean
   queryPublic?: boolean
-  spaceId?: number
+  spaceId?: string | number
 }
 
 const props = withDefaults(defineProps<Props>(), {

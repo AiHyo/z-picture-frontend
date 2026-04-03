@@ -1,11 +1,9 @@
 <template>
   <div class="page-shell vip-exchange-page">
-    <section class="page-head">
+    <section class="page-head page-head--compact">
       <span class="sketch-note">Membership</span>
       <h1 class="page-head__title">会员兑换中心</h1>
-      <p class="page-head__desc">
-        兑换接口和校验规则不动，只把这页从一张普通卡片改成完整的权益说明与操作面板，减少“输入完不知道会发生什么”的旧体验。
-      </p>
+      <p class="page-head__desc">输入兑换码直接提交，权益说明退到次级位置。</p>
     </section>
 
     <section class="workspace-grid workspace-grid--sidebar">
@@ -106,13 +104,13 @@ const onFinish = async (values: { vipCode: string }) => {
 
 <style scoped>
 .vip-exchange-page {
-  gap: 22px;
+  gap: 14px;
 }
 
 .vip-form-panel,
 .vip-side {
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .vip-benefits-head {

@@ -1,28 +1,11 @@
 <template>
   <div id="spaceManagePage" class="page-shell admin-page">
-    <section class="page-head">
-      <span class="sketch-note">Admin Console</span>
-      <h1 class="page-head__title">空间管理</h1>
-      <p class="page-head__desc">
-        空间搜索、删除、分析跳转都保留旧逻辑。重构点只有信息排布和阅读顺序，不碰核心数据流。
-      </p>
-    </section>
-
-    <section class="paper-panel paper-section">
-      <div class="admin-toolbar">
-        <div class="admin-overview">
-          <div class="admin-stat">
-            <strong>{{ total }}</strong>
-            <span>空间总数</span>
-          </div>
-          <div class="admin-stat">
-            <strong>{{ dataList.length }}</strong>
-            <span>当前页记录</span>
-          </div>
-          <div class="admin-stat">
-            <strong>{{ professionalCount }}</strong>
-            <span>当前页专业/旗舰</span>
-          </div>
+    <section class="paper-panel paper-section toolbar-panel">
+      <div class="toolbar-panel__main">
+        <div class="page-head page-head--compact">
+          <span class="sketch-note">Admin Console</span>
+          <h1 class="page-head__title">空间管理</h1>
+          <p class="page-head__desc">先给控制项，再直接露出空间表和分析入口。</p>
         </div>
         <div class="admin-toolbar__actions">
           <a-button type="primary" href="/add_space" target="_blank">+ 创建空间</a-button>
@@ -30,39 +13,42 @@
           <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">分析全空间</a-button>
         </div>
       </div>
-    </section>
-
-    <section class="paper-panel paper-section">
-      <div class="panel-intro">
-        <span class="sketch-note">Query Filters</span>
-        <p>空间级别、名称和用户 id 还是老字段，没必要编造新筛选条件。</p>
+      <div class="admin-overview">
+        <div class="admin-stat">
+          <strong>{{ total }}</strong>
+          <span>空间总数</span>
+        </div>
+        <div class="admin-stat">
+          <strong>{{ dataList.length }}</strong>
+          <span>当前页记录</span>
+        </div>
+        <div class="admin-stat">
+          <strong>{{ professionalCount }}</strong>
+          <span>当前页专业/旗舰</span>
+        </div>
       </div>
-      <a-form layout="inline" :model="searchParams" @finish="doSearch">
+      <div class="toolbar-panel__filters">
+        <div class="toolbar-panel__filter-bar">
+          <p class="toolbar-panel__summary">名称常显，级别和用户 id 收进按需筛选。</p>
+          <a-button class="toolbar-toggle" @click="openFilterModal">
+            {{ `更多筛选${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
+          </a-button>
+        </div>
+        <a-form layout="inline" :model="searchParams" @finish="doSearch">
         <a-form-item label="空间名称">
           <a-input v-model:value="searchParams.spaceName" placeholder="请输入空间名称" allow-clear />
-        </a-form-item>
-        <a-form-item name="spaceLevel" label="空间级别">
-          <a-select
-            v-model:value="searchParams.spaceLevel"
-            style="min-width: 180px"
-            placeholder="请选择空间级别"
-            :options="SPACE_LEVEL_OPTIONS"
-            allow-clear
-          />
-        </a-form-item>
-        <a-form-item label="用户 id">
-          <a-input v-model:value="searchParams.userId" placeholder="请输入用户 id" allow-clear />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit">搜索</a-button>
         </a-form-item>
-      </a-form>
+        </a-form>
+      </div>
     </section>
 
-    <section class="paper-panel paper-section">
-      <div class="panel-intro">
+    <section class="paper-panel paper-section table-panel">
+      <div class="table-panel__head">
         <span class="sketch-note">Records</span>
-        <p>配额和使用量拆成稳定的双行信息，避免在一格里塞成一团。</p>
+        <p>使用量与配额保留双行信息，但不再让说明卡挡住表格。</p>
       </div>
       <a-table
         :columns="columns"
@@ -97,6 +83,37 @@
         </template>
       </a-table>
     </section>
+
+    <a-modal
+      v-model:open="filterModalVisible"
+      title="更多筛选"
+      width="720px"
+      :footer="null"
+      @cancel="closeFilterModal"
+    >
+      <a-form layout="vertical" :model="searchParams" class="filter-modal-form">
+        <div class="filter-modal-form__grid">
+          <a-form-item name="spaceLevel" label="空间级别">
+            <a-select
+              v-model:value="searchParams.spaceLevel"
+              placeholder="请选择空间级别"
+              :options="SPACE_LEVEL_OPTIONS"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item label="用户 id">
+            <a-input v-model:value="searchParams.userId" placeholder="请输入用户 id" allow-clear />
+          </a-form-item>
+        </div>
+        <div class="filter-modal-form__actions">
+          <span class="toolbar-panel__summary">已激活 {{ activeFilterCount }} 项筛选</span>
+          <a-space>
+            <a-button @click="closeFilterModal">取消</a-button>
+            <a-button type="primary" @click="applyFilterModal">应用筛选</a-button>
+          </a-space>
+        </div>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 <script lang="ts" setup>
@@ -120,6 +137,7 @@ const columns = [
 
 const dataList = ref<any[]>([])
 const total = ref(0)
+const filterModalVisible = ref(false)
 const professionalCount = computed(() => {
   return dataList.value.filter((item: any) => (item.spaceLevel ?? 0) >= SPACE_LEVEL_ENUM.PROFESSIONAL).length
 })
@@ -130,13 +148,38 @@ const searchParams = reactive<API.SpaceQueryRequest>({
   sortField: 'createTime',
   sortOrder: 'descend',
 })
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (searchParams.spaceName) {
+    count += 1
+  }
+  if (searchParams.spaceLevel !== undefined) {
+    count += 1
+  }
+  if (searchParams.userId) {
+    count += 1
+  }
+  return count
+})
+const openFilterModal = () => {
+  filterModalVisible.value = true
+}
+
+const closeFilterModal = () => {
+  filterModalVisible.value = false
+}
+
+const applyFilterModal = () => {
+  closeFilterModal()
+  doSearch()
+}
 
 const fetchData = async () => {
   const res = await listSpaceByPageUsingPost({ ...searchParams } as any)
   const result = res.data as any
   if (result.code === 0 && result.data) {
     dataList.value = result.data.records ?? []
-    total.value = result.data.total ?? 0
+    total.value = Number(result.data.total ?? 0)
   } else {
     message.error('获取数据失败，' + result.message)
   }
@@ -166,11 +209,10 @@ const doSearch = () => {
 }
 
 const doDelete = async (id: number | string) => {
-  const numericId = Number(id)
-  if (!numericId) {
+  if (!id) {
     return
   }
-  const res = await deleteSpaceUsingPost({ id: numericId } as any)
+  const res = await deleteSpaceUsingPost({ id } as any)
   const result = res.data as any
   if (result.code === 0) {
     message.success('删除成功')
@@ -183,6 +225,24 @@ const doDelete = async (id: number | string) => {
 
 <style scoped>
 .admin-page {
-  gap: 22px;
+  gap: 14px;
+}
+
+@media (max-width: 768px) {
+  .admin-page .table-panel {
+    order: 1;
+  }
+
+  .admin-page .toolbar-panel {
+    order: 2;
+  }
+
+  .admin-page :deep(.admin-overview) {
+    display: none;
+  }
+
+  .admin-page :deep(.toolbar-panel__hint) {
+    display: none;
+  }
 }
 </style>

@@ -7,6 +7,8 @@ import * as mainController from './mainController'
 import * as pictureController from './pictureController'
 import * as spaceController from './spaceController'
 import * as spaceAnalyzeController from './spaceAnalyzeController'
+import * as spaceInviteController from './spaceInviteController'
+import * as spaceNoticeController from './spaceNoticeController'
 import * as spaceUserController from './spaceUserController'
 import * as userController from './userController'
 export default {
@@ -15,6 +17,8 @@ export default {
   pictureController,
   spaceController,
   spaceAnalyzeController,
+  spaceInviteController,
+  spaceNoticeController,
   spaceUserController,
   userController,
 }

@@ -21,7 +21,7 @@ import { message } from 'ant-design-vue'
 interface Props {
   queryAll?: boolean
   queryPublic?: boolean
-  spaceId?: number
+  spaceId?: string | number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -55,7 +55,9 @@ watchEffect(() => {
 const options = computed(() => {
   const categories = dataList.value.map((item: any) => item.category || '未分类')
   const countData = dataList.value.map((item: any) => item.count)
-  const sizeData = dataList.value.map((item: any) => Number((((item.totalSize ?? 0) as number) / (1024 * 1024)).toFixed(2)))
+  const sizeData = dataList.value.map((item: any) =>
+    Number((((item.totalSize ?? 0) as number) / (1024 * 1024)).toFixed(2)),
+  )
 
   return {
     color: ['#f97316', '#0d9488'],
@@ -83,8 +85,22 @@ const options = computed(() => {
       },
     ],
     series: [
-      { name: '图片数量', type: 'bar', data: countData, yAxisIndex: 0, barMaxWidth: 28, borderRadius: [8, 8, 0, 0] },
-      { name: '图片总大小', type: 'bar', data: sizeData, yAxisIndex: 1, barMaxWidth: 28, borderRadius: [8, 8, 0, 0] },
+      {
+        name: '图片数量',
+        type: 'bar',
+        data: countData,
+        yAxisIndex: 0,
+        barMaxWidth: 28,
+        borderRadius: [8, 8, 0, 0],
+      },
+      {
+        name: '图片总大小',
+        type: 'bar',
+        data: sizeData,
+        yAxisIndex: 1,
+        barMaxWidth: 28,
+        borderRadius: [8, 8, 0, 0],
+      },
     ],
   }
 })

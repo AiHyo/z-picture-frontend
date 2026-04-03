@@ -1,15 +1,12 @@
 <template>
-  <a-modal v-model:visible="visible" title="批量编辑图片" :footer="false" width="640px" @cancel="closeModal">
+  <a-modal v-model:open="visible" title="批量编辑图片" :footer="false" width="640px" @cancel="closeModal">
     <p class="modal-note">只对当前页面选中的图片生效，接口仍然按原批量编辑逻辑执行。</p>
     <a-form layout="vertical" :model="formData" @finish="handleSubmit">
       <div class="batch-edit-grid">
         <a-form-item label="分类" name="category">
-          <a-auto-complete
-            v-model:value="formData.category"
-            :options="categoryOptions"
-            placeholder="请输入分类"
-            allowClear
-          />
+          <a-auto-complete v-model:value="formData.category" :options="categoryOptions">
+            <a-input placeholder="请输入分类" allow-clear />
+          </a-auto-complete>
         </a-form-item>
         <a-form-item label="标签" name="tags">
           <a-select
@@ -38,7 +35,7 @@ import { message } from 'ant-design-vue'
 
 interface Props {
   pictureList: API.PictureVO[]
-  spaceId: number
+  spaceId: string | number
   onSuccess: () => void
 }
 
@@ -83,7 +80,7 @@ const handleSubmit = async (values: { category: string; tags: string[]; nameRule
   if (!props.pictureList) {
     return
   }
-  const pictureIdList = props.pictureList.map((picture) => picture.id).filter((id): id is number => typeof id === 'number')
+  const pictureIdList = props.pictureList.map((picture) => picture.id).filter(Boolean)
   const res = await editPictureByBatchUsingPost({
     pictureIdList,
     spaceId: props.spaceId,

@@ -1,11 +1,9 @@
 <template>
   <div id="addPictureBatchPage" class="page-shell add-picture-batch-page">
-    <section class="page-head">
+    <section class="page-head page-head--compact">
       <span class="sketch-note">Batch Intake</span>
       <h1 class="page-head__title">批量创建图片</h1>
-      <p class="page-head__desc">
-        抓取、命名、分类和标签逻辑保持原样。我只把这页改成清晰的任务面板，避免用户面对一条从头拉到底的旧表单。
-      </p>
+      <p class="page-head__desc">关键词、数量和标签保留原逻辑，首屏直接看到任务表单。</p>
     </section>
 
     <section class="workspace-grid workspace-grid--sidebar">
@@ -38,12 +36,9 @@
           </a-form-item>
           <div class="batch-form-grid">
             <a-form-item label="分类" name="category">
-              <a-auto-complete
-                v-model:value="formData.category"
-                :options="categoryOptions"
-                placeholder="请输入分类"
-                allow-clear
-              />
+              <a-auto-complete v-model:value="formData.category" :options="categoryOptions">
+                <a-input placeholder="请输入分类" allow-clear />
+              </a-auto-complete>
             </a-form-item>
             <a-form-item label="标签" name="tags">
               <a-select
@@ -146,13 +141,13 @@ const handleSubmit = async () => {
 
 <style scoped>
 .add-picture-batch-page {
-  gap: 22px;
+  gap: 14px;
 }
 
 .batch-form-panel,
 .batch-side {
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .batch-form-grid {

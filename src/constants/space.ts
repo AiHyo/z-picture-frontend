@@ -64,6 +64,28 @@ export const SPACE_ROLE_OPTIONS = Object.keys(SPACE_ROLE_MAP).map((key) => {
   };
 });
 
+export const SPACE_INVITE_STATUS_ENUM = {
+  PENDING: 0,
+  ACCEPTED: 1,
+  REJECTED: 2,
+  CANCELED: 3,
+} as const
+
+export const SPACE_INVITE_STATUS_MAP: Record<number, string> = {
+  0: '待处理',
+  1: '已接受',
+  2: '已拒绝',
+  3: '已取消',
+}
+
+export const SPACE_INVITE_STATUS_OPTIONS = Object.keys(SPACE_INVITE_STATUS_MAP).map((key) => {
+  const value = Number(key)
+  return {
+    label: SPACE_INVITE_STATUS_MAP[value],
+    value,
+  }
+})
+
 /**
  * 空间权限常量
  */
@@ -74,4 +96,3 @@ export const SPACE_PERMISSION_ENUM = {
   PICTURE_EDIT: "picture:edit",
   PICTURE_DELETE: "picture:delete",
 } as const;
-

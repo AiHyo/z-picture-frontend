@@ -35,6 +35,24 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListPictureCategoryVO_ = {
+    code?: number
+    data?: PictureCategoryVO[]
+    message?: string
+  }
+
+  type BaseResponseListPictureTagVO_ = {
+    code?: number
+    data?: PictureTagVO[]
+    message?: string
+  }
+
+  type BaseResponseListSpaceNoticeVO_ = {
+    code?: number
+    data?: SpaceNoticeVO[]
+    message?: string
+  }
+
   type BaseResponseListSpace_ = {
     code?: number
     data?: Space[]
@@ -95,6 +113,18 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponsePagePictureAiTaskVO_ = {
+    code?: number
+    data?: PagePictureAiTaskVO_
+    message?: string
+  }
+
+  type BaseResponsePagePictureReportVO_ = {
+    code?: number
+    data?: PagePictureReportVO_
+    message?: string
+  }
+
   type BaseResponsePagePictureVO_ = {
     code?: number
     data?: PagePictureVO_
@@ -110,6 +140,12 @@ declare namespace API {
   type BaseResponsePageSpaceVO_ = {
     code?: number
     data?: PageSpaceVO_
+    message?: string
+  }
+
+  type BaseResponsePageSpaceInviteVO_ = {
+    code?: number
+    data?: PageSpaceInviteVO_
     message?: string
   }
 
@@ -283,6 +319,22 @@ declare namespace API {
     total?: number
   }
 
+  type PagePictureAiTaskVO_ = {
+    current?: number
+    pages?: number
+    records?: PictureAiTaskVO[]
+    size?: number
+    total?: number
+  }
+
+  type PagePictureReportVO_ = {
+    current?: number
+    pages?: number
+    records?: PictureReportVO[]
+    size?: number
+    total?: number
+  }
+
   type PagePictureVO_ = {
     current?: number
     pages?: number
@@ -303,6 +355,14 @@ declare namespace API {
     current?: number
     pages?: number
     records?: SpaceVO[]
+    size?: number
+    total?: number
+  }
+
+  type PageSpaceInviteVO_ = {
+    current?: number
+    pages?: number
+    records?: SpaceInviteVO[]
     size?: number
     total?: number
   }
@@ -356,6 +416,44 @@ declare namespace API {
     userId?: number
   }
 
+  type PictureAiTaskQueryRequest = {
+    current?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    taskStatus?: number
+  }
+
+  type PictureAiTaskVO = {
+    createTime?: string
+    errorMessage?: string
+    finishTime?: string
+    id?: number
+    pictureId?: number
+    resultUrl?: string
+    taskStatus?: number
+    taskType?: string
+    userId?: number
+  }
+
+  type PictureCategoryAddRequest = {
+    categoryName?: string
+  }
+
+  type PictureCategoryEditRequest = {
+    categoryName?: string
+    id?: number
+  }
+
+  type PictureCategoryQueryRequest = {
+    categoryName?: string
+  }
+
+  type PictureCategoryVO = {
+    categoryName?: string
+    id?: number
+  }
+
   type PictureEditByBatchRequest = {
     category?: string
     nameRule?: string
@@ -404,9 +502,61 @@ declare namespace API {
     reviewStatus?: number
   }
 
+  type PictureReportAddRequest = {
+    pictureId?: number
+    reportReasonText?: string
+    reportReasonType?: string
+  }
+
+  type PictureReportProcessRequest = {
+    id?: number
+    processResult?: string
+    reportStatus?: number
+  }
+
+  type PictureReportQueryRequest = {
+    current?: number
+    pageSize?: number
+    pictureId?: number
+    reportStatus?: number
+    sortField?: string
+    sortOrder?: string
+  }
+
+  type PictureReportVO = {
+    createTime?: string
+    id?: number
+    pictureId?: number
+    processResult?: string
+    processTime?: string
+    reportReasonText?: string
+    reportReasonType?: string
+    reportStatus?: number
+    reporter?: UserVO
+    reporterId?: number
+  }
+
+  type PictureTagAddRequest = {
+    tagName?: string
+  }
+
+  type PictureTagEditRequest = {
+    id?: number
+    tagName?: string
+  }
+
+  type PictureTagQueryRequest = {
+    tagName?: string
+  }
+
   type PictureTagCategory = {
     categoryList?: string[]
     tagList?: string[]
+  }
+
+  type PictureTagVO = {
+    id?: number
+    tagName?: string
   }
 
   type PictureUpdateRequest = {
@@ -577,6 +727,73 @@ declare namespace API {
     spaceId?: number
     spaceRole?: string
     updateTime?: string
+    userId?: number
+  }
+
+  type SpaceInviteAddRequest = {
+    inviteMessage?: string
+    inviteeId?: number
+    spaceId?: number
+    spaceRole?: string
+  }
+
+  type SpaceInviteHandleRequest = {
+    id?: number
+  }
+
+  type SpaceInviteQueryRequest = {
+    current?: number
+    inviteStatus?: number
+    inviteeId?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    spaceId?: number
+  }
+
+  type SpaceInviteVO = {
+    createTime?: string
+    handleTime?: string
+    id?: number
+    inviteMessage?: string
+    inviteStatus?: number
+    invitee?: UserVO
+    inviteeId?: number
+    inviter?: UserVO
+    inviterId?: number
+    spaceId?: number
+    spaceRole?: string
+    updateTime?: string
+  }
+
+  type SpaceNoticeAddRequest = {
+    content?: string
+    isPinned?: number
+    spaceId?: number
+    title?: string
+  }
+
+  type SpaceNoticeEditRequest = {
+    content?: string
+    id?: number
+    isPinned?: number
+    spaceId?: number
+    title?: string
+  }
+
+  type SpaceNoticeQueryRequest = {
+    spaceId?: number
+  }
+
+  type SpaceNoticeVO = {
+    content?: string
+    createTime?: string
+    id?: number
+    isPinned?: number
+    spaceId?: number
+    title?: string
+    updateTime?: string
+    user?: UserVO
     userId?: number
   }
 

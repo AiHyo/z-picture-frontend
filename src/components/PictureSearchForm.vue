@@ -10,12 +10,9 @@
           />
         </a-form-item>
         <a-form-item name="category" label="分类">
-          <a-auto-complete
-            v-model:value="searchParams.category"
-            placeholder="请输入分类"
-            :options="categoryOptions"
-            allow-clear
-          />
+          <a-auto-complete v-model:value="searchParams.category" :options="categoryOptions">
+            <a-input placeholder="请输入分类" allow-clear />
+          </a-auto-complete>
         </a-form-item>
         <a-form-item name="tags" label="标签">
           <a-select

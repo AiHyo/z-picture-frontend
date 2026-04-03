@@ -1,13 +1,15 @@
 <template>
   <a-modal
     class="image-cropper"
-    v-model:visible="visible"
+    v-model:open="visible"
     title="编辑图片"
     :footer="false"
     width="920px"
     @cancel="closeModal"
   >
-    <p class="modal-note">裁剪和旋转仍然走原有上传链路。团队空间下的协同编辑状态也保留，但控制区现在更清楚。</p>
+    <p class="modal-note">
+      裁剪和旋转仍然走原有上传链路。团队空间下的协同编辑状态也保留，但控制区现在更清楚。
+    </p>
     <div class="cropper-shell">
       <vue-cropper
         ref="cropperRef"
@@ -22,6 +24,9 @@
     </div>
     <div v-if="isTeamSpace" class="image-edit-actions">
       <a-space wrap>
+        <span v-if="collaborationUnavailable" class="edit-status"
+          >协同连接不可用，当前切换为本地编辑</span
+        >
         <a-button v-if="editingUser" disabled>{{ editingUser.userName }} 正在编辑</a-button>
         <a-button v-if="canEnterEdit" type="primary" ghost @click="enterEdit">进入编辑</a-button>
         <a-button v-if="canExitEdit" danger ghost @click="exitEdit">退出编辑</a-button>
@@ -33,7 +38,9 @@
         <a-button @click="rotateRight" :disabled="!canEdit">向右旋转</a-button>
         <a-button @click="changeScale(1)" :disabled="!canEdit">放大</a-button>
         <a-button @click="changeScale(-1)" :disabled="!canEdit">缩小</a-button>
-        <a-button type="primary" :loading="loading" :disabled="!canEdit" @click="handleConfirm">确认</a-button>
+        <a-button type="primary" :loading="loading" :disabled="!canEdit" @click="handleConfirm"
+          >确认</a-button
+        >
       </a-space>
     </div>
   </a-modal>
@@ -51,7 +58,7 @@ import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
 interface Props {
   imageUrl?: string
   picture?: API.PictureVO
-  spaceId?: number
+  spaceId?: string | number
   space?: API.SpaceVO
   onSuccess?: (newPicture: API.PictureVO) => void
 }
@@ -99,10 +106,14 @@ const isTeamSpace = computed(() => props.space?.spaceType === SPACE_TYPE_ENUM.TE
 const loginUserStore = useLoginUserStore()
 const loginUser = loginUserStore.loginUser
 const editingUser = ref<any>()
-const canEnterEdit = computed(() => !editingUser.value)
-const canExitEdit = computed(() => editingUser.value?.id === loginUser.id)
+const collaborationUnavailable = ref(false)
+const socketOpened = ref(false)
+const canEnterEdit = computed(() => !collaborationUnavailable.value && !editingUser.value)
+const canExitEdit = computed(
+  () => !collaborationUnavailable.value && editingUser.value?.id === loginUser.id,
+)
 const canEdit = computed(() => {
-  if (!isTeamSpace.value) {
+  if (!isTeamSpace.value || collaborationUnavailable.value) {
     return true
   }
   return editingUser.value?.id === loginUser.id
@@ -122,8 +133,14 @@ const initWebsocket = () => {
     return
   }
   disconnectWebsocket()
+  collaborationUnavailable.value = false
+  socketOpened.value = false
   websocket = new PictureEditWebSocket(pictureId)
   websocket.connect()
+
+  websocket.on('open', () => {
+    socketOpened.value = true
+  })
 
   websocket.on(PICTURE_EDIT_MESSAGE_TYPE_ENUM.INFO, (msg: any) => {
     message.info(msg.message)
@@ -156,6 +173,23 @@ const initWebsocket = () => {
     message.info(msg.message)
     editingUser.value = undefined
   })
+  websocket.on('error', () => {
+    if (collaborationUnavailable.value) {
+      return
+    }
+    collaborationUnavailable.value = true
+    editingUser.value = loginUser
+    if (visible.value) {
+      message.warning('协同编辑不可用，已切换为本地编辑')
+    }
+  })
+  websocket.on('close', () => {
+    if (!socketOpened.value && !collaborationUnavailable.value) {
+      collaborationUnavailable.value = true
+      editingUser.value = loginUser
+    }
+    socketOpened.value = false
+  })
 }
 
 watchEffect(() => {
@@ -165,12 +199,16 @@ watchEffect(() => {
 onUnmounted(() => {
   disconnectWebsocket()
   editingUser.value = undefined
+  collaborationUnavailable.value = false
+  socketOpened.value = false
 })
 
 const closeModal = () => {
   visible.value = false
   disconnectWebsocket()
   editingUser.value = undefined
+  collaborationUnavailable.value = false
+  socketOpened.value = false
 }
 
 const enterEdit = () => {
@@ -182,6 +220,9 @@ const exitEdit = () => {
 }
 
 const editAction = (action: string) => {
+  if (collaborationUnavailable.value) {
+    return
+  }
   websocket?.sendMessage({ type: PICTURE_EDIT_MESSAGE_TYPE_ENUM.EDIT_ACTION, editAction: action })
 }
 
@@ -217,5 +258,10 @@ const changeScale = (num: number) => {
 .image-cropper-actions {
   margin-top: 16px;
   text-align: center;
+}
+
+.edit-status {
+  color: rgba(45, 45, 45, 0.66);
+  font-size: 0.86rem;
 }
 </style>

@@ -1,76 +1,84 @@
 <template>
   <div id="homePage" class="page-shell home-page">
-    <section class="paper-panel hero-panel">
-      <div class="hero-copy page-head">
-        <span class="sketch-note">Public Gallery</span>
-        <h1 class="page-head__title">把灵感贴满整面墙，不要再看默认模板。</h1>
-        <p class="page-head__desc">
-          搜索、分类、标签和分页逻辑保持原样，我只重做展示方式。用户看到的是更强的视觉记忆点，代码里走的还是原来的查询主链路。
-        </p>
-        <div class="search-bar">
-          <a-input-search
-            v-model:value="searchParams.searchText"
-            placeholder="从海量图片中搜索"
-            enter-button="搜索"
-            size="large"
-            @search="doSearch"
-          />
+    <section class="home-hero">
+      <article class="paper-panel hero-stage">
+        <div class="hero-stage__copy page-head">
+          <span class="sketch-note">Public Gallery</span>
+          <h1 class="page-head__title">公共图库</h1>
+          <p class="page-head__desc">
+            桌面端先把结果区钉在视线中央，搜索和深筛退到侧边工作台。上传、分享、详情这些链路不动，只把浏览节奏拉顺。
+          </p>
         </div>
-        <p class="hero-tip">试试关键词、分类和标签组合，把筛选当成贴便签，而不是填表。</p>
-      </div>
-      <div class="hero-notes">
-        <div class="note-grid">
-          <div class="note-chip">
+        <div class="hero-stage__stats">
+          <article class="hero-stat hero-stat--primary">
+            <small>当前结果</small>
             <strong>{{ total }}</strong>
-            <span>当前结果</span>
-          </div>
-          <div class="note-chip">
-            <strong>{{ categoryList.length }}</strong>
-            <span>分类卡片</span>
-          </div>
-          <div class="note-chip">
-            <strong>{{ tagList.length }}</strong>
-            <span>标签贴纸</span>
-          </div>
-          <div class="note-chip">
-            <strong>{{ selectedTagCount }}</strong>
+            <span>按最新上传时间排序</span>
+          </article>
+          <article class="hero-stat">
+            <small>激活筛选</small>
+            <strong>{{ activeFilterCount }}</strong>
+            <span>{{ selectedCategoryLabel }} / {{ selectedTagCount }} 个标签</span>
+          </article>
+          <article class="hero-stat">
+            <small>浏览节奏</small>
+            <strong>{{ searchParams.pageSize }}</strong>
+            <span>每页记录</span>
+          </article>
+        </div>
+      </article>
+
+      <aside class="paper-panel search-workbench">
+        <div class="search-workbench__head page-head page-head--compact">
+          <span class="sketch-note">Search Workbench</span>
+          <h2 class="page-head__title">先搜，再决定要不要深筛</h2>
+          <p class="page-head__desc">关键词、分类、标签都往辅助位走，不再把图片墙挤到首屏下面。</p>
+        </div>
+        <a-input-search
+          class="search-bar"
+          v-model:value="searchParams.searchText"
+          placeholder="从海量图片中搜索"
+          enter-button="搜索"
+          @search="doSearch"
+        />
+        <div class="search-workbench__meta">
+          <article class="workbench-chip">
+            <span>当前分类</span>
+            <strong>{{ selectedCategoryLabel }}</strong>
+          </article>
+          <article class="workbench-chip">
             <span>已选标签</span>
+            <strong>{{ selectedTagCount }} 个</strong>
+          </article>
+        </div>
+        <div class="search-workbench__actions">
+          <span class="search-row__summary"
+            >关键词、分类和标签都收进筛选面板，结果区继续保持在首屏。</span
+          >
+          <a-button class="toolbar-toggle" @click="openFilterModal">
+            {{ `筛选面板${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
+          </a-button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="paper-panel gallery-shell">
+      <div class="gallery-shell__head">
+        <div class="gallery-shell__title">
+          <span class="sketch-note">Records</span>
+          <div>
+            <h2>{{ total }} 张图片</h2>
+            <p>按最新记录平铺展示，先扫结果，再决定是否打开筛选面板继续收口。</p>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section class="paper-panel filter-panel">
-      <div class="filter-panel__head">
-        <span class="sketch-note">Filter Board</span>
-        <p>分类走主线，标签负责补刀。结构不变，只把它从工具表单变成可读的筛选板。</p>
-      </div>
-      <a-tabs v-model:active-key="selectedCategory" @change="doSearch">
-        <a-tab-pane key="all" tab="全部" />
-        <a-tab-pane v-for="category in categoryList" :key="category" :tab="category" />
-      </a-tabs>
-      <div class="tag-bar">
-        <span class="tag-bar__label">标签</span>
-        <a-space :size="[0, 8]" wrap>
-          <a-checkable-tag
-            v-for="(tag, index) in tagList"
-            :key="tag"
-            v-model:checked="selectedTagList[index]"
-            @change="doSearch"
+        <div v-if="visibleFilterLabels.length" class="gallery-shell__filters">
+          <span v-for="label in visibleFilterLabels" :key="label" class="active-filter">{{
+            label
+          }}</span>
+          <span v-if="overflowFilterCount > 0" class="active-filter active-filter--muted"
+            >+{{ overflowFilterCount }} 项</span
           >
-            {{ tag }}
-          </a-checkable-tag>
-        </a-space>
-      </div>
-    </section>
-
-    <section class="gallery-section">
-      <div class="gallery-section__head">
-        <div>
-          <span class="sketch-note">Gallery Stack</span>
-          <h2>本页展示 {{ dataList.length }} 张图片</h2>
         </div>
-        <p>卡片、封面、标签和操作区统一改成手绘纸片风，点击、分享、编辑、删除行为不动。</p>
       </div>
       <PictureList :dataList="dataList" :loading="loading" />
     </section>
@@ -83,6 +91,46 @@
         @change="onPageChange"
       />
     </div>
+
+    <a-modal
+      v-model:open="filterModalVisible"
+      title="筛选面板"
+      width="880px"
+      :footer="null"
+      @cancel="closeFilterModal"
+    >
+      <div class="home-filter-modal">
+        <div class="home-filter__head">
+          <span class="sketch-note">Filter</span>
+          <p>深筛放进浮层，不再让图库内容被控件区推下去。</p>
+        </div>
+        <a-tabs v-model:active-key="selectedCategory" @change="doSearch">
+          <a-tab-pane key="all" tab="全部" />
+          <a-tab-pane v-for="category in categoryList" :key="category" :tab="category" />
+        </a-tabs>
+        <div class="tag-bar">
+          <span class="tag-bar__label">标签</span>
+          <div class="tag-bar__scroll">
+            <a-space :size="[0, 8]" wrap class="tag-bar__space">
+              <a-checkable-tag
+                v-for="(tag, index) in tagList"
+                :key="tag"
+                v-model:checked="selectedTagList[index]"
+                @change="doSearch"
+              >
+                {{ tag }}
+              </a-checkable-tag>
+            </a-space>
+          </div>
+        </div>
+        <div class="home-filter-modal__actions">
+          <span class="search-row__summary"
+            >分类：{{ selectedCategoryLabel }} · 标签：{{ selectedTagCount }} 个</span
+          >
+          <a-button type="primary" @click="closeFilterModal">完成</a-button>
+        </div>
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -93,15 +141,12 @@ import {
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
-import PictureList from '@/components/PictureList.vue' // 定义数据
+import PictureList from '@/components/PictureList.vue'
 
-// 数据
 const dataList = ref<API.PictureVO[]>([])
 const total = ref(0)
 const loading = ref(true)
 
-// 搜索条件
 const searchParams = reactive<API.PictureQueryRequest>({
   current: 1,
   pageSize: 12,
@@ -109,32 +154,55 @@ const searchParams = reactive<API.PictureQueryRequest>({
   sortOrder: 'descend',
 })
 
-// // 分页参数
-// const pagination = computed(() => {
-//   return {
-//     current: searchParams.current ?? 1,
-//     pageSize: searchParams.pageSize ?? 10,
-//     total: total.value,
-//     // 切换页号时,会修改搜索参数并获取数据. (这里不指定number类型会爆红)
-//     onChange: (page: number, pageSize: number) => {
-//       searchParams.current = page
-//       searchParams.pageSize = pageSize
-//       fetchData()
-//     },
-//   }
-// })
 const onPageChange = (page: number, pageSize: number) => {
   searchParams.current = page
   searchParams.pageSize = pageSize
   fetchData()
 }
 
-// 获取标签和分类选项
 const categoryList = ref<string[]>([])
 const selectedCategory = ref<string>('all')
 const tagList = ref<string[]>([])
 const selectedTagList = ref<boolean[]>([])
 const selectedTagCount = computed(() => selectedTagList.value.filter(Boolean).length)
+const filterModalVisible = ref(false)
+const activeFilterLabels = computed(() => {
+  const labels: string[] = []
+  const keyword = searchParams.searchText?.trim()
+  if (keyword) {
+    labels.push(`关键词 · ${keyword}`)
+  }
+  if (selectedCategory.value !== 'all') {
+    labels.push(`分类 · ${selectedCategory.value}`)
+  }
+  selectedTagList.value.forEach((selected, index) => {
+    if (selected && tagList.value[index]) {
+      labels.push(`标签 · ${tagList.value[index]}`)
+    }
+  })
+  return labels
+})
+const visibleFilterLabels = computed(() => activeFilterLabels.value.slice(0, 5))
+const overflowFilterCount = computed(() =>
+  Math.max(activeFilterLabels.value.length - visibleFilterLabels.value.length, 0),
+)
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (selectedCategory.value !== 'all') {
+    count += 1
+  }
+  if (selectedTagCount.value > 0) {
+    count += 1
+  }
+  if (searchParams.searchText) {
+    count += 1
+  }
+  return count
+})
+const selectedCategoryLabel = computed(() => {
+  return selectedCategory.value === 'all' ? '全部' : selectedCategory.value
+})
+
 const getTagCategoryOptions = async () => {
   try {
     const res = await listPictureTagCategoryUsingGet()
@@ -148,22 +216,21 @@ const getTagCategoryOptions = async () => {
     console.error('加载分类标签失败', error)
   }
 }
+
 onMounted(() => {
   getTagCategoryOptions()
 })
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
   const params = {
     ...searchParams,
-    tags: [] as string[], // 不指定类型as string[],会爆红
+    nullSpaceId: true,
+    tags: [] as string[],
   }
   if (selectedCategory.value !== 'all') {
     params.category = selectedCategory.value
   }
-  // [true, false, true] => ['tag1', 'tag3']
   selectedTagList.value.forEach((useTag, index) => {
     if (useTag) {
       params.tags.push(tagList.value[index])
@@ -173,7 +240,7 @@ const fetchData = async () => {
     const res = await listPictureVoByPageUsingPost(params)
     if (res.data.data) {
       dataList.value = res.data.data.records ?? []
-      total.value = res.data.data.total ?? 0
+      total.value = Number(res.data.data.total ?? 0)
     } else {
       message.error('获取数据失败，' + res.data.message)
     }
@@ -185,109 +252,240 @@ const fetchData = async () => {
     loading.value = false
   }
 }
+
 onMounted(() => {
   fetchData()
 })
 
-// 搜索
 const doSearch = () => {
   searchParams.current = 1
   fetchData()
+}
+
+const openFilterModal = () => {
+  filterModalVisible.value = true
+}
+
+const closeFilterModal = () => {
+  filterModalVisible.value = false
 }
 </script>
 
 <style scoped>
 .home-page {
-  gap: 22px;
+  gap: 18px;
 }
 
-.hero-panel {
+.home-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
-  gap: 24px;
-  padding: 28px;
+  grid-template-columns: minmax(0, 1.22fr) minmax(340px, 0.78fr);
+  gap: 18px;
+  align-items: stretch;
 }
 
-.hero-copy {
+.hero-stage,
+.search-workbench {
+  display: grid;
+  align-content: start;
   gap: 16px;
+  padding: 22px;
+}
+
+.hero-stage__copy {
+  max-width: 44rem;
+}
+
+.hero-stage__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.hero-stat,
+.workbench-chip {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px dashed rgba(45, 45, 45, 0.16);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.hero-stat--primary {
+  background: linear-gradient(180deg, rgba(255, 245, 191, 0.5), rgba(255, 255, 255, 0.9));
+  border-style: solid;
+}
+
+.hero-stat small,
+.workbench-chip span {
+  color: rgba(45, 45, 45, 0.56);
+  font-size: 0.78rem;
+}
+
+.hero-stat strong,
+.workbench-chip strong {
+  font-family: var(--sketch-title-font);
+  font-size: clamp(1.32rem, 1.8vw, 1.72rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.hero-stat span {
+  color: rgba(45, 45, 45, 0.68);
+  font-size: 0.82rem;
+}
+
+.search-workbench__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .search-bar {
-  max-width: 560px;
+  width: 100%;
 }
 
-.hero-tip {
-  margin: 0;
-  color: rgba(45, 45, 45, 0.66);
-  font-size: 0.98rem;
-}
-
-.hero-notes {
-  display: grid;
-  align-content: center;
-}
-
-.filter-panel {
-  padding: 24px;
-}
-
-.filter-panel__head {
+.search-workbench__actions {
   display: grid;
   gap: 10px;
-  margin-bottom: 14px;
 }
 
-.filter-panel__head p {
+.search-row__summary {
+  color: rgba(45, 45, 45, 0.66);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.home-filter-modal {
+  display: grid;
+  gap: 10px;
+}
+
+.home-filter__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 14px;
+  align-items: center;
+}
+
+.home-filter__head p {
   margin: 0;
-  color: rgba(45, 45, 45, 0.68);
+  color: rgba(45, 45, 45, 0.66);
+  font-size: 0.84rem;
 }
 
 .tag-bar {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
 .tag-bar__label {
   font-family: var(--sketch-title-font);
-  font-size: 1.05rem;
+  font-size: 0.9rem;
 }
 
-.gallery-section {
-  display: grid;
-  gap: 18px;
-}
-
-.gallery-section__head {
+.home-filter-modal__actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px 24px;
+  gap: 8px 12px;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.gallery-shell {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.gallery-shell__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 18px;
   align-items: end;
 }
 
-.gallery-section__head h2 {
-  margin: 8px 0 0;
-  font-family: var(--sketch-title-font);
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-  line-height: 1.04;
+.gallery-shell__title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-.gallery-section__head p {
+.gallery-shell__title h2 {
   margin: 0;
-  max-width: 36ch;
-  color: rgba(45, 45, 45, 0.68);
+  font-family: var(--sketch-title-font);
+  font-size: clamp(1.2rem, 1.7vw, 1.56rem);
+  line-height: 1.05;
 }
 
-@media (max-width: 900px) {
-  .hero-panel {
+.gallery-shell__title p {
+  margin: 6px 0 0;
+  color: rgba(45, 45, 45, 0.66);
+  font-size: 0.84rem;
+}
+
+.gallery-shell__filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.active-filter {
+  padding: 7px 12px;
+  border: 1px solid rgba(45, 45, 45, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(45, 45, 45, 0.68);
+  font-size: 0.8rem;
+}
+
+.active-filter--muted {
+  background: rgba(255, 245, 191, 0.56);
+}
+
+@media (max-width: 1100px) {
+  .home-hero {
     grid-template-columns: 1fr;
-    padding: 22px;
   }
 }
 
 @media (max-width: 640px) {
-  .filter-panel {
-    padding: 18px;
+  .hero-stage,
+  .search-workbench,
+  .gallery-shell {
+    padding: 16px;
+  }
+
+  .hero-stage__stats,
+  .search-workbench__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-shell__title {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .home-filter__head p {
+    display: none;
+  }
+
+  .tag-bar__scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tag-bar__scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tag-bar__space {
+    min-width: max-content;
+    white-space: nowrap;
   }
 }
 </style>

@@ -53,6 +53,7 @@ select {
 
 .sketch-app {
   min-height: 100vh;
+  --sketch-control-height: 36px;
   color: var(--sketch-fg);
 }
 
@@ -85,41 +86,43 @@ select {
   align-items: center;
   gap: 8px;
   width: fit-content;
-  padding: 6px 14px;
+  padding: 4px 10px;
   border: 2px solid var(--sketch-border);
   border-radius: var(--sketch-radius-sm);
   background: var(--sketch-paper-strong);
   box-shadow: var(--sketch-shadow-soft);
   color: var(--sketch-fg);
   font-family: var(--sketch-title-font);
-  font-size: 1rem;
+  font-size: 0.84rem;
   letter-spacing: 0.03em;
   transform: rotate(-1.5deg);
 }
 
 .page-shell {
   display: grid;
-  gap: 24px;
+  gap: 12px;
+  align-content: start;
+  align-items: start;
 }
 
 .page-head {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .page-head__title {
   margin: 0;
   font-family: var(--sketch-title-font);
-  font-size: clamp(2.2rem, 4vw, 3.8rem);
-  line-height: 1;
+  font-size: clamp(1.9rem, 3.2vw, 2.9rem);
+  line-height: 1.04;
 }
 
 .page-head__desc {
-  max-width: 760px;
+  max-width: 62ch;
   margin: 0;
   color: rgba(45, 45, 45, 0.72);
-  font-size: 1.08rem;
-  line-height: 1.55;
+  font-size: 0.98rem;
+  line-height: 1.42;
 }
 
 .note-grid {
@@ -150,18 +153,18 @@ select {
 }
 
 .pagination-shell {
-  padding: 16px 20px;
+  padding: 12px 16px;
 }
 
 .sketch-empty {
-  padding: 32px 24px;
+  padding: 24px 20px;
   text-align: center;
 }
 
 .sketch-empty h3 {
-  margin: 14px 0 8px;
+  margin: 12px 0 6px;
   font-family: var(--sketch-title-font);
-  font-size: 1.6rem;
+  font-size: 1.45rem;
 }
 
 .sketch-empty p {
@@ -178,13 +181,13 @@ select {
 
 .auth-copy,
 .auth-panel {
-  padding: 28px;
+  padding: 24px;
 }
 
 .auth-copy {
   display: grid;
   align-content: center;
-  gap: 18px;
+  gap: 14px;
   min-height: 100%;
 }
 
@@ -230,7 +233,7 @@ select {
 }
 
 .sketch-app :where(.ant-card-head) {
-  min-height: 62px;
+  min-height: 56px;
   border-bottom: 2px dashed rgba(45, 45, 45, 0.26);
   background: linear-gradient(180deg, rgba(255, 249, 196, 0.38), rgba(255, 255, 255, 0.86));
 }
@@ -241,7 +244,7 @@ select {
 }
 
 .sketch-app :where(.ant-card-body) {
-  padding: 22px;
+  padding: 16px;
 }
 
 .sketch-app :where(.ant-card-actions) {
@@ -259,15 +262,15 @@ select {
 
 .sketch-app :where(.ant-btn) {
   height: auto;
-  min-height: 48px;
-  padding: 10px 18px;
-  border: 3px solid var(--sketch-border);
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 2px solid var(--sketch-border);
   border-radius: var(--sketch-radius-sm);
   background: #fff;
-  box-shadow: var(--sketch-shadow);
+  box-shadow: 3px 3px 0 0 var(--sketch-border);
   color: var(--sketch-fg);
   font-family: var(--sketch-body-font);
-  font-size: 1rem;
+  font-size: 0.92rem;
   transition:
     transform 120ms ease,
     box-shadow 120ms ease,
@@ -277,7 +280,7 @@ select {
 }
 
 .sketch-app :where(.ant-btn:hover) {
-  transform: translate(2px, 2px) rotate(-1deg);
+  transform: translate(1px, 1px) rotate(-0.6deg);
   box-shadow: 2px 2px 0 0 var(--sketch-border);
   color: #fff !important;
   border-color: var(--sketch-border) !important;
@@ -285,7 +288,7 @@ select {
 }
 
 .sketch-app :where(.ant-btn:active) {
-  transform: translate(4px, 4px);
+  transform: translate(2px, 2px);
   box-shadow: none;
 }
 
@@ -294,9 +297,17 @@ select {
   color: #fff;
 }
 
+.sketch-app :where(.ant-btn.ant-btn-background-ghost) {
+  background: rgba(255, 253, 248, 0.98) !important;
+  color: var(--sketch-fg) !important;
+  border-color: rgba(45, 45, 45, 0.34) !important;
+  box-shadow: none;
+}
+
 .sketch-app :where(.ant-btn-primary.ant-btn-background-ghost) {
-  background: rgba(45, 93, 161, 0.08);
-  color: var(--sketch-blue);
+  background: rgba(13, 148, 136, 0.1) !important;
+  color: var(--sketch-blue) !important;
+  border-color: rgba(13, 148, 136, 0.22) !important;
 }
 
 .sketch-app :where(.ant-btn-dangerous) {
@@ -316,27 +327,81 @@ select {
 }
 
 .sketch-app :where(.ant-input, .ant-input-affix-wrapper, .ant-input-number, .ant-input-number-affix-wrapper, .ant-picker, .ant-select-selector, .ant-mentions, .ant-input-search .ant-input-group-addon .ant-btn, .ant-input-group-addon) {
-  border: 2px solid var(--sketch-border) !important;
+  border: 1px solid rgba(45, 45, 45, 0.26) !important;
   border-radius: var(--sketch-radius-sm) !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 2px 2px 0 0 rgba(45, 45, 45, 0.14);
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: none;
   color: var(--sketch-fg);
   font-family: var(--sketch-body-font);
 }
 
 .sketch-app :where(.ant-input, .ant-input-affix-wrapper, .ant-picker, .ant-select-selector, .ant-input-number, .ant-input-number-affix-wrapper) {
-  min-height: 46px;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  min-height: var(--sketch-control-height);
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.sketch-app :where(.ant-input-affix-wrapper, .ant-input-number-affix-wrapper) {
+  min-height: var(--sketch-control-height) !important;
+  padding-block: 0 !important;
+  padding-inline: 9px !important;
+  display: flex;
+  align-items: center;
+}
+
+.sketch-app :where(.ant-input-affix-wrapper > input.ant-input, .ant-input-affix-wrapper .ant-input, .ant-input-number-affix-wrapper input, .ant-input-number .ant-input-number-input) {
+  height: calc(var(--sketch-control-height) - 2px) !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .sketch-app :where(.ant-input-number-input-wrap input, .ant-input::placeholder, .ant-input-affix-wrapper input::placeholder, .ant-select-selection-placeholder) {
   color: rgba(45, 45, 45, 0.44) !important;
 }
 
+.sketch-app :where(textarea.ant-input) {
+  min-height: 88px;
+  padding: 9px 12px !important;
+  line-height: 1.45;
+}
+
 .sketch-app :where(.ant-input:focus, .ant-input-affix-wrapper-focused, .ant-picker-focused, .ant-select-focused .ant-select-selector, .ant-input-number-focused) {
   border-color: var(--sketch-blue) !important;
-  box-shadow: 0 0 0 4px rgba(45, 93, 161, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(45, 93, 161, 0.1) !important;
+}
+
+.sketch-app :where(.ant-input-search .ant-input-group .ant-input, .ant-input-search .ant-input-group .ant-input-affix-wrapper) {
+  border-inline-end: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.sketch-app :where(.ant-input-search .ant-input-group) {
+  display: flex;
+  align-items: stretch;
+}
+
+.sketch-app :where(.ant-input-search .ant-input-group .ant-input-affix-wrapper, .ant-input-search .ant-input-group > .ant-input) {
+  flex: 1 1 auto;
+}
+
+.sketch-app :where(.ant-input-search .ant-input-group-addon) {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.sketch-app :where(.ant-input-search .ant-input-group-addon .ant-btn) {
+  min-height: var(--sketch-control-height);
+  padding: 0 12px;
+  border-width: 1px !important;
+  border-inline-start: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  box-shadow: none;
 }
 
 .sketch-app :where(.ant-select-arrow, .ant-picker-suffix, .ant-input-password-icon) {
@@ -346,7 +411,7 @@ select {
 .sketch-app :where(.ant-form-inline) {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 18px;
+  gap: 10px 14px;
   align-items: flex-start;
 }
 
@@ -358,7 +423,7 @@ select {
 .sketch-app :where(.ant-form-item-label > label) {
   color: var(--sketch-fg);
   font-family: var(--sketch-title-font);
-  font-size: 1rem;
+  font-size: 0.88rem;
 }
 
 .sketch-app :where(.ant-tabs-nav::before, .ant-tabs-ink-bar) {
@@ -366,12 +431,12 @@ select {
 }
 
 .sketch-app :where(.ant-tabs-nav) {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .sketch-app :where(.ant-tabs-tab) {
-  margin: 0 12px 12px 0 !important;
-  padding: 10px 16px !important;
+  margin: 0 8px 8px 0 !important;
+  padding: 8px 14px !important;
   border: 2px solid var(--sketch-border) !important;
   border-radius: var(--sketch-radius-sm);
   background: #fff;
@@ -562,16 +627,16 @@ select {
 
 @media (max-width: 768px) {
   .page-head__title {
-    font-size: 2.4rem;
+    font-size: 1.9rem;
   }
 
   .auth-copy,
   .auth-panel {
-    padding: 22px;
+    padding: 18px;
   }
 
   .sketch-app :where(.ant-card-body) {
-    padding: 18px;
+    padding: 16px;
   }
 
   .sketch-app :where(.ant-pagination) {

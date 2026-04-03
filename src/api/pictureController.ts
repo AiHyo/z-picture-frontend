@@ -158,6 +158,66 @@ export async function getPictureOutPaintingTaskUsingGet(
   )
 }
 
+/** listMyPictureAiTask POST /api/picture/out_painting/list/my */
+export async function listMyPictureAiTaskUsingPost(
+  body: API.PictureAiTaskQueryRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponsePagePictureAiTaskVO_>('/api/picture/out_painting/list/my', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** addPictureReport POST /api/picture/report/add */
+export async function addPictureReportUsingPost(
+  body: API.PictureReportAddRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseLong_>('/api/picture/report/add', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** listPictureReportByPage POST /api/picture/report/list/page */
+export async function listPictureReportByPageUsingPost(
+  body: API.PictureReportQueryRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponsePagePictureReportVO_>('/api/picture/report/list/page', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** processPictureReport POST /api/picture/report/process */
+export async function processPictureReportUsingPost(
+  body: API.PictureReportProcessRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/picture/report/process', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** doPictureReview POST /api/picture/review */
 export async function doPictureReviewUsingPost(
   body: API.PictureReviewRequest,
@@ -207,6 +267,126 @@ export async function searchPictureByPictureUsingPost(
 export async function listPictureTagCategoryUsingGet(options?: { [key: string]: any }) {
   return request<API.BaseResponsePictureTagCategory_>('/api/picture/tag_category', {
     method: 'GET',
+    ...(options || {}),
+  })
+}
+
+/** addPictureTag POST /api/picture/tag/add */
+export async function addPictureTagUsingPost(
+  body: API.PictureTagAddRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseLong_>('/api/picture/tag/add', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** editPictureTag POST /api/picture/tag/edit */
+export async function editPictureTagUsingPost(
+  body: API.PictureTagEditRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/picture/tag/edit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** deletePictureTag POST /api/picture/tag/delete */
+export async function deletePictureTagUsingPost(
+  body: API.DeleteRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/picture/tag/delete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** listPictureTag POST /api/picture/tag/list */
+export async function listPictureTagUsingPost(
+  body: API.PictureTagQueryRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseListPictureTagVO_>('/api/picture/tag/list', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** addPictureCategory POST /api/picture/category/add */
+export async function addPictureCategoryUsingPost(
+  body: API.PictureCategoryAddRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseLong_>('/api/picture/category/add', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** editPictureCategory POST /api/picture/category/edit */
+export async function editPictureCategoryUsingPost(
+  body: API.PictureCategoryEditRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/picture/category/edit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** deletePictureCategory POST /api/picture/category/delete */
+export async function deletePictureCategoryUsingPost(
+  body: API.DeleteRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/picture/category/delete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** listPictureCategory POST /api/picture/category/list */
+export async function listPictureCategoryUsingPost(
+  body: API.PictureCategoryQueryRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseListPictureCategoryVO_>('/api/picture/category/list', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
     ...(options || {}),
   })
 }

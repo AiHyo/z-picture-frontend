@@ -1,11 +1,9 @@
 <template>
   <div id="addSpacePage" class="page-shell add-space-page">
-    <section class="page-head">
+    <section class="page-head page-head--compact">
       <span class="sketch-note">{{ route.query?.id ? 'Edit Space' : 'Create Space' }}</span>
       <h1 class="page-head__title">{{ route.query?.id ? '修改' : '创建' }}{{ SPACE_TYPE_MAP[spaceType] }}</h1>
-      <p class="page-head__desc">
-        空间类型和空间级别继续走原有接口与配额逻辑，这里只把表单和说明重排成更清晰的决策界面。
-      </p>
+      <p class="page-head__desc">表单优先，空间级别说明放到右侧辅助区。</p>
     </section>
 
     <section class="space-editor">
@@ -76,6 +74,14 @@ const toNumber = (value: unknown): number | undefined => {
   return Number.isNaN(num) ? undefined : num
 }
 
+const toRouteId = (value: unknown): string | undefined => {
+  const raw = Array.isArray(value) ? value[0] : value
+  if (raw === undefined || raw === null || raw === '') {
+    return undefined
+  }
+  return String(raw)
+}
+
 const space = ref<API.SpaceVO>()
 const spaceForm = reactive<Partial<API.SpaceAddRequest & API.SpaceEditRequest>>({})
 const loading = ref(false)
@@ -138,10 +144,10 @@ const handleSubmit = async (values: any) => {
 
 // 获取老数据
 const getOldSpace = async () => {
-  const id = toNumber(route.query?.id)
+  const id = toRouteId(route.query?.id)
   if (id) {
     const res = await getSpaceVoByIdUsingGet({
-      id,
+      id: id as any,
     })
     if (res.data.code === 0 && res.data.data) {
       const data = res.data.data
@@ -160,18 +166,18 @@ onMounted(() => {
 
 <style scoped>
 .add-space-page {
-  gap: 22px;
+  gap: 14px;
 }
 
 .space-editor {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(280px, 1.08fr);
-  gap: 20px;
+  gap: 16px;
 }
 
 .space-form-panel,
 .level-panel {
-  padding: 24px;
+  padding: 18px;
 }
 
 .submit-button {
@@ -180,18 +186,19 @@ onMounted(() => {
 
 .level-panel {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .level-panel h2 {
   margin: 0;
   font-family: var(--sketch-title-font);
-  font-size: 2rem;
+  font-size: 1.45rem;
 }
 
 .level-panel__desc {
   margin: 0;
   color: rgba(45, 45, 45, 0.68);
+  font-size: 0.92rem;
 }
 
 .level-list {
@@ -222,7 +229,7 @@ onMounted(() => {
 @media (max-width: 640px) {
   .space-form-panel,
   .level-panel {
-    padding: 18px;
+    padding: 14px;
   }
 }
 </style>
