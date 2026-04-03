@@ -1,65 +1,59 @@
 <template>
   <div id="homePage" class="page-shell home-page">
-    <section class="home-hero">
-      <article class="paper-panel hero-stage">
-        <div class="hero-stage__copy page-head">
+    <section class="paper-panel home-toolbar">
+      <div class="home-toolbar__main">
+        <div class="page-head page-head--compact home-toolbar__copy">
           <span class="sketch-note">Public Gallery</span>
           <h1 class="page-head__title">公共图库</h1>
           <p class="page-head__desc">
-            桌面端先把结果区钉在视线中央，搜索和深筛退到侧边工作台。上传、分享、详情这些链路不动，只把浏览节奏拉顺。
+            结果区优先露出，搜索和筛选压缩成工具条，首屏直接看到更多图片。
           </p>
         </div>
-        <div class="hero-stage__stats">
-          <article class="hero-stat hero-stat--primary">
+        <div class="home-toolbar__stats">
+          <article class="home-stat home-stat--primary">
             <small>当前结果</small>
             <strong>{{ total }}</strong>
-            <span>按最新上传时间排序</span>
+            <span>按最新上传排序</span>
           </article>
-          <article class="hero-stat">
+          <article class="home-stat">
             <small>激活筛选</small>
             <strong>{{ activeFilterCount }}</strong>
             <span>{{ selectedCategoryLabel }} / {{ selectedTagCount }} 个标签</span>
           </article>
-          <article class="hero-stat">
-            <small>浏览节奏</small>
-            <strong>{{ searchParams.pageSize }}</strong>
-            <span>每页记录</span>
+          <article class="home-stat">
+            <small>当前页</small>
+            <strong>{{ searchParams.current }}</strong>
+            <span>共 {{ pageCount }} 页</span>
           </article>
         </div>
-      </article>
+      </div>
 
-      <aside class="paper-panel search-workbench">
-        <div class="search-workbench__head page-head page-head--compact">
-          <span class="sketch-note">Search Workbench</span>
-          <h2 class="page-head__title">先搜，再决定要不要深筛</h2>
-          <p class="page-head__desc">关键词、分类、标签都往辅助位走，不再把图片墙挤到首屏下面。</p>
-        </div>
+      <div class="home-toolbar__controls">
         <a-input-search
-          class="search-bar"
+          class="home-toolbar__search"
           v-model:value="searchParams.searchText"
-          placeholder="从海量图片中搜索"
+          placeholder="从图片名称、简介和标签中搜索"
           enter-button="搜索"
           @search="doSearch"
         />
-        <div class="search-workbench__meta">
-          <article class="workbench-chip">
-            <span>当前分类</span>
-            <strong>{{ selectedCategoryLabel }}</strong>
-          </article>
-          <article class="workbench-chip">
-            <span>已选标签</span>
-            <strong>{{ selectedTagCount }} 个</strong>
-          </article>
-        </div>
-        <div class="search-workbench__actions">
-          <span class="search-row__summary"
-            >关键词、分类和标签都收进筛选面板，结果区继续保持在首屏。</span
+        <a-button class="toolbar-toggle home-toolbar__filter-button" @click="openFilterModal">
+          {{ `筛选面板${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
+        </a-button>
+      </div>
+
+      <div class="home-toolbar__foot">
+        <span class="search-row__summary">
+          分类：{{ selectedCategoryLabel }} · 标签：{{ selectedTagCount }} 个 · 支持页码直达
+        </span>
+        <div v-if="visibleFilterLabels.length" class="home-toolbar__filters">
+          <span v-for="label in visibleFilterLabels" :key="label" class="active-filter">{{
+            label
+          }}</span>
+          <span v-if="overflowFilterCount > 0" class="active-filter active-filter--muted"
+            >+{{ overflowFilterCount }} 项</span
           >
-          <a-button class="toolbar-toggle" @click="openFilterModal">
-            {{ `筛选面板${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
-          </a-button>
         </div>
-      </aside>
+      </div>
     </section>
 
     <section class="paper-panel gallery-shell">
@@ -68,16 +62,8 @@
           <span class="sketch-note">Records</span>
           <div>
             <h2>{{ total }} 张图片</h2>
-            <p>按最新记录平铺展示，先扫结果，再决定是否打开筛选面板继续收口。</p>
+            <p>图片列表直接前置，筛选只保留在工具条和弹层里，不再抢首屏。</p>
           </div>
-        </div>
-        <div v-if="visibleFilterLabels.length" class="gallery-shell__filters">
-          <span v-for="label in visibleFilterLabels" :key="label" class="active-filter">{{
-            label
-          }}</span>
-          <span v-if="overflowFilterCount > 0" class="active-filter active-filter--muted"
-            >+{{ overflowFilterCount }} 项</span
-          >
         </div>
       </div>
       <PictureList :dataList="dataList" :loading="loading" />
@@ -88,6 +74,10 @@
         v-model:current="searchParams.current"
         v-model:pageSize="searchParams.pageSize"
         :total="total"
+        :show-size-changer="false"
+        show-quick-jumper
+        show-less-items
+        :show-total="showTotal"
         @change="onPageChange"
       />
     </div>
@@ -102,7 +92,7 @@
       <div class="home-filter-modal">
         <div class="home-filter__head">
           <span class="sketch-note">Filter</span>
-          <p>深筛放进浮层，不再让图库内容被控件区推下去。</p>
+          <p>深筛继续放进弹层，避免把图库主内容挤出首屏。</p>
         </div>
         <a-tabs v-model:active-key="selectedCategory" @change="doSearch">
           <a-tab-pane key="all" tab="全部" />
@@ -159,6 +149,11 @@ const onPageChange = (page: number, pageSize: number) => {
   searchParams.pageSize = pageSize
   fetchData()
 }
+
+const showTotal = (value: number) => `共 ${value} 条，支持直接跳页`
+const pageCount = computed(() =>
+  Math.max(1, Math.ceil(total.value / Math.max(searchParams.pageSize || 1, 1))),
+)
 
 const categoryList = ref<string[]>([])
 const selectedCategory = ref<string>('all')
@@ -273,87 +268,141 @@ const closeFilterModal = () => {
 
 <style scoped>
 .home-page {
-  gap: 18px;
-}
-
-.home-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.22fr) minmax(340px, 0.78fr);
-  gap: 18px;
-  align-items: stretch;
-}
-
-.hero-stage,
-.search-workbench {
-  display: grid;
-  align-content: start;
   gap: 16px;
-  padding: 22px;
 }
 
-.hero-stage__copy {
-  max-width: 44rem;
-}
-
-.hero-stage__stats {
+.home-toolbar {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
+  padding: 18px 20px;
 }
 
-.hero-stat,
-.workbench-chip {
-  display: grid;
-  gap: 6px;
-  padding: 16px;
-  border: 1px dashed rgba(45, 45, 45, 0.16);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.68);
+.home-toolbar__main {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 18px;
+  align-items: start;
 }
 
-.hero-stat--primary {
-  background: linear-gradient(180deg, rgba(255, 245, 191, 0.5), rgba(255, 255, 255, 0.9));
-  border-style: solid;
+.home-toolbar__copy {
+  flex: 1 1 420px;
+  max-width: 48rem;
 }
 
-.hero-stat small,
-.workbench-chip span {
-  color: rgba(45, 45, 45, 0.56);
-  font-size: 0.78rem;
-}
-
-.hero-stat strong,
-.workbench-chip strong {
-  font-family: var(--sketch-title-font);
-  font-size: clamp(1.32rem, 1.8vw, 1.72rem);
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-
-.hero-stat span {
-  color: rgba(45, 45, 45, 0.68);
-  font-size: 0.82rem;
-}
-
-.search-workbench__meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.home-toolbar__stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px;
 }
 
-.search-bar {
+.home-stat {
+  display: grid;
+  gap: 4px;
+  min-width: 118px;
+  padding: 10px 12px;
+  border: 1px solid rgba(45, 45, 45, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.home-stat--primary {
+  background: linear-gradient(180deg, rgba(255, 245, 191, 0.5), rgba(255, 255, 255, 0.92));
+}
+
+.home-stat small,
+.home-stat span {
+  color: rgba(45, 45, 45, 0.62);
+  font-size: 0.76rem;
+}
+
+.home-stat strong {
+  font-family: var(--sketch-title-font);
+  font-size: 1.36rem;
+  line-height: 1;
+}
+
+.home-toolbar__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.home-toolbar__search {
   width: 100%;
 }
 
-.search-workbench__actions {
-  display: grid;
-  gap: 10px;
+.home-toolbar__filter-button {
+  white-space: nowrap;
+}
+
+.home-toolbar__foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 16px;
+  align-items: start;
 }
 
 .search-row__summary {
   color: rgba(45, 45, 45, 0.66);
   font-size: 0.82rem;
   line-height: 1.45;
+}
+
+.home-toolbar__filters,
+.gallery-shell__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.active-filter {
+  padding: 6px 11px;
+  border: 1px solid rgba(45, 45, 45, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(45, 45, 45, 0.68);
+  font-size: 0.8rem;
+}
+
+.active-filter--muted {
+  background: rgba(255, 245, 191, 0.56);
+}
+
+.gallery-shell {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.gallery-shell__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 18px;
+  align-items: end;
+}
+
+.gallery-shell__title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gallery-shell__title h2 {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: clamp(1.18rem, 1.55vw, 1.46rem);
+  line-height: 1.05;
+}
+
+.gallery-shell__title p {
+  margin: 5px 0 0;
+  color: rgba(45, 45, 45, 0.66);
+  font-size: 0.84rem;
 }
 
 .home-filter-modal {
@@ -394,75 +443,20 @@ const closeFilterModal = () => {
   padding-top: 4px;
 }
 
-.gallery-shell {
-  display: grid;
-  gap: 16px;
-  padding: 20px;
-}
-
-.gallery-shell__head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px 18px;
-  align-items: end;
-}
-
-.gallery-shell__title {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.gallery-shell__title h2 {
-  margin: 0;
-  font-family: var(--sketch-title-font);
-  font-size: clamp(1.2rem, 1.7vw, 1.56rem);
-  line-height: 1.05;
-}
-
-.gallery-shell__title p {
-  margin: 6px 0 0;
-  color: rgba(45, 45, 45, 0.66);
-  font-size: 0.84rem;
-}
-
-.gallery-shell__filters {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.active-filter {
-  padding: 7px 12px;
-  border: 1px solid rgba(45, 45, 45, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: rgba(45, 45, 45, 0.68);
-  font-size: 0.8rem;
-}
-
-.active-filter--muted {
-  background: rgba(255, 245, 191, 0.56);
-}
-
-@media (max-width: 1100px) {
-  .home-hero {
+@media (max-width: 960px) {
+  .home-toolbar__controls {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
-  .hero-stage,
-  .search-workbench,
+  .home-toolbar,
   .gallery-shell {
     padding: 16px;
   }
 
-  .hero-stage__stats,
-  .search-workbench__meta {
-    grid-template-columns: 1fr;
+  .home-toolbar__stats {
+    justify-content: flex-start;
   }
 
   .gallery-shell__title {

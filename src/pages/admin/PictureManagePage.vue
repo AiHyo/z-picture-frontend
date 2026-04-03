@@ -5,11 +5,15 @@
         <div class="page-head page-head--compact">
           <span class="sketch-note">Admin Console</span>
           <h1 class="page-head__title">图片管理</h1>
-          <p class="page-head__desc">筛选、审核、举报处理和标签字典都在这页，但首屏仍然先露出数据表。</p>
+          <p class="page-head__desc">
+            筛选、审核、举报处理和标签字典都在这页，但首屏仍然先露出数据表。
+          </p>
         </div>
         <div class="admin-toolbar__actions">
           <a-button type="primary" href="/add_picture" target="_blank">+ 创建图片</a-button>
-          <a-button type="primary" href="/add_picture/batch" target="_blank" ghost>+ 批量创建图片</a-button>
+          <a-button type="primary" href="/add_picture/batch" target="_blank" ghost
+            >+ 批量创建图片</a-button
+          >
           <a-button ghost @click="openReportModal">举报处理</a-button>
           <a-button ghost @click="openTagModal">标签字典</a-button>
           <a-button ghost @click="openCategoryModal">分类字典</a-button>
@@ -35,14 +39,20 @@
       </div>
       <div class="toolbar-panel__filters">
         <div class="toolbar-panel__filter-bar">
-          <p class="toolbar-panel__summary">关键词常显，其余条件按需展开，治理入口继续留在动作区。</p>
+          <p class="toolbar-panel__summary">
+            关键词常显，其余条件按需展开，治理入口继续留在动作区。
+          </p>
           <a-button class="toolbar-toggle" @click="openFilterModal">
             {{ `更多筛选${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
           </a-button>
         </div>
         <a-form layout="inline" :model="searchParams" @finish="doSearch">
           <a-form-item label="关键词" name="searchText">
-            <a-input v-model:value="searchParams.searchText" placeholder="从名称和简介搜索" allow-clear />
+            <a-input
+              v-model:value="searchParams.searchText"
+              placeholder="从名称和简介搜索"
+              allow-clear
+            />
           </a-form-item>
           <a-form-item>
             <a-button type="primary" html-type="submit">搜索</a-button>
@@ -57,48 +67,68 @@
         <p>审核和删除逻辑不变，只是把治理入口从表格主链路旁边拆出去。</p>
       </div>
       <a-table
+        class="picture-manage-table"
         :columns="columns"
         :data-source="dataList"
         :pagination="pagination"
-        :scroll="{ x: 'max-content' }"
+        :scroll="{ x: 1040 }"
         row-key="id"
         @change="doTableChange"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.dataIndex === 'url'">
-            <div class="table-image">
-              <a-image :src="record.url" :width="120" />
+          <template v-if="column.dataIndex === 'record'">
+            <div class="manage-record-cell">
+              <strong>ID {{ record.id }}</strong>
+              <span>用户 {{ record.userId || '-' }}</span>
             </div>
           </template>
-          <template v-else-if="column.dataIndex === 'tags'">
-            <a-space wrap>
-              <a-tag v-for="tag in parseTags(record.tags)" :key="tag">{{ tag }}</a-tag>
-            </a-space>
+          <template v-else-if="column.dataIndex === 'url'">
+            <div class="table-image">
+              <a-image :src="record.url" :width="112" />
+            </div>
+          </template>
+          <template v-else-if="column.dataIndex === 'content'">
+            <div class="manage-content-cell">
+              <div class="table-cell-stack table-cell-stack--tight">
+                <strong>{{ record.name || '未命名图片' }}</strong>
+                <small class="manage-content-cell__intro">{{
+                  record.introduction || '暂无简介'
+                }}</small>
+              </div>
+              <div class="manage-content-cell__meta">
+                <a-tag>{{ record.category || '未分类' }}</a-tag>
+                <a-tag v-for="tag in visibleTags(record.tags)" :key="tag">{{ tag }}</a-tag>
+                <span v-if="hiddenTagCount(record.tags) > 0" class="manage-content-cell__more">
+                  +{{ hiddenTagCount(record.tags) }}
+                </span>
+              </div>
+            </div>
           </template>
           <template v-else-if="column.dataIndex === 'picInfo'">
-            <div class="table-cell-stack table-cell-stack--tight">
-              <span>格式：{{ record.picFormat }}</span>
-              <span>宽度：{{ record.picWidth }}</span>
-              <span>高度：{{ record.picHeight }}</span>
-              <span>宽高比：{{ record.picScale }}</span>
+            <div class="manage-meta-cell">
+              <span
+                >{{ record.picFormat || '-' }} · {{ record.picWidth || '-' }} x
+                {{ record.picHeight || '-' }}</span
+              >
+              <span>比例：{{ record.picScale || '-' }}</span>
               <span>大小：{{ ((record.picSize ?? 0) / 1024).toFixed(2) }}KB</span>
             </div>
           </template>
           <template v-else-if="column.dataIndex === 'reviewMessage'">
-            <div class="table-cell-stack table-cell-stack--tight">
+            <div class="manage-review-cell">
               <strong>{{ PIC_REVIEW_STATUS_MAP[record.reviewStatus as number] }}</strong>
               <span>审核信息：{{ record.reviewMessage || '-' }}</span>
               <span>审核人：{{ record.reviewerId || '-' }}</span>
             </div>
           </template>
-          <template v-else-if="column.dataIndex === 'createTime'">
-            {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
-          </template>
-          <template v-else-if="column.dataIndex === 'editTime'">
-            {{ dayjs(record.editTime).format('YYYY-MM-DD HH:mm:ss') }}
+          <template v-else-if="column.dataIndex === 'timeline'">
+            <div class="manage-timeline-cell">
+              <span>创建：{{ formatDateTime(record.createTime) }}</span>
+              <span>编辑：{{ formatDateTime(record.editTime) }}</span>
+            </div>
           </template>
           <template v-else-if="column.key === 'action'">
-            <a-space wrap>
+            <div class="manage-action-group">
               <a-button
                 v-if="record.reviewStatus !== PIC_REVIEW_STATUS_ENUM.PASS"
                 type="link"
@@ -115,9 +145,11 @@
                 拒绝
               </a-button>
               <a-button type="link" :href="`/picture/${record.id}`" target="_blank">详情</a-button>
-              <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank">编辑</a-button>
+              <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank"
+                >编辑</a-button
+              >
               <a-button type="link" danger @click="doDelete(record.id)">删除</a-button>
-            </a-space>
+            </div>
           </template>
         </template>
       </a-table>
@@ -204,20 +236,31 @@
               </a-space>
             </template>
             <template v-else-if="column.dataIndex === 'reportStatus'">
-              <a-tag>{{ PIC_REPORT_STATUS_MAP[record.reportStatus as number] || '未知状态' }}</a-tag>
+              <a-tag>{{
+                PIC_REPORT_STATUS_MAP[record.reportStatus as number] || '未知状态'
+              }}</a-tag>
             </template>
             <template v-else-if="column.dataIndex === 'createTime'">
               {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
             </template>
             <template v-else-if="column.dataIndex === 'processTime'">
-              {{ record.processTime ? dayjs(record.processTime).format('YYYY-MM-DD HH:mm:ss') : '-' }}
+              {{
+                record.processTime ? dayjs(record.processTime).format('YYYY-MM-DD HH:mm:ss') : '-'
+              }}
             </template>
             <template v-else-if="column.key === 'action'">
               <a-space v-if="record.reportStatus === PIC_REPORT_STATUS_ENUM.PENDING">
-                <a-button type="primary" danger ghost @click="processReport(record.id, PIC_REPORT_STATUS_ENUM.APPROVED)">
+                <a-button
+                  type="primary"
+                  danger
+                  ghost
+                  @click="processReport(record.id, PIC_REPORT_STATUS_ENUM.APPROVED)"
+                >
                   成立
                 </a-button>
-                <a-button @click="processReport(record.id, PIC_REPORT_STATUS_ENUM.REJECTED)">驳回</a-button>
+                <a-button @click="processReport(record.id, PIC_REPORT_STATUS_ENUM.REJECTED)"
+                  >驳回</a-button
+                >
               </a-space>
               <span v-else>-</span>
             </template>
@@ -259,7 +302,9 @@
             <div class="dict-modal__actions">
               <a-space>
                 <a-button v-if="editingTagId" @click="resetTagForm">取消编辑</a-button>
-                <a-button type="primary" @click="submitTag">{{ editingTagId ? '保存标签' : '新增标签' }}</a-button>
+                <a-button type="primary" @click="submitTag">{{
+                  editingTagId ? '保存标签' : '新增标签'
+                }}</a-button>
               </a-space>
             </div>
           </a-form>
@@ -276,7 +321,12 @@
     >
       <div class="dict-modal">
         <div class="dict-modal__list">
-          <a-table :columns="dictColumns" :data-source="categoryList" :pagination="false" row-key="id">
+          <a-table
+            :columns="dictColumns"
+            :data-source="categoryList"
+            :pagination="false"
+            row-key="id"
+          >
             <template #bodyCell="{ column, record }">
               <template v-if="column.dataIndex === 'name'">{{ record.categoryName }}</template>
               <template v-else-if="column.key === 'action'">
@@ -341,18 +391,13 @@ import {
 } from '../../constants/picture.ts'
 
 const columns = [
-  { title: 'id', dataIndex: 'id', width: 80 },
-  { title: '图片', dataIndex: 'url' },
-  { title: '名称', dataIndex: 'name' },
-  { title: '简介', dataIndex: 'introduction', ellipsis: true },
-  { title: '类型', dataIndex: 'category' },
-  { title: '标签', dataIndex: 'tags' },
-  { title: '图片信息', dataIndex: 'picInfo' },
-  { title: '用户 id', dataIndex: 'userId', width: 80 },
-  { title: '审核信息', dataIndex: 'reviewMessage' },
-  { title: '创建时间', dataIndex: 'createTime' },
-  { title: '编辑时间', dataIndex: 'editTime' },
-  { title: '操作', key: 'action' },
+  { title: '记录', dataIndex: 'record', width: 138 },
+  { title: '图片', dataIndex: 'url', width: 124 },
+  { title: '内容', dataIndex: 'content' },
+  { title: '元数据', dataIndex: 'picInfo', width: 164 },
+  { title: '审核', dataIndex: 'reviewMessage', width: 204 },
+  { title: '时间', dataIndex: 'timeline', width: 156 },
+  { title: '操作', key: 'action', width: 188 },
 ]
 
 const reportColumns = [
@@ -386,15 +431,28 @@ const editingTagId = ref<number>()
 const editingCategoryId = ref<number>()
 const reportStatusFilter = ref<number | undefined>(undefined)
 const filterModalVisible = ref(false)
-const tagOptions = computed(() => tagList.value.map((item) => ({ label: item.tagName || '', value: item.tagName || '' })))
-const categoryOptions = computed(() => categoryList.value.map((item) => ({ label: item.categoryName || '', value: item.categoryName || '' })))
-const reportStatusFilterOptions = [{ label: '全部状态', value: undefined }, ...PIC_REPORT_STATUS_OPTIONS]
+const tagOptions = computed(() =>
+  tagList.value.map((item) => ({ label: item.tagName || '', value: item.tagName || '' })),
+)
+const categoryOptions = computed(() =>
+  categoryList.value.map((item) => ({
+    label: item.categoryName || '',
+    value: item.categoryName || '',
+  })),
+)
+const reportStatusFilterOptions = [
+  { label: '全部状态', value: undefined },
+  ...PIC_REPORT_STATUS_OPTIONS,
+]
 
 const pendingReviewCount = computed(() => {
-  return dataList.value.filter((item: any) => item.reviewStatus === PIC_REVIEW_STATUS_ENUM.REVIEWING).length
+  return dataList.value.filter(
+    (item: any) => item.reviewStatus === PIC_REVIEW_STATUS_ENUM.REVIEWING,
+  ).length
 })
 const pendingReportCount = computed(() => {
-  return reportList.value.filter((item) => item.reportStatus === PIC_REPORT_STATUS_ENUM.PENDING).length
+  return reportList.value.filter((item) => item.reportStatus === PIC_REPORT_STATUS_ENUM.PENDING)
+    .length
 })
 
 const searchParams = reactive<API.PictureQueryRequest>({
@@ -437,6 +495,8 @@ const pagination = computed(() => ({
   pageSize: searchParams.pageSize,
   total: total.value,
   showSizeChanger: true,
+  showQuickJumper: true,
+  showLessItems: true,
   showTotal: (value: number) => `共 ${value} 条`,
 }))
 
@@ -464,6 +524,11 @@ const parseTags = (value: unknown): string[] => {
   }
   return []
 }
+
+const visibleTags = (value: unknown) => parseTags(value).slice(0, 3)
+const hiddenTagCount = (value: unknown) => Math.max(parseTags(value).length - 3, 0)
+const formatDateTime = (value: string | undefined) =>
+  value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '-'
 
 const fetchData = async () => {
   const res = await listPictureByPageUsingPost({
@@ -546,7 +611,8 @@ const doTableChange = (page: { current: number; pageSize: number }) => {
 }
 
 const handleReview = async (record: any, reviewStatus: number) => {
-  const reviewMessage = reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '管理员操作通过' : '管理员操作拒绝'
+  const reviewMessage =
+    reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '管理员操作通过' : '管理员操作拒绝'
   const res = await doPictureReviewUsingPost({
     id: record.id,
     reviewStatus,
@@ -658,7 +724,10 @@ const submitCategory = async () => {
     return
   }
   const res = editingCategoryId.value
-    ? await editPictureCategoryUsingPost({ id: editingCategoryId.value, categoryName: categoryForm.categoryName })
+    ? await editPictureCategoryUsingPost({
+        id: editingCategoryId.value,
+        categoryName: categoryForm.categoryName,
+      })
     : await addPictureCategoryUsingPost({ categoryName: categoryForm.categoryName })
   if (res.data.code === 0) {
     message.success(editingCategoryId.value ? '分类已更新' : '分类已新增')
@@ -705,6 +774,79 @@ const removeCategory = async (id?: number) => {
 <style scoped>
 .admin-page {
   gap: 14px;
+}
+
+#pictureManagePage .table-panel {
+  padding-inline: 14px;
+}
+
+#pictureManagePage :deep(.picture-manage-table .ant-table-thead > tr > th),
+#pictureManagePage :deep(.picture-manage-table .ant-table-tbody > tr > td) {
+  vertical-align: top;
+}
+
+#pictureManagePage :deep(.picture-manage-table table) {
+  min-width: 100%;
+}
+
+.manage-record-cell,
+.manage-content-cell,
+.manage-meta-cell,
+.manage-review-cell,
+.manage-timeline-cell {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.manage-record-cell strong,
+.manage-review-cell strong {
+  font-family: var(--sketch-title-font);
+  font-size: 0.86rem;
+}
+
+.manage-record-cell span,
+.manage-meta-cell span,
+.manage-review-cell span,
+.manage-timeline-cell span {
+  color: rgba(45, 45, 45, 0.72);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.manage-content-cell__intro {
+  color: rgba(45, 45, 45, 0.68);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.manage-content-cell__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.manage-content-cell__more {
+  padding: 2px 8px;
+  border: 1px dashed rgba(45, 45, 45, 0.18);
+  border-radius: 999px;
+  color: rgba(45, 45, 45, 0.62);
+  font-size: 0.74rem;
+}
+
+.manage-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: flex-start;
+}
+
+.manage-action-group :deep(.ant-btn) {
+  min-height: auto !important;
+  padding: 0 !important;
 }
 
 .governance-modal,

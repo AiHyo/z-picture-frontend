@@ -8,8 +8,13 @@
       <header ref="headerRef" class="header">
         <GlobalHeader />
       </header>
-      <main id="workspaceMain" tabindex="-1" role="main" class="layout-body">
-        <GlobalSider class="sider" />
+      <main
+        id="workspaceMain"
+        tabindex="-1"
+        role="main"
+        :class="['layout-body', { 'layout-body--full': !showSider }]"
+      >
+        <GlobalSider v-if="showSider" class="sider" />
         <section class="content">
           <div class="content-board">
             <div class="content-stage">
@@ -33,9 +38,11 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import GlobalHeader from '@/components/GlobalHeader.vue'
 import GlobalSider from '@/components/GlobalSider.vue'
 
+const route = useRoute()
 const headerRef = ref<any>()
 const footerRef = ref<any>()
 const layoutMetrics = ref({
@@ -54,6 +61,8 @@ const syncLayoutMetrics = () => {
     footer: measureElementHeight(footerRef.value),
   }
 }
+
+const showSider = computed(() => !route.path.startsWith('/admin/'))
 
 let resizeObserver: ResizeObserver | undefined
 
@@ -81,7 +90,6 @@ onBeforeUnmount(() => {
 const layoutStyle = computed(() => ({
   '--layout-header-height': `${layoutMetrics.value.header}px`,
   '--layout-footer-height': `${layoutMetrics.value.footer}px`,
-  '--layout-sticky-top': `calc(${layoutMetrics.value.header}px + var(--layout-shell-pad) + var(--layout-shell-gap))`,
 }))
 </script>
 
@@ -90,6 +98,7 @@ const layoutStyle = computed(() => ({
   --layout-shell-pad: clamp(14px, 1.4vw, 24px);
   --layout-shell-gap: clamp(14px, 1.2vw, 20px);
   --layout-stage-max: 1680px;
+  --layout-sticky-top: var(--layout-shell-pad);
   position: relative;
   min-height: 100vh;
   box-sizing: border-box;
@@ -163,13 +172,11 @@ const layoutStyle = computed(() => ({
 }
 
 #basicLayout .header {
-  position: sticky;
-  top: var(--layout-shell-pad);
-  z-index: 20;
+  position: static;
+  z-index: 10;
   height: auto;
   line-height: normal;
   padding: 0;
-  backdrop-filter: blur(12px);
 }
 
 #basicLayout .layout-body {
@@ -182,6 +189,10 @@ const layoutStyle = computed(() => ({
       var(--layout-footer-height, 0px) - var(--layout-shell-gap)
   );
   width: 100%;
+}
+
+#basicLayout .layout-body--full {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 #basicLayout .sider {
@@ -273,6 +284,19 @@ const layoutStyle = computed(() => ({
 }
 
 @media (max-width: 1180px) {
+  #basicLayout {
+    --layout-sticky-top: calc(
+      var(--layout-header-height, 0px) + var(--layout-shell-pad) + var(--layout-shell-gap)
+    );
+  }
+
+  #basicLayout .header {
+    position: sticky;
+    top: var(--layout-shell-pad);
+    z-index: 20;
+    backdrop-filter: blur(12px);
+  }
+
   #basicLayout .layout-body {
     grid-template-columns: 1fr;
   }
