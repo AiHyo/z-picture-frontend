@@ -71,7 +71,7 @@
         :columns="columns"
         :data-source="dataList"
         :pagination="pagination"
-        :scroll="{ x: 1040 }"
+        :scroll="{ x: 960 }"
         row-key="id"
         @change="doTableChange"
       >
@@ -84,7 +84,7 @@
           </template>
           <template v-else-if="column.dataIndex === 'url'">
             <div class="table-image">
-              <a-image :src="record.url" :width="112" />
+              <a-image :src="record.url" :width="96" />
             </div>
           </template>
           <template v-else-if="column.dataIndex === 'content'">
@@ -391,13 +391,13 @@ import {
 } from '../../constants/picture.ts'
 
 const columns = [
-  { title: '记录', dataIndex: 'record', width: 138 },
-  { title: '图片', dataIndex: 'url', width: 124 },
+  { title: '记录', dataIndex: 'record', width: 112 },
+  { title: '图片', dataIndex: 'url', width: 104 },
   { title: '内容', dataIndex: 'content' },
-  { title: '元数据', dataIndex: 'picInfo', width: 164 },
-  { title: '审核', dataIndex: 'reviewMessage', width: 204 },
-  { title: '时间', dataIndex: 'timeline', width: 156 },
-  { title: '操作', key: 'action', width: 188 },
+  { title: '元数据', dataIndex: 'picInfo', width: 144 },
+  { title: '审核', dataIndex: 'reviewMessage', width: 180 },
+  { title: '时间', dataIndex: 'timeline', width: 136 },
+  { title: '操作', key: 'action', width: 160 },
 ]
 
 const reportColumns = [
@@ -840,7 +840,7 @@ const removeCategory = async (id?: number) => {
 .manage-action-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 10px;
+  gap: 2px 8px;
   align-items: flex-start;
 }
 

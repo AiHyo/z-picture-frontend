@@ -19,7 +19,6 @@
     </div>
 
     <div class="menu-wrap">
-      <span class="menu-caption">Navigation</span>
       <a-menu
         :selectedKeys="current"
         mode="horizontal"
@@ -170,21 +169,21 @@ const doLogout = async () => {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px 18px;
-  min-height: 86px;
-  padding: 14px 18px;
+  gap: 10px 16px;
+  min-height: 74px;
+  padding: 12px 16px;
 }
 
 .brand-cluster {
   display: grid;
-  gap: 10px;
+  gap: 6px;
   min-width: 0;
 }
 
 .brand-link {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
   color: inherit;
   text-decoration: none;
@@ -193,11 +192,11 @@ const doLogout = async () => {
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   border: 1px solid rgba(45, 45, 45, 0.16);
-  border-radius: 22px;
+  border-radius: 18px;
   background: linear-gradient(135deg, rgba(255, 245, 191, 0.94), rgba(255, 255, 255, 0.98)), #fff;
   box-shadow:
     0 18px 30px rgba(62, 43, 22, 0.12),
@@ -206,64 +205,60 @@ const doLogout = async () => {
 
 .brand-copy {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
 .title {
   color: var(--sketch-fg);
   font-family: var(--sketch-title-font);
-  font-size: clamp(1.24rem, 1.8vw, 1.62rem);
-  line-height: 1.02;
+  font-size: clamp(1.12rem, 1.4vw, 1.46rem);
+  line-height: 1;
   letter-spacing: -0.03em;
 }
 
 .subtitle {
   margin: 0;
-  max-width: 32ch;
+  max-width: 30ch;
   color: rgba(45, 45, 45, 0.7);
-  font-size: 0.82rem;
-  line-height: 1.35;
+  font-size: 0.76rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .brand-summary span {
-  padding: 6px 10px;
+  padding: 4px 8px;
   border: 1px solid rgba(45, 45, 45, 0.12);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   color: rgba(45, 45, 45, 0.62);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
 }
 
 .logo {
-  height: 34px;
-  width: 34px;
+  height: 28px;
+  width: 28px;
   object-fit: contain;
 }
 
 .menu-wrap {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  align-items: center;
   min-width: 0;
-}
-
-.menu-caption {
-  color: rgba(45, 45, 45, 0.56);
-  font-family: var(--sketch-title-font);
-  font-size: 0.74rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .header-menu {
   display: flex;
   flex-wrap: nowrap;
+  align-items: center;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -275,10 +270,10 @@ const doLogout = async () => {
 
 .header-menu :deep(.ant-menu-item),
 .header-menu :deep(.ant-menu-submenu) {
-  height: 40px;
-  line-height: 40px;
-  margin: 0 6px 0 0 !important;
-  padding-inline: 14px;
+  height: 36px;
+  line-height: 36px;
+  margin: 0 4px 0 0 !important;
+  padding-inline: 12px;
   border: 1px solid transparent;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.42);
@@ -294,42 +289,94 @@ const doLogout = async () => {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
 .header-shortcut {
   white-space: nowrap;
+  min-height: 40px;
+  padding-inline: 14px;
 }
 
 .user-pill,
 .login-note {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 7px 12px;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 10px;
   border: 1px solid rgba(45, 45, 45, 0.12);
-  border-radius: 18px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.78);
 }
 
 .user-caption {
   font-family: var(--sketch-title-font);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   color: rgba(45, 45, 45, 0.62);
   white-space: nowrap;
 }
 
 .user-trigger {
   cursor: pointer;
-  gap: 10px;
-  font-size: 0.92rem;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 1440px) {
+  .brand-summary {
+    display: none;
+  }
 }
 
 @media (max-width: 1280px) {
   .header-shell {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand actions'
+      'menu menu';
+    align-items: start;
+  }
+
+  .brand-cluster {
+    grid-area: brand;
+  }
+
+  .menu-wrap {
+    grid-area: menu;
+  }
+
+  .action-wrap {
+    grid-area: actions;
+    align-self: center;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .action-wrap {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 992px) {
+  .brand-summary {
+    display: none;
+  }
+}
+
+@media (max-width: 840px) {
+  .header-shell {
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'brand'
+      'menu'
+      'actions';
+    gap: 12px;
+    padding: 14px;
   }
 
   .action-wrap {
@@ -337,24 +384,7 @@ const doLogout = async () => {
   }
 }
 
-@media (max-width: 992px) {
-  .menu-wrap {
-    width: 100%;
-  }
-
-  .brand-summary {
-    display: none;
-  }
-}
-
 @media (max-width: 720px) {
-  .header-shell {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-    padding: 14px;
-  }
-
   .brand-mark {
     width: 48px;
     height: 48px;

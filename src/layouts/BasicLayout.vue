@@ -95,8 +95,8 @@ const layoutStyle = computed(() => ({
 
 <style scoped>
 #basicLayout {
-  --layout-shell-pad: clamp(14px, 1.4vw, 24px);
-  --layout-shell-gap: clamp(14px, 1.2vw, 20px);
+  --layout-shell-pad: clamp(12px, 1.2vw, 20px);
+  --layout-shell-gap: clamp(12px, 1vw, 18px);
   --layout-stage-max: 1680px;
   --layout-sticky-top: var(--layout-shell-pad);
   position: relative;
@@ -217,7 +217,7 @@ const layoutStyle = computed(() => ({
     100vh - (var(--layout-shell-pad) * 2) - var(--layout-header-height, 0px) -
       var(--layout-footer-height, 0px) - (var(--layout-shell-gap) * 2)
   );
-  padding: clamp(18px, 1.6vw, 28px);
+  padding: clamp(14px, 1.2vw, 20px);
   box-sizing: border-box;
   border: 1px solid rgba(45, 45, 45, 0.14);
   border-radius: calc(var(--sketch-radius-md) + 2px);
@@ -248,7 +248,7 @@ const layoutStyle = computed(() => ({
   z-index: 1;
   display: grid;
   align-content: start;
-  gap: clamp(18px, 1.4vw, 24px);
+  gap: clamp(14px, 1.1vw, 20px);
   width: 100%;
   min-width: 0;
 }
@@ -284,19 +284,6 @@ const layoutStyle = computed(() => ({
 }
 
 @media (max-width: 1180px) {
-  #basicLayout {
-    --layout-sticky-top: calc(
-      var(--layout-header-height, 0px) + var(--layout-shell-pad) + var(--layout-shell-gap)
-    );
-  }
-
-  #basicLayout .header {
-    position: sticky;
-    top: var(--layout-shell-pad);
-    z-index: 20;
-    backdrop-filter: blur(12px);
-  }
-
   #basicLayout .layout-body {
     grid-template-columns: 1fr;
   }

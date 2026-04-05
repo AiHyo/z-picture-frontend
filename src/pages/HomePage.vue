@@ -5,25 +5,23 @@
         <div class="page-head page-head--compact home-toolbar__copy">
           <span class="sketch-note">Public Gallery</span>
           <h1 class="page-head__title">公共图库</h1>
-          <p class="page-head__desc">
-            结果区优先露出，搜索和筛选压缩成工具条，首屏直接看到更多图片。
-          </p>
+          <p class="page-head__desc">搜索和筛选收进工具条，首屏先给图片列表。</p>
         </div>
         <div class="home-toolbar__stats">
           <article class="home-stat home-stat--primary">
-            <small>当前结果</small>
+            <small>结果</small>
             <strong>{{ total }}</strong>
-            <span>按最新上传排序</span>
+            <span>最新排序</span>
           </article>
           <article class="home-stat">
-            <small>激活筛选</small>
+            <small>筛选</small>
             <strong>{{ activeFilterCount }}</strong>
-            <span>{{ selectedCategoryLabel }} / {{ selectedTagCount }} 个标签</span>
+            <span>{{ selectedCategoryLabel }} / {{ selectedTagCount }} 标签</span>
           </article>
           <article class="home-stat">
-            <small>当前页</small>
-            <strong>{{ searchParams.current }}</strong>
-            <span>共 {{ pageCount }} 页</span>
+            <small>页码</small>
+            <strong>{{ searchParams.current }}/{{ pageCount }}</strong>
+            <span>支持直达</span>
           </article>
         </div>
       </div>
@@ -60,11 +58,9 @@
       <div class="gallery-shell__head">
         <div class="gallery-shell__title">
           <span class="sketch-note">Records</span>
-          <div>
-            <h2>{{ total }} 张图片</h2>
-            <p>图片列表直接前置，筛选只保留在工具条和弹层里，不再抢首屏。</p>
-          </div>
+          <h2>{{ total }} 张图片</h2>
         </div>
+        <span class="gallery-shell__summary">结果区前置，首屏直接露出图片卡片。</span>
       </div>
       <PictureList :dataList="dataList" :loading="loading" />
     </section>
@@ -268,42 +264,44 @@ const closeFilterModal = () => {
 
 <style scoped>
 .home-page {
-  gap: 16px;
+  gap: 14px;
 }
 
 .home-toolbar {
   display: grid;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 12px;
+  padding: 14px 16px;
 }
 
 .home-toolbar__main {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px 18px;
-  align-items: start;
+  gap: 10px 14px;
+  align-items: center;
 }
 
 .home-toolbar__copy {
-  flex: 1 1 420px;
-  max-width: 48rem;
+  flex: 1 1 360px;
+  max-width: 34rem;
 }
 
 .home-toolbar__stats {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
 
 .home-stat {
-  display: grid;
-  gap: 4px;
-  min-width: 118px;
-  padding: 10px 12px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  min-width: 0;
+  padding: 8px 10px;
   border: 1px solid rgba(45, 45, 45, 0.12);
-  border-radius: 18px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
 }
 
@@ -314,24 +312,35 @@ const closeFilterModal = () => {
 .home-stat small,
 .home-stat span {
   color: rgba(45, 45, 45, 0.62);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
+  line-height: 1.2;
 }
 
 .home-stat strong {
   font-family: var(--sketch-title-font);
-  font-size: 1.36rem;
+  font-size: 1.02rem;
   line-height: 1;
 }
 
 .home-toolbar__controls {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(146px, auto);
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .home-toolbar__search {
   width: 100%;
+}
+
+.home-toolbar__search :deep(.ant-input),
+.home-toolbar__search :deep(.ant-input-search-button),
+.home-toolbar__filter-button {
+  min-height: 42px;
+}
+
+.home-toolbar__search :deep(.ant-input-search-button) {
+  padding-inline: 16px;
 }
 
 .home-toolbar__filter-button {
@@ -342,14 +351,14 @@ const closeFilterModal = () => {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 10px 16px;
-  align-items: start;
+  gap: 8px 14px;
+  align-items: center;
 }
 
 .search-row__summary {
   color: rgba(45, 45, 45, 0.66);
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .home-toolbar__filters,
@@ -374,35 +383,35 @@ const closeFilterModal = () => {
 
 .gallery-shell {
   display: grid;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 12px;
+  padding: 14px 16px 16px;
 }
 
 .gallery-shell__head {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px 18px;
-  align-items: end;
+  gap: 8px 14px;
+  align-items: center;
 }
 
 .gallery-shell__title {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
 }
 
 .gallery-shell__title h2 {
   margin: 0;
   font-family: var(--sketch-title-font);
-  font-size: clamp(1.18rem, 1.55vw, 1.46rem);
-  line-height: 1.05;
+  font-size: clamp(1.08rem, 1.3vw, 1.34rem);
+  line-height: 1;
 }
 
-.gallery-shell__title p {
-  margin: 5px 0 0;
+.gallery-shell__summary {
   color: rgba(45, 45, 45, 0.66);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
 }
 
 .home-filter-modal {
@@ -447,6 +456,10 @@ const closeFilterModal = () => {
   .home-toolbar__controls {
     grid-template-columns: 1fr;
   }
+
+  .home-toolbar__stats {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 640px) {
@@ -455,13 +468,8 @@ const closeFilterModal = () => {
     padding: 16px;
   }
 
-  .home-toolbar__stats {
-    justify-content: flex-start;
-  }
-
   .gallery-shell__title {
-    flex-direction: column;
-    gap: 8px;
+    align-items: flex-start;
   }
 
   .home-filter__head p {
