@@ -83,7 +83,7 @@ const scopeTitle = computed(() => {
 
 const scopeDescription = computed(() => {
   if (queryAll.value) {
-    return '这里汇总全站空间的使用、分类、标签和上传行为，用于看整体资源分布。'
+    return '汇总全站空间的使用、分类、标签和上传行为，整体资源分布。'
   }
   if (queryPublic.value) {
     return '这里聚焦公共图库，适合查看对外内容的分类和热度结构。'

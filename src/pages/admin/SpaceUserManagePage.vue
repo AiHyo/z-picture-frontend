@@ -208,11 +208,11 @@ import {
 import dayjs from 'dayjs'
 
 interface Props {
-  id: string | number
+  id: string
 }
 
 const props = defineProps<Props>()
-const spaceId = computed<string | number>(() => props.id)
+const spaceId = computed<string>(() => props.id)
 
 const columns = [
   { title: '用户', dataIndex: 'userInfo' },
@@ -375,7 +375,7 @@ const editSpaceRole = async (value: string, record: any) => {
   }
 }
 
-const doDelete = async (id: number | string) => {
+const doDelete = async (id: string) => {
   if (!id) {
     return
   }

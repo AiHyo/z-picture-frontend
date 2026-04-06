@@ -32,12 +32,12 @@ import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 interface Props {
   picture?: API.PictureVO
   onSuccess?: (newPicture: API.PictureVO) => void
-  spaceId?: string | number
+  spaceId?: string
 }
 
 const props = defineProps<Props>()
 
-const toStringId = (value: string | number | undefined) => {
+const toStringId = (value: string | undefined) => {
   if (value === undefined || value === null || value === '') {
     return undefined
   }

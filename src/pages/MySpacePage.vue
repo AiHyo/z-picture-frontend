@@ -162,7 +162,7 @@ const teamSpaceList = ref<API.SpaceUserVO[]>([])
 const inviteList = ref<API.SpaceInviteVO[]>([])
 const pendingInviteCount = computed(() => inviteList.value.length)
 
-const fetchOwnedSpaceList = async (userId: number) => {
+const fetchOwnedSpaceList = async (userId: string) => {
   const res = await listSpaceVoByPageUsingPost({
     userId,
     current: 1,
@@ -233,7 +233,7 @@ const loadWorkspaceData = async () => {
   }
 }
 
-const handleInvite = async (id: number | undefined, action: 'accept' | 'reject') => {
+const handleInvite = async (id: string | undefined, action: 'accept' | 'reject') => {
   if (!id) {
     return
   }
@@ -247,21 +247,21 @@ const handleInvite = async (id: number | undefined, action: 'accept' | 'reject')
   }
 }
 
-const goSpace = (spaceId?: number) => {
+const goSpace = (spaceId?: string) => {
   if (!spaceId) {
     return
   }
   router.push(`/space/${spaceId}`)
 }
 
-const goAnalyze = (spaceId?: number) => {
+const goAnalyze = (spaceId?: string) => {
   if (!spaceId) {
     return
   }
   router.push(`/space_analyze?spaceId=${spaceId}`)
 }
 
-const goSpaceUserManage = (spaceId?: number) => {
+const goSpaceUserManage = (spaceId?: string) => {
   if (!spaceId) {
     return
   }

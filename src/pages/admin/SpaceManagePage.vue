@@ -208,7 +208,7 @@ const doSearch = () => {
   fetchData()
 }
 
-const doDelete = async (id: number | string) => {
+const doDelete = async (id: string) => {
   if (!id) {
     return
   }

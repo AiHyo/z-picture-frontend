@@ -36,7 +36,7 @@ import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 
 interface Props {
   pictureList: API.PictureVO[]
-  spaceId: string | number
+  spaceId: string
   onSuccess: () => void
 }
 

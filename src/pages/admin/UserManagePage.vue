@@ -117,7 +117,7 @@ const fetchData = async () => {
   }
 }
 
-const doDelete = async (id: number) => {
+const doDelete = async (id: string) => {
   const res = await deleteUserUsingPost({ id })
   if (res.data.code === 0) {
     message.success('删除成功')

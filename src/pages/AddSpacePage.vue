@@ -128,7 +128,7 @@ const handleSubmit = async (values: any) => {
   if (res.data.code === 0 && res.data.data) {
     message.success('操作成功')
     const loginUserStore = useLoginUserStore()
-    const newSpace = res.data.data as { id?: number | string }
+    const newSpace = res.data.data as { id?: string }
     if (loginUserStore.loginUser.userRole == 'admin'){
       router.push({path: '/admin/spaceManage'})
     } else {

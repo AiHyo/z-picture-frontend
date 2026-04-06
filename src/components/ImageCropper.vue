@@ -58,13 +58,13 @@ import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
 interface Props {
   imageUrl?: string
   picture?: API.PictureVO
-  spaceId?: string | number
+  spaceId?: string
   space?: API.SpaceVO
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 const props = defineProps<Props>()
 
-const toStringId = (value: string | number | undefined) => {
+const toStringId = (value: string | undefined) => {
   if (value === undefined || value === null || value === '') {
     return undefined
   }

@@ -22,6 +22,7 @@
       <a-menu
         :selectedKeys="current"
         mode="horizontal"
+        :disabledOverflow="true"
         @click="doMenuClick"
         :items="items"
         class="header-menu"

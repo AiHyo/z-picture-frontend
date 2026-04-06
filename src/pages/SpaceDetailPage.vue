@@ -275,7 +275,7 @@ import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '../constants/space.ts'
 import dayjs from 'dayjs'
 
 interface Props {
-  id: string | number
+  id: string
 }
 
 const props = defineProps<Props>()
@@ -436,7 +436,7 @@ const noticeList = ref<API.SpaceNoticeVO[]>([])
 const noticeLoading = ref(false)
 const noticeSubmitting = ref(false)
 const noticeModalVisible = ref(false)
-const editingNoticeId = ref<number>()
+const editingNoticeId = ref<string>()
 const noticeForm = reactive<API.SpaceNoticeEditRequest>({
   title: '',
   content: '',
@@ -524,7 +524,7 @@ const submitNotice = async () => {
   }
 }
 
-const removeNotice = async (id?: number) => {
+const removeNotice = async (id?: string) => {
   if (!id) {
     return
   }

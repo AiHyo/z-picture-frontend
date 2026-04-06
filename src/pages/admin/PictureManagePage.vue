@@ -423,8 +423,8 @@ const reportLoading = ref(false)
 const reportModalVisible = ref(false)
 const tagModalVisible = ref(false)
 const categoryModalVisible = ref(false)
-const editingTagId = ref<number>()
-const editingCategoryId = ref<number>()
+const editingTagId = ref<string>()
+const editingCategoryId = ref<string>()
 const reportStatusFilter = ref<number | undefined>(undefined)
 const filterModalVisible = ref(false)
 const tagOptions = computed(() =>
@@ -584,7 +584,7 @@ onMounted(() => {
   fetchReportData()
 })
 
-const doDelete = async (id: number) => {
+const doDelete = async (id: string) => {
   const res = await deletePictureUsingPost({ id } as any)
   const result = res.data as any
   if (result.code === 0) {
@@ -628,7 +628,7 @@ const openReportModal = async () => {
   await fetchReportData()
 }
 
-const processReport = async (id: number | undefined, status: number) => {
+const processReport = async (id: string | undefined, status: number) => {
   if (!id) {
     return
   }
@@ -734,7 +734,7 @@ const submitCategory = async () => {
   }
 }
 
-const removeTag = async (id?: number) => {
+const removeTag = async (id?: string) => {
   if (!id) {
     return
   }
@@ -750,7 +750,7 @@ const removeTag = async (id?: number) => {
   }
 }
 
-const removeCategory = async (id?: number) => {
+const removeCategory = async (id?: string) => {
   if (!id) {
     return
   }

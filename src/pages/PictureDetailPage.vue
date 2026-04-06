@@ -143,22 +143,24 @@ import {
 import { message } from 'ant-design-vue'
 import { downloadImage, formatSize } from '@/utils'
 import { EditOutlined, DeleteOutlined, DownloadOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
-import router, { toHexColor } from '@/router'
+import { useRouter } from 'vue-router'
+import { toHexColor } from '@/router'
 import ShareModal from '@/components/ShareModal.vue'
 import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 // const props = defineProps<{
-//   id: string | number
+//   id: string
 // }>()
 interface props {
-  id: string | number
+  id: string
 }
 
 const props = defineProps<props>()
 const pictureId = computed(() => props.id)
 const picture = ref<API.PictureVO>({})
 const loginUserStore = useLoginUserStore()
+const router = useRouter()
 
 const reportReasonOptions = [
   { label: '侵权盗图', value: 'copyright' },
@@ -208,14 +210,21 @@ onMounted(() => {
 // })
 
 // 编辑
-const doEdit = () => {
-  // 跳转时一定要携带 spaceId
-  router.push({
+const doEdit = async () => {
+  const id = picture.value.id
+  if (!id) {
+    message.warning('图片详情还在加载，请稍后再试')
+    return
+  }
+  const query: Record<string, string> = {
+    id,
+  }
+  if (picture.value.spaceId) {
+    query.spaceId = picture.value.spaceId
+  }
+  await router.push({
     path: '/add_picture',
-    query: {
-      id: picture.value.id,
-      spaceId: picture.value.spaceId,
-    },
+    query,
   })
 }
 // 删除

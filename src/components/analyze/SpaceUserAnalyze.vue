@@ -32,7 +32,7 @@ import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 interface Props {
   queryAll?: boolean
   queryPublic?: boolean
-  spaceId?: string | number
+  spaceId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -50,10 +50,10 @@ const timeDimensionOptions = [
   { label: '月', value: 'month' },
 ]
 
-const userId = ref<number>()
+const userId = ref<string>()
 const doSearch = (value: string) => {
-  const num = Number(value)
-  userId.value = Number.isNaN(num) ? undefined : num
+  const nextValue = value.trim()
+  userId.value = nextValue || undefined
 }
 
 const dataList = ref<any[]>([])

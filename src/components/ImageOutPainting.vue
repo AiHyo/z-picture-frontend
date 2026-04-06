@@ -53,12 +53,12 @@ import { message } from 'ant-design-vue'
 
 interface Props {
   picture?: API.PictureVO
-  spaceId?: string | number
+  spaceId?: string
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 const props = defineProps<Props>()
 
-const toStringId = (value: string | number | undefined) => {
+const toStringId = (value: string | undefined) => {
   if (value === undefined || value === null || value === '') {
     return undefined
   }

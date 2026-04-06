@@ -151,6 +151,7 @@ const onSuccess = (newPicture: API.PictureVO) => {
 // 必须使用computed,及时更新
 const spaceId = computed<string | undefined>(() => toRouteString(route.query?.spaceId))
 const currentPictureId = computed<string | undefined>(() => toRouteString(route.query?.id))
+const submitActionText = computed(() => (currentPictureId.value ? '编辑' : '创建'))
 
 // 提交表单：实际调用的是【修改图片接口】
 const router = useRouter()
@@ -164,13 +165,13 @@ const handleSubmit = async (values: any) => {
     ...values,
   })
   if (res.data.code === 0 && res.data.data) {
-    message.success('创建成功')
+    message.success(`${submitActionText.value}成功`)
     // 跳转到图片详情页
     router.push({
       path: `/picture/${pictureId}`,
     })
   } else {
-    message.error('创建失败，' + res.data.message)
+    message.error(`${submitActionText.value}失败，` + res.data.message)
   }
 }
 
