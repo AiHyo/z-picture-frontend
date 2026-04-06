@@ -204,13 +204,13 @@
         <div class="governance-modal__head">
           <div class="table-cell-stack table-cell-stack--tight">
             <strong>公共图库举报</strong>
-            <small>成立后会将图片标记为拒绝状态。</small>
+            <small>{{ `共 ${reportTotal} 条记录，成立后会将图片标记为拒绝状态。` }}</small>
           </div>
           <a-select
             v-model:value="reportStatusFilter"
             :options="reportStatusFilterOptions"
             style="min-width: 180px"
-            @change="fetchReportData"
+            @change="handleReportStatusChange"
           />
         </div>
         <a-table
@@ -218,9 +218,10 @@
           :columns="reportColumns"
           :data-source="reportList"
           :loading="reportLoading"
-          :pagination="false"
+          :pagination="reportPagination"
           row-key="id"
-          :scroll="{ x: 1500 }"
+          :scroll="{ x: 1500, y: 460 }"
+          @change="handleReportTableChange"
         >
           <template #bodyCell="{ column, record }">
             <template v-if="column.dataIndex === 'pictureId'">
@@ -435,11 +436,16 @@ const REPORT_STATUS_ALL = 'all'
 const reportList = ref<API.PictureReportVO[]>([])
 const reportLoading = ref(false)
 const reportModalVisible = ref(false)
+const reportTotal = ref(0)
 const tagModalVisible = ref(false)
 const categoryModalVisible = ref(false)
 const editingTagId = ref<string>()
 const editingCategoryId = ref<string>()
 const reportStatusFilter = ref<number | typeof REPORT_STATUS_ALL>(REPORT_STATUS_ALL)
+const reportQuery = reactive({
+  current: 1,
+  pageSize: 10,
+})
 const filterModalVisible = ref(false)
 const tagOptions = computed(() =>
   tagList.value.map((item) => ({ label: item.tagName || '', value: item.tagName || '' })),
@@ -455,14 +461,11 @@ const reportStatusFilterOptions = [
   ...PIC_REPORT_STATUS_OPTIONS,
 ]
 
+const pendingReportCount = ref(0)
 const pendingReviewCount = computed(() => {
   return dataList.value.filter(
     (item: any) => item.reviewStatus === PIC_REVIEW_STATUS_ENUM.REVIEWING,
   ).length
-})
-const pendingReportCount = computed(() => {
-  return reportList.value.filter((item) => item.reportStatus === PIC_REPORT_STATUS_ENUM.PENDING)
-    .length
 })
 
 const searchParams = reactive<API.PictureQueryRequest>({
@@ -508,6 +511,15 @@ const pagination = computed(() => ({
   showQuickJumper: true,
   showLessItems: true,
   showTotal: (value: number) => `共 ${value} 条`,
+}))
+const reportPagination = computed(() => ({
+  current: reportQuery.current,
+  pageSize: reportQuery.pageSize,
+  total: reportTotal.value,
+  showSizeChanger: true,
+  showQuickJumper: true,
+  showLessItems: true,
+  showTotal: (value: number) => `共 ${value} 条举报`,
 }))
 
 const tagForm = reactive<API.PictureTagEditRequest>({
@@ -578,13 +590,22 @@ const fetchReportData = async () => {
     const reportStatus =
       reportStatusFilter.value === REPORT_STATUS_ALL ? undefined : reportStatusFilter.value
     const res = await listPictureReportByPageUsingPost({
-      current: 1,
-      pageSize: 50,
+      current: reportQuery.current,
+      pageSize: reportQuery.pageSize,
       reportStatus,
     } as any)
     const result = res.data as any
     if (result.code === 0 && result.data) {
-      reportList.value = result.data.records ?? []
+      const nextTotal = Number(result.data.total ?? 0)
+      const nextRecords = result.data.records ?? []
+      const maxPage = Math.max(1, Math.ceil(nextTotal / reportQuery.pageSize))
+      if (!nextRecords.length && nextTotal > 0 && reportQuery.current > maxPage) {
+        reportQuery.current = maxPage
+        await fetchReportData()
+        return
+      }
+      reportList.value = nextRecords
+      reportTotal.value = nextTotal
     } else {
       message.error('加载举报失败，' + result.message)
     }
@@ -593,11 +614,23 @@ const fetchReportData = async () => {
   }
 }
 
+const fetchPendingReportCount = async () => {
+  const res = await listPictureReportByPageUsingPost({
+    current: 1,
+    pageSize: 1,
+    reportStatus: PIC_REPORT_STATUS_ENUM.PENDING,
+  } as any)
+  const result = res.data as any
+  if (result.code === 0 && result.data) {
+    pendingReportCount.value = Number(result.data.total ?? 0)
+  }
+}
+
 onMounted(() => {
   fetchData()
   fetchTagData()
   fetchCategoryData()
-  fetchReportData()
+  fetchPendingReportCount()
 })
 
 const doDelete = async (id: string) => {
@@ -622,6 +655,17 @@ const doTableChange = (page: { current: number; pageSize: number }) => {
   fetchData()
 }
 
+const handleReportStatusChange = async () => {
+  reportQuery.current = 1
+  await fetchReportData()
+}
+
+const handleReportTableChange = (page: { current?: number; pageSize?: number }) => {
+  reportQuery.current = page.current ?? 1
+  reportQuery.pageSize = page.pageSize ?? reportQuery.pageSize
+  fetchReportData()
+}
+
 const handleReview = async (record: any, reviewStatus: number) => {
   const reviewMessage =
     reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '管理员操作通过' : '管理员操作拒绝'
@@ -641,7 +685,8 @@ const handleReview = async (record: any, reviewStatus: number) => {
 
 const openReportModal = async () => {
   reportModalVisible.value = true
-  await fetchReportData()
+  reportQuery.current = 1
+  await Promise.all([fetchReportData(), fetchPendingReportCount()])
 }
 
 const processReport = async (id: string | undefined, status: number) => {
@@ -660,8 +705,7 @@ const processReport = async (id: string | undefined, status: number) => {
   const result = res.data as any
   if (result.code === 0) {
     message.success('举报处理成功')
-    fetchReportData()
-    fetchData()
+    await Promise.all([fetchReportData(), fetchPendingReportCount(), fetchData()])
   } else {
     message.error('举报处理失败，' + result.message)
   }
