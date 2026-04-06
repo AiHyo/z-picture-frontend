@@ -58,12 +58,11 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-const toNumberId = (value: string | number | undefined) => {
+const toStringId = (value: string | number | undefined) => {
   if (value === undefined || value === null || value === '') {
     return undefined
   }
-  const id = Number(value)
-  return Number.isFinite(id) ? id : undefined
+  return String(value)
 }
 
 const resultImageUrl = ref('')
@@ -131,7 +130,7 @@ const handleUpload = async () => {
   try {
     const params: API.PictureUploadRequest = {
       fileUrl: resultImageUrl.value,
-      spaceId: toNumberId(props.spaceId),
+      spaceId: toStringId(props.spaceId),
     }
     params.id = props.picture?.id
     const res = await uploadPictureByUrlUsingPost(params as any)

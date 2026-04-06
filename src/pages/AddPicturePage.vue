@@ -132,13 +132,12 @@ import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 
 const uploadType = ref<'file' | 'url'>('file') // 上传方式
 const route = useRoute()
-const toRouteNumber = (value: unknown): number | undefined => {
+const toRouteString = (value: unknown): string | undefined => {
   const raw = Array.isArray(value) ? value[0] : value
   if (raw === undefined || raw === null || raw === '') {
     return undefined
   }
-  const id = Number(raw)
-  return Number.isFinite(id) ? id : undefined
+  return String(raw)
 }
 
 // 定义变量，接收上传的图片和填写的表单信息
@@ -150,8 +149,8 @@ const onSuccess = (newPicture: API.PictureVO) => {
 }
 
 // 必须使用computed,及时更新
-const spaceId = computed<number | undefined>(() => toRouteNumber(route.query?.spaceId))
-const currentPictureId = computed<number | undefined>(() => toRouteNumber(route.query?.id))
+const spaceId = computed<string | undefined>(() => toRouteString(route.query?.spaceId))
+const currentPictureId = computed<string | undefined>(() => toRouteString(route.query?.id))
 
 // 提交表单：实际调用的是【修改图片接口】
 const router = useRouter()

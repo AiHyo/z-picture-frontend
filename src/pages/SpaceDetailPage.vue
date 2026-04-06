@@ -279,7 +279,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const spaceId = computed<number>(() => Number(props.id))
+const spaceId = computed<string>(() => String(props.id))
 
 watch(
   () => props.id,

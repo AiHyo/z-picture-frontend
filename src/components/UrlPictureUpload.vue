@@ -28,12 +28,11 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const toNumberId = (value: string | number | undefined) => {
+const toStringId = (value: string | number | undefined) => {
   if (value === undefined || value === null || value === '') {
     return undefined
   }
-  const id = Number(value)
-  return Number.isFinite(id) ? id : undefined
+  return String(value)
 }
 
 const loading = ref(false)
@@ -46,7 +45,7 @@ const handleUpload = async () => {
     if (props.picture) {
       params.id = props.picture.id
     }
-    params.spaceId = toNumberId(props.spaceId)
+    params.spaceId = toStringId(props.spaceId)
     const res = await uploadPictureByUrlUsingPost(params)
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')
