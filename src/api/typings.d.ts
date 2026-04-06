@@ -296,6 +296,11 @@ declare namespace API {
     userRole?: string
   }
 
+  type listPictureTagCategoryUsingGETParams = {
+    /** spaceId */
+    spaceId?: ID
+  }
+
   type Output = {
     taskId?: string
     taskStatus?: string

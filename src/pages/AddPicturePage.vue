@@ -179,7 +179,7 @@ const handleSubmit = async (values: any) => {
 const categoryOptions = ref<{ value: string; label: string }[]>([])
 const tagOptions = ref<{ value: string; label: string }[]>([])
 const getTagCategoryOptions = async () => {
-  const res = await listPictureTagCategoryUsingGet()
+  const res = await listPictureTagCategoryUsingGet(spaceId.value ? { spaceId: spaceId.value } : undefined)
   if (res.data.code === 0 && res.data.data) {
     const metaOptions = buildPictureMetaOptions(res.data.data)
     tagOptions.value = metaOptions.tagOptions
@@ -188,7 +188,7 @@ const getTagCategoryOptions = async () => {
     message.error('加载选项失败，' + res.data.message)
   }
 }
-onMounted(() => {
+watchEffect(() => {
   getTagCategoryOptions()
 })
 

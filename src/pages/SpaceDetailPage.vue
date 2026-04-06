@@ -145,7 +145,7 @@
       @cancel="closeFilterModal"
     >
       <div class="filter-modal">
-        <PictureSearchForm :on-search="onSearch" />
+        <PictureSearchForm :on-search="onSearch" :space-id="spaceId" />
         <div class="color-shell">
           <a-form-item label="按颜色搜索" class="color-shell__picker">
             <color-picker format="hex" @pureColorChange="onColorChange" />

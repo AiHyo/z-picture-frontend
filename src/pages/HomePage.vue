@@ -31,7 +31,7 @@
           <a-input
             v-model:value="searchParams.searchText"
             class="home-toolbar__search-input"
-            placeholder="从图片名称、简介和标签中搜索"
+            placeholder="从图片名称、简介、分类和标签中搜索"
             allow-clear
             @pressEnter="doSearch"
           />
@@ -93,25 +93,54 @@
       <div class="home-filter-modal">
         <div class="home-filter__head">
           <span class="sketch-note">Filter</span>
-          <p>选择分类和标签后会立即刷新结果。</p>
+          <p>支持从推荐项选择，也支持直接输入分类和标签。</p>
         </div>
-        <a-tabs v-model:active-key="selectedCategory" @change="doSearch">
-          <a-tab-pane key="all" tab="全部" />
-          <a-tab-pane v-for="category in categoryList" :key="category" :tab="category" />
-        </a-tabs>
-        <div class="tag-bar">
-          <span class="tag-bar__label">标签</span>
-          <div class="tag-bar__scroll">
-            <a-space :size="[0, 8]" wrap class="tag-bar__space">
-              <a-checkable-tag
-                v-for="(tag, index) in tagList"
-                :key="tag"
-                v-model:checked="selectedTagList[index]"
-                @change="doSearch"
-              >
-                {{ tag }}
-              </a-checkable-tag>
-            </a-space>
+        <div class="home-filter-modal__form">
+          <div class="home-filter-modal__grid">
+            <a-form-item name="category" label="分类">
+              <a-auto-complete v-model:value="searchParams.category" :options="categoryOptions">
+                <a-input placeholder="请输入分类" allow-clear />
+              </a-auto-complete>
+            </a-form-item>
+            <a-form-item name="tags" label="标签">
+              <a-select
+                v-model:value="searchParams.tags"
+                mode="tags"
+                placeholder="请输入标签"
+                :options="tagOptions"
+                allow-clear
+              />
+            </a-form-item>
+          </div>
+          <div class="tag-bar">
+            <span class="tag-bar__label">推荐分类</span>
+            <div class="tag-bar__scroll">
+              <a-space :size="[0, 8]" wrap class="tag-bar__space">
+                <a-tag
+                  v-for="category in categoryList"
+                  :key="category"
+                  class="home-filter-modal__chip"
+                  @click="applyCategory(category)"
+                >
+                  {{ category }}
+                </a-tag>
+              </a-space>
+            </div>
+          </div>
+          <div class="tag-bar">
+            <span class="tag-bar__label">推荐标签</span>
+            <div class="tag-bar__scroll">
+              <a-space :size="[0, 8]" wrap class="tag-bar__space">
+                <a-tag
+                  v-for="tag in tagList"
+                  :key="tag"
+                  class="home-filter-modal__chip"
+                  @click="toggleTag(tag)"
+                >
+                  {{ tag }}
+                </a-tag>
+              </a-space>
+            </div>
           </div>
         </div>
         <div class="home-filter-modal__actions">
@@ -161,10 +190,20 @@ const pageCount = computed(() =>
 )
 
 const categoryList = ref<string[]>([])
-const selectedCategory = ref<string>('all')
 const tagList = ref<string[]>([])
-const selectedTagList = ref<boolean[]>([])
-const selectedTagCount = computed(() => selectedTagList.value.filter(Boolean).length)
+const categoryOptions = computed(() =>
+  categoryList.value.map((category) => ({
+    label: category,
+    value: category,
+  })),
+)
+const tagOptions = computed(() =>
+  tagList.value.map((tag) => ({
+    label: tag,
+    value: tag,
+  })),
+)
+const selectedTagCount = computed(() => searchParams.tags?.length ?? 0)
 const filterModalVisible = ref(false)
 const activeFilterLabels = computed(() => {
   const labels: string[] = []
@@ -172,14 +211,10 @@ const activeFilterLabels = computed(() => {
   if (keyword) {
     labels.push(`关键词 · ${keyword}`)
   }
-  if (selectedCategory.value !== 'all') {
-    labels.push(`分类 · ${selectedCategory.value}`)
+  if (searchParams.category?.trim()) {
+    labels.push(`分类 · ${searchParams.category.trim()}`)
   }
-  selectedTagList.value.forEach((selected, index) => {
-    if (selected && tagList.value[index]) {
-      labels.push(`标签 · ${tagList.value[index]}`)
-    }
-  })
+  ;(searchParams.tags ?? []).forEach((tag) => labels.push(`标签 · ${tag}`))
   return labels
 })
 const visibleFilterLabels = computed(() => activeFilterLabels.value.slice(0, 5))
@@ -188,7 +223,7 @@ const overflowFilterCount = computed(() =>
 )
 const activeFilterCount = computed(() => {
   let count = 0
-  if (selectedCategory.value !== 'all') {
+  if (searchParams.category?.trim()) {
     count += 1
   }
   if (selectedTagCount.value > 0) {
@@ -200,30 +235,16 @@ const activeFilterCount = computed(() => {
   return count
 })
 const selectedCategoryLabel = computed(() => {
-  return selectedCategory.value === 'all' ? '全部' : selectedCategory.value
+  return searchParams.category?.trim() || '全部'
 })
 
 const getTagCategoryOptions = async () => {
   try {
     const res = await listPictureTagCategoryUsingGet()
     if (res.data.code === 0 && res.data.data) {
-      const selectedTags = selectedTagList.value.reduce((result, selected, index) => {
-        const tag = tagList.value[index]
-        if (selected && tag) {
-          result.add(tag)
-        }
-        return result
-      }, new Set<string>())
       const metaOptions = buildPictureMetaOptions(res.data.data)
       categoryList.value = metaOptions.categoryList
       tagList.value = metaOptions.tagList
-      selectedTagList.value = metaOptions.tagList.map((tag) => selectedTags.has(tag))
-      if (
-        selectedCategory.value !== 'all' &&
-        !metaOptions.categoryList.includes(selectedCategory.value)
-      ) {
-        selectedCategory.value = 'all'
-      }
     } else {
       message.error('加载分类标签失败，' + res.data.message)
     }
@@ -241,16 +262,7 @@ const fetchData = async () => {
   const params = {
     ...searchParams,
     nullSpaceId: true,
-    tags: [] as string[],
   }
-  if (selectedCategory.value !== 'all') {
-    params.category = selectedCategory.value
-  }
-  selectedTagList.value.forEach((useTag, index) => {
-    if (useTag) {
-      params.tags.push(tagList.value[index])
-    }
-  })
   try {
     const res = await listPictureVoByPageUsingPost(params)
     if (res.data.data) {
@@ -282,9 +294,24 @@ const openFilterModal = () => {
 }
 
 const resetFilterPanel = () => {
-  selectedCategory.value = 'all'
-  selectedTagList.value = tagList.value.map(() => false)
+  searchParams.category = undefined
+  searchParams.tags = []
   doSearch()
+}
+
+const applyCategory = (category: string) => {
+  searchParams.category = category
+}
+
+const toggleTag = (tag: string) => {
+  const nextTags = [...(searchParams.tags ?? [])]
+  const index = nextTags.indexOf(tag)
+  if (index >= 0) {
+    nextTags.splice(index, 1)
+  } else {
+    nextTags.push(tag)
+  }
+  searchParams.tags = nextTags
 }
 
 const closeFilterModal = () => {
@@ -467,6 +494,17 @@ const closeFilterModal = () => {
   min-width: 0;
 }
 
+.home-filter-modal__form {
+  display: grid;
+  gap: 10px;
+}
+
+.home-filter-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
 .home-filter__head {
   display: flex;
   flex-wrap: wrap;
@@ -499,6 +537,11 @@ const closeFilterModal = () => {
 
 .tag-bar__scroll::-webkit-scrollbar {
   display: none;
+}
+
+.home-filter-modal__chip {
+  cursor: pointer;
+  user-select: none;
 }
 
 .home-filter-modal__actions {
@@ -545,6 +588,10 @@ const closeFilterModal = () => {
     padding: 16px;
   }
 
+  .home-filter-modal__grid {
+    grid-template-columns: 1fr;
+  }
+
   .gallery-shell__title {
     align-items: flex-start;
   }
@@ -567,11 +614,6 @@ const closeFilterModal = () => {
 
   .home-filter-modal__buttons :deep(.ant-btn) {
     flex: 1 1 0;
-  }
-
-  .tag-bar__space {
-    min-width: max-content;
-    white-space: nowrap;
   }
 }
 </style>

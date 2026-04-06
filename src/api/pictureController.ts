@@ -264,9 +264,15 @@ export async function searchPictureByPictureUsingPost(
 }
 
 /** listPictureTagCategory GET /api/picture/tag_category */
-export async function listPictureTagCategoryUsingGet(options?: { [key: string]: any }) {
+export async function listPictureTagCategoryUsingGet(
+  params?: API.listPictureTagCategoryUsingGETParams,
+  options?: { [key: string]: any }
+) {
   return request<API.BaseResponsePictureTagCategory_>('/api/picture/tag_category', {
     method: 'GET',
+    params: {
+      ...params,
+    },
     ...(options || {}),
   })
 }
@@ -475,6 +481,5 @@ export async function uploadPictureByUrlUsingPost(
     ...(options || {}),
   })
 }
-
 
 

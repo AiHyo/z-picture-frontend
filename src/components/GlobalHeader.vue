@@ -51,15 +51,19 @@
           </a-space>
           <template #overlay>
             <a-menu>
-              <a-menu-item @click="doLogout">
-                <LogoutOutlined />
-                退出登录
+              <a-menu-item @click="openProfileModal">
+                <UserOutlined />
+                个人信息
               </a-menu-item>
               <a-menu-item>
                 <router-link to="/my_space">
                   <UserOutlined />
                   我的空间
                 </router-link>
+              </a-menu-item>
+              <a-menu-item @click="doLogout">
+                <LogoutOutlined />
+                退出登录
               </a-menu-item>
             </a-menu>
           </template>
@@ -70,15 +74,74 @@
         <a-button type="primary" @click="router.push('/user/login')">登录</a-button>
       </div>
     </div>
+
+    <a-modal
+      v-model:open="profileModalVisible"
+      title="个人信息"
+      ok-text="保存修改"
+      cancel-text="取消"
+      :confirm-loading="profileSaving"
+      @ok="submitProfile"
+      @cancel="closeProfileModal"
+    >
+      <a-form layout="vertical">
+        <a-form-item label="头像预览">
+          <a-space align="center">
+            <a-avatar :size="56" :src="profileForm.userAvatar || loginUserStore.loginUser.userAvatar" />
+            <span class="profile-helper">直接填写头像链接即可，方便为主。</span>
+          </a-space>
+        </a-form-item>
+        <a-form-item label="本地上传头像">
+          <input
+            ref="avatarInputRef"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            class="sr-only-input"
+            @change="onAvatarFileChange"
+          />
+          <a-space>
+            <a-button :loading="avatarUploading" @click="openAvatarFileDialog">选择本地图片</a-button>
+            <span class="profile-helper">支持 JPG、PNG、WEBP，大小不超过 2MB。</span>
+          </a-space>
+        </a-form-item>
+        <a-form-item label="用户名" required>
+          <a-input v-model:value="profileForm.userName" placeholder="请输入用户名" :maxlength="32" show-count />
+        </a-form-item>
+        <a-form-item label="头像链接">
+          <a-input
+            v-model:value="profileForm.userAvatar"
+            placeholder="请输入头像图片链接，例如 https://example.com/avatar.png"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item label="个人简介">
+          <a-textarea
+            v-model:value="profileForm.userProfile"
+            placeholder="简单介绍一下自己"
+            :rows="4"
+            :maxlength="200"
+            show-count
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item label="账号">
+          <a-input :value="loginUserStore.loginUser.userAccount || '-'" disabled />
+        </a-form-item>
+        <a-form-item label="角色">
+          <a-input :value="loginUserStore.loginUser.userRole || '-'" disabled />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, h } from 'vue'
+import { computed, h, reactive, ref } from 'vue'
 import { HomeOutlined, LogoutOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { type MenuProps, message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import { userLogoutUsingPost } from '@/api/userController.ts'
+import { updateUserUsingPost, userLogoutUsingPost } from '@/api/userController.ts'
+import { uploadAvatarUsingPost } from '@/api/fileController.ts'
 
 const originItems = [
   {
@@ -133,6 +196,23 @@ const items = computed<MenuProps['items']>(() => {
 const router = useRouter()
 const route = useRoute()
 const loginUserStore = useLoginUserStore()
+const profileModalVisible = ref(false)
+const profileSaving = ref(false)
+const avatarUploading = ref(false)
+const avatarInputRef = ref<HTMLInputElement | null>(null)
+const profileForm = reactive<API.UserUpdateRequest>({
+  id: undefined,
+  userAvatar: '',
+  userName: '',
+  userProfile: '',
+})
+
+const syncProfileForm = () => {
+  profileForm.id = loginUserStore.loginUser.id
+  profileForm.userAvatar = loginUserStore.loginUser.userAvatar ?? ''
+  profileForm.userName = loginUserStore.loginUser.userName ?? ''
+  profileForm.userProfile = loginUserStore.loginUser.userProfile ?? ''
+}
 
 const doMenuClick = ({ key }: { key: string }) => {
   if (key.startsWith('/')) {
@@ -144,6 +224,93 @@ const current = computed(() => [route.path])
 
 const goCreatePicture = () => {
   router.push('/add_picture')
+}
+
+const openProfileModal = () => {
+  syncProfileForm()
+  profileModalVisible.value = true
+}
+
+const closeProfileModal = () => {
+  profileModalVisible.value = false
+}
+
+const validateAvatarFile = (file: File) => {
+  const isImage = file.type.startsWith('image/')
+  if (!isImage) {
+    message.error('请选择图片文件')
+    return false
+  }
+  const isLt2M = file.size / 1024 / 1024 < 2
+  if (!isLt2M) {
+    message.error('头像图片不能超过 2MB')
+    return false
+  }
+  return true
+}
+
+const openAvatarFileDialog = () => {
+  avatarInputRef.value?.click()
+}
+
+const uploadAvatarFile = async (file: File) => {
+  avatarUploading.value = true
+  try {
+    const res = await uploadAvatarUsingPost({}, file)
+    if (res.data.code === 0 && res.data.data) {
+      profileForm.userAvatar = res.data.data
+      message.success('头像上传成功')
+    } else {
+      message.error('头像上传失败，' + res.data.message)
+    }
+  } catch (error) {
+    message.error('头像上传失败')
+  } finally {
+    avatarUploading.value = false
+  }
+}
+
+const onAvatarFileChange = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) {
+    return
+  }
+  if (!validateAvatarFile(file)) {
+    input.value = ''
+    return
+  }
+  await uploadAvatarFile(file)
+  input.value = ''
+}
+
+const submitProfile = async () => {
+  if (!profileForm.id) {
+    message.warning('登录信息失效，请重新登录后再试')
+    return
+  }
+  if (!profileForm.userName?.trim()) {
+    message.warning('请输入用户名')
+    return
+  }
+  profileSaving.value = true
+  try {
+    const res = await updateUserUsingPost({
+      id: profileForm.id,
+      userName: profileForm.userName.trim(),
+      userAvatar: profileForm.userAvatar?.trim() || undefined,
+      userProfile: profileForm.userProfile?.trim() || undefined,
+    })
+    if (res.data.code === 0) {
+      await loginUserStore.fetchLoginUser()
+      message.success('个人信息已更新')
+      closeProfileModal()
+    } else {
+      message.error('更新失败，' + res.data.message)
+    }
+  } finally {
+    profileSaving.value = false
+  }
 }
 
 const doLogout = async () => {
@@ -318,6 +485,12 @@ const doLogout = async () => {
   cursor: pointer;
   gap: 8px;
   font-size: 0.88rem;
+}
+
+.profile-helper {
+  color: rgba(45, 45, 45, 0.6);
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 @media (max-width: 1440px) {

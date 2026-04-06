@@ -19,9 +19,22 @@
         <div class="results-head">
           <span class="sketch-note">Matches</span>
           <h2>识图结果</h2>
-          <p>点击任意结果会在新标签页打开原始来源。</p>
+          <p>{{ loading ? '正在分析图片内容，请稍候片刻。' : '点击任意结果会在新标签页打开原始来源。' }}</p>
+        </div>
+        <div v-if="loading" class="paper-panel search-loading">
+          <div class="search-loading__badge">
+            <span class="search-loading__dot"></span>
+            <span class="search-loading__dot"></span>
+            <span class="search-loading__dot"></span>
+          </div>
+          <h3>正在以图搜图</h3>
+          <p>正在向识图服务提交原图并整理相似结果。</p>
+          <div class="search-loading__grid">
+            <span v-for="item in 4" :key="item" class="search-loading__card"></span>
+          </div>
         </div>
         <a-list
+          v-else
           :grid="{ gutter: 20, xs: 1, sm: 2, md: 2, lg: 3, xl: 4, xxl: 4 }"
           :data-source="dataList"
         >
@@ -83,18 +96,24 @@ onMounted(() => {
 
 
 const dataList = ref<API.ImageSearchResult[]>([])
+const loading = ref(false)
 // 获取搜图结果
 const fetchData = async () => {
   if (!pictureId.value) {
     return
   }
-  const res = await searchPictureByPictureUsingPost({
-    pictureId: pictureId.value as any,
-  })
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data ?? []
-  } else {
-    message.error('获取数据失败，' + res.data.message)
+  loading.value = true
+  try {
+    const res = await searchPictureByPictureUsingPost({
+      pictureId: pictureId.value as any,
+    })
+    if (res.data.code === 0 && res.data.data) {
+      dataList.value = res.data.data ?? []
+    } else {
+      message.error('获取数据失败，' + res.data.message)
+    }
+  } finally {
+    loading.value = false
   }
 }
 
@@ -156,6 +175,79 @@ onMounted(() => {
   gap: 18px;
 }
 
+.search-loading {
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+  border: 2px dashed rgba(45, 45, 45, 0.18);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(245, 234, 216, 0.92)),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(45, 45, 45, 0.03),
+      rgba(45, 45, 45, 0.03) 10px,
+      transparent 10px,
+      transparent 20px
+    );
+}
+
+.search-loading h3 {
+  margin: 0;
+  font-family: var(--sketch-title-font);
+  font-size: 1.6rem;
+}
+
+.search-loading p {
+  margin: 0;
+  color: rgba(45, 45, 45, 0.68);
+}
+
+.search-loading__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(45, 45, 45, 0.12);
+}
+
+.search-loading__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2d2d2d;
+  opacity: 0.22;
+  animation: search-bounce 1.1s ease-in-out infinite;
+}
+
+.search-loading__dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.search-loading__dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.search-loading__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.search-loading__card {
+  display: block;
+  height: 180px;
+  border-radius: var(--sketch-radius-md);
+  border: 2px dashed rgba(45, 45, 45, 0.14);
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.5) 20%, rgba(255, 255, 255, 0.92) 35%, rgba(245, 234, 216, 0.7) 50%, rgba(255, 255, 255, 0.5) 65%),
+    #f7f1e8;
+  background-size: 220% 100%;
+  animation: search-shimmer 1.6s linear infinite;
+}
+
 .results-head {
   display: grid;
   gap: 8px;
@@ -181,6 +273,28 @@ onMounted(() => {
 
 .search-result-card__cover {
   height: 220px;
+}
+
+@keyframes search-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0) scale(0.92);
+    opacity: 0.22;
+  }
+  40% {
+    transform: translateY(-4px) scale(1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes search-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
 }
 
 @media (max-width: 900px) {

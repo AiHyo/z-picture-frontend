@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineExpose, onMounted, reactive, ref } from 'vue'
+import { defineExpose, reactive, ref, watch } from 'vue'
 import { editPictureByBatchUsingPost, listPictureTagCategoryUsingGet } from '@/api/pictureController'
 import { message } from 'ant-design-vue'
 import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
@@ -63,7 +63,9 @@ const formData = reactive({
 const categoryOptions = ref<{ value: string; label: string }[]>([])
 const tagOptions = ref<{ value: string; label: string }[]>([])
 const getTagCategoryOptions = async () => {
-  const res = await listPictureTagCategoryUsingGet()
+  const res = await listPictureTagCategoryUsingGet(
+    props.spaceId ? { spaceId: props.spaceId } : undefined,
+  )
   const result = res.data as any
   if (result.code === 0 && result.data) {
     const metaOptions = buildPictureMetaOptions(result.data)
@@ -74,9 +76,13 @@ const getTagCategoryOptions = async () => {
   }
 }
 
-onMounted(() => {
-  getTagCategoryOptions()
-})
+watch(
+  () => props.spaceId,
+  () => {
+    getTagCategoryOptions()
+  },
+  { immediate: true },
+)
 
 const handleSubmit = async (values: { category: string; tags: string[]; nameRule: string }) => {
   if (!props.pictureList) {

@@ -196,7 +196,7 @@
     <a-modal
       v-model:open="reportModalVisible"
       title="举报处理"
-      width="1100px"
+      width="min(1720px, calc(100vw - 16px))"
       :footer="null"
       @cancel="reportModalVisible = false"
     >
@@ -214,12 +214,13 @@
           />
         </div>
         <a-table
+          class="report-manage-table"
           :columns="reportColumns"
           :data-source="reportList"
           :loading="reportLoading"
           :pagination="false"
           row-key="id"
-          :scroll="{ x: 'max-content' }"
+          :scroll="{ x: 1500 }"
         >
           <template #bodyCell="{ column, record }">
             <template v-if="column.dataIndex === 'reporter'">
@@ -398,14 +399,14 @@ const columns = [
 
 const reportColumns = [
   { title: '图片 id', dataIndex: 'pictureId', width: 90 },
-  { title: '举报人', dataIndex: 'reporter' },
-  { title: '举报类型', dataIndex: 'reportReasonType' },
-  { title: '举报说明', dataIndex: 'reportReasonText' },
-  { title: '状态', dataIndex: 'reportStatus' },
-  { title: '发起时间', dataIndex: 'createTime' },
-  { title: '处理结果', dataIndex: 'processResult' },
-  { title: '处理时间', dataIndex: 'processTime' },
-  { title: '操作', key: 'action' },
+  { title: '举报人', dataIndex: 'reporter', width: 180 },
+  { title: '举报类型', dataIndex: 'reportReasonType', width: 140 },
+  { title: '举报说明', dataIndex: 'reportReasonText', width: 280 },
+  { title: '状态', dataIndex: 'reportStatus', width: 110 },
+  { title: '发起时间', dataIndex: 'createTime', width: 170 },
+  { title: '处理结果', dataIndex: 'processResult', width: 280 },
+  { title: '处理时间', dataIndex: 'processTime', width: 170 },
+  { title: '操作', key: 'action', width: 140 },
 ]
 
 const dictColumns = [
@@ -418,6 +419,8 @@ const dataList = ref<any[]>([])
 const total = ref(0)
 const tagList = ref<API.PictureTagVO[]>([])
 const categoryList = ref<API.PictureCategoryVO[]>([])
+const REPORT_STATUS_ALL = 'all'
+
 const reportList = ref<API.PictureReportVO[]>([])
 const reportLoading = ref(false)
 const reportModalVisible = ref(false)
@@ -425,7 +428,7 @@ const tagModalVisible = ref(false)
 const categoryModalVisible = ref(false)
 const editingTagId = ref<string>()
 const editingCategoryId = ref<string>()
-const reportStatusFilter = ref<number | undefined>(undefined)
+const reportStatusFilter = ref<number | typeof REPORT_STATUS_ALL>(REPORT_STATUS_ALL)
 const filterModalVisible = ref(false)
 const tagOptions = computed(() =>
   tagList.value.map((item) => ({ label: item.tagName || '', value: item.tagName || '' })),
@@ -437,7 +440,7 @@ const categoryOptions = computed(() =>
   })),
 )
 const reportStatusFilterOptions = [
-  { label: '全部状态', value: undefined },
+  { label: '全部状态', value: REPORT_STATUS_ALL },
   ...PIC_REPORT_STATUS_OPTIONS,
 ]
 
@@ -561,10 +564,12 @@ const fetchCategoryData = async () => {
 const fetchReportData = async () => {
   reportLoading.value = true
   try {
+    const reportStatus =
+      reportStatusFilter.value === REPORT_STATUS_ALL ? undefined : reportStatusFilter.value
     const res = await listPictureReportByPageUsingPost({
       current: 1,
       pageSize: 50,
-      reportStatus: reportStatusFilter.value,
+      reportStatus,
     } as any)
     const result = res.data as any
     if (result.code === 0 && result.data) {
@@ -783,6 +788,16 @@ const removeCategory = async (id?: string) => {
 
 #pictureManagePage :deep(.picture-manage-table table) {
   min-width: 100%;
+}
+
+#pictureManagePage :deep(.report-manage-table .ant-table-thead > tr > th),
+#pictureManagePage :deep(.report-manage-table .ant-table-tbody > tr > td) {
+  vertical-align: top;
+  word-break: break-word;
+}
+
+#pictureManagePage :deep(.report-manage-table table) {
+  min-width: 1500px;
 }
 
 .manage-record-cell,
