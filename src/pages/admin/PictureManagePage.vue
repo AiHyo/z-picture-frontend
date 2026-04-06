@@ -13,8 +13,7 @@
             >+ 批量创建图片</a-button
           >
           <a-button ghost @click="openReportModal">举报处理</a-button>
-          <a-button ghost @click="openTagModal">标签字典</a-button>
-          <a-button ghost @click="openCategoryModal">分类字典</a-button>
+          <a-button ghost @click="openDictModal">标签分类维护</a-button>
         </div>
       </div>
       <div class="admin-overview">
@@ -279,94 +278,94 @@
     </a-modal>
 
     <a-modal
-      v-model:open="tagModalVisible"
-      title="标签字典"
+      v-model:open="dictModalVisible"
+      title="标签分类维护"
       width="920px"
       :footer="null"
-      @cancel="closeTagModal"
+      @cancel="closeDictModal"
     >
-      <div class="dict-modal">
-        <div class="dict-modal__list">
-          <a-table :columns="dictColumns" :data-source="tagList" :pagination="false" row-key="id">
-            <template #bodyCell="{ column, record }">
-              <template v-if="column.dataIndex === 'name'">{{ record.tagName }}</template>
-              <template v-else-if="column.key === 'action'">
-                <a-space>
-                  <a-button size="small" @click="startEditTag(record)">编辑</a-button>
-                  <a-button size="small" danger @click="removeTag(record.id)">删除</a-button>
-                </a-space>
-              </template>
-            </template>
-          </a-table>
-        </div>
-        <div class="dict-modal__form">
-          <div class="table-cell-stack table-cell-stack--tight">
-            <strong>{{ editingTagId ? '编辑标签' : '新增标签' }}</strong>
-            <small>保存后可在前台筛选和编辑时使用该标签。</small>
-          </div>
-          <a-form layout="vertical">
-            <a-form-item label="标签名称" required>
-              <a-input v-model:value="tagForm.tagName" placeholder="请输入标签名称" />
-            </a-form-item>
-            <div class="dict-modal__actions">
-              <a-space>
-                <a-button v-if="editingTagId" @click="resetTagForm">取消编辑</a-button>
-                <a-button type="primary" @click="submitTag">{{
-                  editingTagId ? '保存标签' : '新增标签'
-                }}</a-button>
-              </a-space>
+      <a-tabs v-model:activeKey="dictTabKey" class="dict-tabs">
+        <a-tab-pane key="tag" tab="标签管理">
+          <div class="dict-panel">
+            <div class="dict-panel__form">
+              <div class="table-cell-stack table-cell-stack--tight">
+                <strong>{{ editingTagId ? '编辑标签' : '新增标签' }}</strong>
+                <small>统一维护平台中的图片标签与分类字典，保存后可在前台筛选和编辑时使用。</small>
+              </div>
+              <a-form layout="vertical">
+                <a-form-item label="标签名称" required>
+                  <a-input v-model:value="tagForm.tagName" placeholder="请输入标签名称" />
+                </a-form-item>
+                <div class="dict-panel__actions">
+                  <a-space>
+                    <a-button v-if="editingTagId" @click="resetTagForm">取消编辑</a-button>
+                    <a-button type="primary" @click="submitTag">{{
+                      editingTagId ? '保存标签' : '新增标签'
+                    }}</a-button>
+                  </a-space>
+                </div>
+              </a-form>
             </div>
-          </a-form>
-        </div>
-      </div>
-    </a-modal>
-
-    <a-modal
-      v-model:open="categoryModalVisible"
-      title="分类字典"
-      width="920px"
-      :footer="null"
-      @cancel="closeCategoryModal"
-    >
-      <div class="dict-modal">
-        <div class="dict-modal__list">
-          <a-table
-            :columns="dictColumns"
-            :data-source="categoryList"
-            :pagination="false"
-            row-key="id"
-          >
-            <template #bodyCell="{ column, record }">
-              <template v-if="column.dataIndex === 'name'">{{ record.categoryName }}</template>
-              <template v-else-if="column.key === 'action'">
-                <a-space>
-                  <a-button size="small" @click="startEditCategory(record)">编辑</a-button>
-                  <a-button size="small" danger @click="removeCategory(record.id)">删除</a-button>
-                </a-space>
-              </template>
-            </template>
-          </a-table>
-        </div>
-        <div class="dict-modal__form">
-          <div class="table-cell-stack table-cell-stack--tight">
-            <strong>{{ editingCategoryId ? '编辑分类' : '新增分类' }}</strong>
-            <small>保存后可在前台筛选和编辑时使用该分类。</small>
-          </div>
-          <a-form layout="vertical">
-            <a-form-item label="分类名称" required>
-              <a-input v-model:value="categoryForm.categoryName" placeholder="请输入分类名称" />
-            </a-form-item>
-            <div class="dict-modal__actions">
-              <a-space>
-                <a-button v-if="editingCategoryId" @click="resetCategoryForm">取消编辑</a-button>
-                <a-button type="primary" @click="submitCategory">
-                  {{ editingCategoryId ? '保存分类' : '新增分类' }}
-                </a-button>
-              </a-space>
+            <div class="dict-panel__list">
+              <a-table :columns="dictColumns" :data-source="tagList" :pagination="false" row-key="id">
+                <template #bodyCell="{ column, record }">
+                  <template v-if="column.dataIndex === 'name'">{{ record.tagName }}</template>
+                  <template v-else-if="column.key === 'action'">
+                    <a-space>
+                      <a-button size="small" @click="startEditTag(record)">编辑</a-button>
+                      <a-button size="small" danger @click="removeTag(record.id)">删除</a-button>
+                    </a-space>
+                  </template>
+                </template>
+              </a-table>
             </div>
-          </a-form>
-        </div>
-      </div>
+          </div>
+        </a-tab-pane>
+        <a-tab-pane key="category" tab="分类管理">
+          <div class="dict-panel">
+            <div class="dict-panel__form">
+              <div class="table-cell-stack table-cell-stack--tight">
+                <strong>{{ editingCategoryId ? '编辑分类' : '新增分类' }}</strong>
+                <small>统一维护平台中的图片标签与分类字典，保存后可在前台筛选和编辑时使用。</small>
+              </div>
+              <a-form layout="vertical">
+                <a-form-item label="分类名称" required>
+                  <a-input
+                    v-model:value="categoryForm.categoryName"
+                    placeholder="请输入分类名称"
+                  />
+                </a-form-item>
+                <div class="dict-panel__actions">
+                  <a-space>
+                    <a-button v-if="editingCategoryId" @click="resetCategoryForm">取消编辑</a-button>
+                    <a-button type="primary" @click="submitCategory">
+                      {{ editingCategoryId ? '保存分类' : '新增分类' }}
+                    </a-button>
+                  </a-space>
+                </div>
+              </a-form>
+            </div>
+            <div class="dict-panel__list">
+              <a-table
+                :columns="dictColumns"
+                :data-source="categoryList"
+                :pagination="false"
+                row-key="id"
+              >
+                <template #bodyCell="{ column, record }">
+                  <template v-if="column.dataIndex === 'name'">{{ record.categoryName }}</template>
+                  <template v-else-if="column.key === 'action'">
+                    <a-space>
+                      <a-button size="small" @click="startEditCategory(record)">编辑</a-button>
+                      <a-button size="small" danger @click="removeCategory(record.id)">删除</a-button>
+                    </a-space>
+                  </template>
+                </template>
+              </a-table>
+            </div>
+          </div>
+        </a-tab-pane>
+      </a-tabs>
     </a-modal>
   </div>
 </template>
@@ -437,8 +436,8 @@ const reportList = ref<API.PictureReportVO[]>([])
 const reportLoading = ref(false)
 const reportModalVisible = ref(false)
 const reportTotal = ref(0)
-const tagModalVisible = ref(false)
-const categoryModalVisible = ref(false)
+const dictModalVisible = ref(false)
+const dictTabKey = ref<'tag' | 'category'>('tag')
 const editingTagId = ref<string>()
 const editingCategoryId = ref<string>()
 const reportStatusFilter = ref<number | typeof REPORT_STATUS_ALL>(REPORT_STATUS_ALL)
@@ -723,25 +722,18 @@ const resetCategoryForm = () => {
   categoryForm.categoryName = ''
 }
 
-const openTagModal = async () => {
-  tagModalVisible.value = true
+const openDictModal = async (tab: 'tag' | 'category' = 'tag') => {
+  dictTabKey.value = tab
+  dictModalVisible.value = true
   resetTagForm()
-  await fetchTagData()
-}
-
-const closeTagModal = () => {
-  tagModalVisible.value = false
-  resetTagForm()
-}
-
-const openCategoryModal = async () => {
-  categoryModalVisible.value = true
   resetCategoryForm()
-  await fetchCategoryData()
+  await Promise.all([fetchTagData(), fetchCategoryData()])
 }
 
-const closeCategoryModal = () => {
-  categoryModalVisible.value = false
+const closeDictModal = () => {
+  dictModalVisible.value = false
+  dictTabKey.value = 'tag'
+  resetTagForm()
   resetCategoryForm()
 }
 
@@ -916,13 +908,13 @@ const removeCategory = async (id?: string) => {
 }
 
 .governance-modal,
-.dict-modal {
+.dict-panel {
   display: grid;
   gap: 16px;
 }
 
 .governance-modal__head,
-.dict-modal__actions {
+.dict-panel__actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -930,20 +922,43 @@ const removeCategory = async (id?: string) => {
   align-items: center;
 }
 
-.dict-modal {
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+.dict-tabs {
+  margin-top: -8px;
 }
 
-.dict-modal__list,
-.dict-modal__form {
+.dict-panel__form,
+.dict-panel__list {
   display: grid;
   gap: 14px;
 }
 
-@media (max-width: 900px) {
-  .dict-modal {
-    grid-template-columns: 1fr;
-  }
+.dict-panel__form {
+  padding: 18px 20px;
+  border: 1px solid rgba(45, 45, 45, 0.1);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 248, 239, 0.92), rgba(255, 255, 255, 0.98));
+}
+
+.dict-panel__list {
+  min-width: 0;
+}
+
+#pictureManagePage :deep(.dict-tabs .ant-tabs-nav) {
+  margin-bottom: 18px;
+}
+
+#pictureManagePage :deep(.dict-tabs .ant-tabs-content-holder) {
+  min-width: 0;
+}
+
+#pictureManagePage :deep(.dict-panel__list .ant-table-wrapper) {
+  min-width: 0;
+}
+
+#pictureManagePage :deep(.dict-panel__list .ant-table-thead > tr > th),
+#pictureManagePage :deep(.dict-panel__list .ant-table-tbody > tr > td) {
+  vertical-align: top;
+  word-break: break-word;
 }
 
 @media (max-width: 768px) {
