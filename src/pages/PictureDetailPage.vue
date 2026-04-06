@@ -178,7 +178,7 @@ const reportForm = reactive<API.PictureReportAddRequest>({
 const fetchPictureDetail = async () => {
   try {
     const res = await getPictureVoByIdUsingGet({
-      id: pictureId.value as any,
+      id: String(pictureId.value) as any,
     })
     if (res.data.code === 0 && res.data.data) {
       picture.value = res.data.data
@@ -224,14 +224,10 @@ const doDelete = async () => {
   if (!id) {
     return
   }
-  const res = await deletePictureUsingPost({ id })
+  const res = await deletePictureUsingPost({ id: String(id) } as any)
   if (res.data.code === 0) {
     message.success('删除成功')
-    if(picture.value.spaceId) {
-      router.push({path: '/space/' + picture.value.spaceId})
-    }else{
-      router.push({path: '/'})
-    }
+    router.back()
   } else {
     message.error('删除失败')
   }
