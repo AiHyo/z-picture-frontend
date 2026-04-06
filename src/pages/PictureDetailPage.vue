@@ -3,9 +3,7 @@
     <section class="page-head">
       <span class="sketch-note">Picture Note</span>
       <h1 class="page-head__title">{{ picture.name ?? '未命名图片' }}</h1>
-      <p class="page-head__desc">
-        下载、分享、编辑、删除继续走原来的行为函数。这里做的只是把详情页从说明书排版，改成像一张真正被钉在墙上的图片档案。
-      </p>
+      <p class="page-head__desc">查看图片详情、作者信息和操作入口。</p>
     </section>
 
     <section class="detail-grid">
@@ -110,7 +108,7 @@
       @cancel="closeReportModal"
     >
       <div class="report-modal">
-        <p class="report-modal__note">仅公共图库图片支持举报。重复待处理举报会被后端拦住，这里不做假兜底。</p>
+        <p class="report-modal__note">仅公共图库图片支持举报，请选择举报类型并补充说明。</p>
         <a-form layout="vertical">
           <a-form-item label="举报类型" required>
             <a-select

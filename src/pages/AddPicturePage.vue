@@ -9,7 +9,7 @@
                 route.query?.id ? 'Edit Picture' : 'Create Picture'
               }}</span>
               <h1 class="page-head__title">{{ route.query?.id ? '编辑图片' : '创建图片' }}</h1>
-              <p class="page-head__desc">先上传，再补信息；裁剪和扩图仍走原有流程。</p>
+              <p class="page-head__desc">上传图片后补充名称、简介、分类和标签。</p>
             </div>
             <div class="upload-panel__meta">
               <span class="upload-meta-pill">双通道上传</span>
@@ -103,9 +103,9 @@
         <div class="paper-panel side-note">
           <span class="sketch-note">Workflow</span>
           <ul class="side-list">
-            <li>先确定上传入口，再补图片信息。</li>
-            <li>需要时再打开裁剪或 AI 扩图，不把特殊操作塞进主表单。</li>
-            <li>保存后仍然跳转到图片详情页，和原流程一致。</li>
+            <li>支持文件上传和 URL 上传两种方式。</li>
+            <li>需要时可以继续裁剪或 AI 扩图。</li>
+            <li>保存后会进入图片详情页。</li>
           </ul>
         </div>
       </aside>
@@ -128,15 +128,17 @@ import { EditOutlined, FullscreenOutlined } from '@ant-design/icons-vue'
 import ImageCropper from '@/components/ImageCropper.vue'
 import ImageOutPainting from '@/components/ImageOutPainting.vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
+import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 
 const uploadType = ref<'file' | 'url'>('file') // 上传方式
 const route = useRoute()
-const toRouteId = (value: unknown): string | undefined => {
+const toRouteNumber = (value: unknown): number | undefined => {
   const raw = Array.isArray(value) ? value[0] : value
   if (raw === undefined || raw === null || raw === '') {
     return undefined
   }
-  return String(raw)
+  const id = Number(raw)
+  return Number.isFinite(id) ? id : undefined
 }
 
 // 定义变量，接收上传的图片和填写的表单信息
@@ -148,8 +150,8 @@ const onSuccess = (newPicture: API.PictureVO) => {
 }
 
 // 必须使用computed,及时更新
-const spaceId = computed<string | undefined>(() => toRouteId(route.query?.spaceId))
-const currentPictureId = computed<string | undefined>(() => toRouteId(route.query?.id))
+const spaceId = computed<number | undefined>(() => toRouteNumber(route.query?.spaceId))
+const currentPictureId = computed<number | undefined>(() => toRouteNumber(route.query?.id))
 
 // 提交表单：实际调用的是【修改图片接口】
 const router = useRouter()
@@ -179,19 +181,9 @@ const tagOptions = ref<{ value: string; label: string }[]>([])
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   if (res.data.code === 0 && res.data.data) {
-    // 转换成下拉选项组件接受的格式
-    tagOptions.value = (res.data.data.tagList ?? []).map((data: string) => {
-      return {
-        value: data,
-        label: data,
-      }
-    })
-    categoryOptions.value = (res.data.data.categoryList ?? []).map((data: string) => {
-      return {
-        value: data,
-        label: data,
-      }
-    })
+    const metaOptions = buildPictureMetaOptions(res.data.data)
+    tagOptions.value = metaOptions.tagOptions
+    categoryOptions.value = metaOptions.categoryOptions
   } else {
     message.error('加载选项失败，' + res.data.message)
   }

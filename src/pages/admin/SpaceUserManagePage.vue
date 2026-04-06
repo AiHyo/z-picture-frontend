@@ -5,9 +5,7 @@
         <div class="page-head page-head--compact">
           <span class="sketch-note">Team Access</span>
           <h1 class="page-head__title">空间成员管理</h1>
-          <p class="page-head__desc">
-            保留直加成员，同时补齐邀请流，但不让辅助面板把成员表挤到第二屏。
-          </p>
+          <p class="page-head__desc">管理当前空间的成员、角色和邀请。</p>
         </div>
         <div class="admin-toolbar__actions">
           <a-button type="primary" ghost @click="openInviteCreateModal">发起邀请</a-button>
@@ -41,9 +39,7 @@
       </div>
       <div class="toolbar-panel__filters">
         <div class="toolbar-panel__filter-bar">
-          <p class="toolbar-panel__summary">
-            直加成员常显，邀请流程继续放在弹层，不再额外压低成员表。
-          </p>
+          <p class="toolbar-panel__summary">可直接添加成员，也可以发送空间邀请。</p>
         </div>
         <a-form layout="inline" :model="formData" @finish="handleSubmit">
           <a-form-item label="用户 id" name="userId">
@@ -63,7 +59,7 @@
     <section class="paper-panel paper-section table-panel">
       <div class="table-panel__head">
         <span class="sketch-note">Members</span>
-        <p>角色允许就地切换，但表格不该被前言挡住。</p>
+        <p>在这里维护成员角色和移除操作。</p>
       </div>
       <a-table :columns="columns" :data-source="dataList" row-key="id">
         <template #bodyCell="{ column, record }">
@@ -138,7 +134,7 @@
         <div class="invite-records__head">
           <div class="table-cell-stack table-cell-stack--tight">
             <strong>当前空间邀请</strong>
-            <small>管理员端只看当前空间记录，真正的接受/拒绝入口放在“我的空间”。</small>
+            <small>管理员可以查看当前空间的邀请记录。</small>
           </div>
           <a-select
             v-model:value="inviteStatusFilter"

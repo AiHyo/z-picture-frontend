@@ -8,7 +8,7 @@
     @cancel="closeModal"
   >
     <p class="modal-note">
-      扩图任务与轮询逻辑保持原样，但弹窗现在会更明确地区分原图、结果和应用动作。
+      查看原图、生成结果，并在完成后应用到当前图片。
     </p>
     <div class="out-painting-grid">
       <div class="out-painting-panel">
@@ -57,6 +57,14 @@ interface Props {
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 const props = defineProps<Props>()
+
+const toNumberId = (value: string | number | undefined) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined
+  }
+  const id = Number(value)
+  return Number.isFinite(id) ? id : undefined
+}
 
 const resultImageUrl = ref('')
 const taskId = ref<string>()
@@ -123,7 +131,7 @@ const handleUpload = async () => {
   try {
     const params: API.PictureUploadRequest = {
       fileUrl: resultImageUrl.value,
-      spaceId: props.spaceId,
+      spaceId: toNumberId(props.spaceId),
     }
     params.id = props.picture?.id
     const res = await uploadPictureByUrlUsingPost(params as any)

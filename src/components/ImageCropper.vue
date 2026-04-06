@@ -8,7 +8,7 @@
     @cancel="closeModal"
   >
     <p class="modal-note">
-      裁剪和旋转仍然走原有上传链路。团队空间下的协同编辑状态也保留，但控制区现在更清楚。
+      裁剪、旋转和协同编辑都可以在这里完成。
     </p>
     <div class="cropper-shell">
       <vue-cropper
@@ -64,6 +64,14 @@ interface Props {
 }
 const props = defineProps<Props>()
 
+const toNumberId = (value: string | number | undefined) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined
+  }
+  const id = Number(value)
+  return Number.isFinite(id) ? id : undefined
+}
+
 const cropperRef = ref<any>()
 const loading = ref(false)
 const visible = ref(false)
@@ -80,7 +88,7 @@ const handleUpload = async ({ file }: { file: File }) => {
   loading.value = true
   try {
     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
-    params.spaceId = props.spaceId
+    params.spaceId = toNumberId(props.spaceId)
     const res = await uploadPictureUsingPost(params as any, {}, file)
     const result = res.data as any
     if (result.code === 0 && result.data) {

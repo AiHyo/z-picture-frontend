@@ -4,7 +4,7 @@
       <div class="chart-shell__copy">
         <span class="sketch-note">Size Bands</span>
         <h3>空间图片大小分析</h3>
-        <p>过滤零值区间后再画图，避免一堆没意义的空扇区占视线。</p>
+        <p>查看不同大小区间的图片分布。</p>
       </div>
     </div>
     <v-chart :option="options" class="chart-shell__canvas" autoresize :loading="loading" />

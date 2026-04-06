@@ -3,11 +3,11 @@
     <section class="paper-panel auth-copy">
       <span class="sketch-note">Welcome Back</span>
       <h1>把灵感重新钉回墙上。</h1>
-      <p>登录后继续管理图片、空间和协作记录。功能链路不动，只把体验从后台表单拉回产品界面。</p>
+      <p>登录后即可管理图片、空间和协作记录。</p>
       <ul class="auth-points">
-        <li>继续上传、编辑、分享和以图搜图。</li>
+        <li>上传、编辑、分享和以图搜图。</li>
         <li>统一进入你的空间与团队协作面板。</li>
-        <li>保留原有接口、权限和跳转流程。</li>
+        <li>查看图片、空间和协作记录。</li>
       </ul>
     </section>
 

@@ -3,11 +3,11 @@
     <section class="paper-panel auth-copy">
       <span class="sketch-note">Start Pinning</span>
       <h1>先建账号，再把素材系统收进自己的空间。</h1>
-      <p>注册流程和校验逻辑保持不变，只把注册页改成更像产品入口，而不是随手搭出来的表单。</p>
+      <p>注册账号后即可进入公共图库、个人空间和团队协作。</p>
       <ul class="auth-points">
-        <li>创建个人账号，接入公共图库和个人空间。</li>
-        <li>后续可以继续扩展到团队协作与空间分析。</li>
-        <li>密码校验、接口调用和成功跳转都维持现有逻辑。</li>
+        <li>创建个人账号。</li>
+        <li>进入公共图库和个人空间。</li>
+        <li>后续可加入团队协作与空间分析。</li>
       </ul>
     </section>
 

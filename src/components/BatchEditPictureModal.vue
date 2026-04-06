@@ -1,6 +1,6 @@
 <template>
   <a-modal v-model:open="visible" title="批量编辑图片" :footer="false" width="640px" @cancel="closeModal">
-    <p class="modal-note">只对当前页面选中的图片生效，接口仍然按原批量编辑逻辑执行。</p>
+    <p class="modal-note">只对当前页面选中的图片生效。</p>
     <a-form layout="vertical" :model="formData" @finish="handleSubmit">
       <div class="batch-edit-grid">
         <a-form-item label="分类" name="category">
@@ -32,6 +32,7 @@
 import { defineExpose, onMounted, reactive, ref } from 'vue'
 import { editPictureByBatchUsingPost, listPictureTagCategoryUsingGet } from '@/api/pictureController'
 import { message } from 'ant-design-vue'
+import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 
 interface Props {
   pictureList: API.PictureVO[]
@@ -65,8 +66,9 @@ const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   const result = res.data as any
   if (result.code === 0 && result.data) {
-    tagOptions.value = (result.data.tagList ?? []).map((data: string) => ({ value: data, label: data }))
-    categoryOptions.value = (result.data.categoryList ?? []).map((data: string) => ({ value: data, label: data }))
+    const metaOptions = buildPictureMetaOptions(result.data)
+    tagOptions.value = metaOptions.tagOptions
+    categoryOptions.value = metaOptions.categoryOptions
   } else {
     message.error('加载选项失败，' + result.message)
   }

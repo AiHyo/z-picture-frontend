@@ -13,7 +13,7 @@
             <span class="sketch-note">Workspace Rail</span>
             <div class="sider-head__copy">
               <h3>{{ loginUserStore.loginUser.userName ?? '我的工作台' }}</h3>
-              <p>公共图库、个人空间和团队协作保持一条主链路，不再散在页面边角。</p>
+              <p>快速进入公共图库、个人空间和团队协作。</p>
             </div>
           </div>
           <div class="sider-shortcuts">
@@ -47,7 +47,7 @@
             <a-button type="primary" @click="router.push('/user/login')">登录</a-button>
             <a-button @click="router.push('/user/register')">注册</a-button>
           </div>
-          <p class="guest-note">桌面页面先把内容露出来，权限和协作入口等登录后再逐层展开。</p>
+          <p class="guest-note">登录后可进入个人空间和团队协作功能。</p>
         </template>
       </div>
     </a-layout-sider>

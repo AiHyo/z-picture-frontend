@@ -131,10 +131,16 @@ const layoutStyle = computed(() => ({
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(circle at 12% 18%, rgba(249, 115, 22, 0.08), transparent 18%),
-    radial-gradient(circle at 88% 22%, rgba(13, 148, 136, 0.1), transparent 18%),
-    radial-gradient(circle at 74% 78%, rgba(255, 245, 191, 0.52), transparent 22%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 26%);
+    radial-gradient(circle at 10% 14%, rgba(244, 177, 131, 0.18), transparent 0 24%),
+    radial-gradient(circle at 88% 16%, rgba(144, 198, 189, 0.15), transparent 0 22%),
+    radial-gradient(circle at 50% 100%, rgba(255, 243, 212, 0.24), transparent 0 34%),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.08) 36%,
+      rgba(242, 232, 220, 0.06) 100%
+    );
+  background-repeat: no-repeat;
 }
 
 #basicLayout .layout-orb {
@@ -151,13 +157,13 @@ const layoutStyle = computed(() => ({
 #basicLayout .layout-orb--left {
   top: 9vh;
   left: -7rem;
-  background: rgba(249, 115, 22, 0.34);
+  background: rgba(241, 166, 111, 0.24);
 }
 
 #basicLayout .layout-orb--right {
   right: -6rem;
   bottom: 8vh;
-  background: rgba(13, 148, 136, 0.28);
+  background: rgba(126, 186, 177, 0.2);
 }
 
 #basicLayout .layout-frame {

@@ -5,7 +5,7 @@
         <div class="page-head page-head--compact">
           <span class="sketch-note">Admin Console</span>
           <h1 class="page-head__title">空间管理</h1>
-          <p class="page-head__desc">先给控制项，再直接露出空间表和分析入口。</p>
+          <p class="page-head__desc">查看空间信息、配额与分析入口。</p>
         </div>
         <div class="admin-toolbar__actions">
           <a-button type="primary" href="/add_space" target="_blank">+ 创建空间</a-button>
@@ -29,7 +29,7 @@
       </div>
       <div class="toolbar-panel__filters">
         <div class="toolbar-panel__filter-bar">
-          <p class="toolbar-panel__summary">名称常显，级别和用户 id 收进按需筛选。</p>
+          <p class="toolbar-panel__summary">可按名称、级别和用户筛选空间。</p>
           <a-button class="toolbar-toggle" @click="openFilterModal">
             {{ `更多筛选${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
           </a-button>
@@ -48,7 +48,7 @@
     <section class="paper-panel paper-section table-panel">
       <div class="table-panel__head">
         <span class="sketch-note">Records</span>
-        <p>使用量与配额保留双行信息，但不再让说明卡挡住表格。</p>
+        <p>这里展示空间用量、配额和基础信息。</p>
       </div>
       <a-table
         :columns="columns"

@@ -5,9 +5,7 @@
         <div class="page-head page-head--compact">
           <span class="sketch-note">Admin Console</span>
           <h1 class="page-head__title">图片管理</h1>
-          <p class="page-head__desc">
-            筛选、审核、举报处理和标签字典都在这页，但首屏仍然先露出数据表。
-          </p>
+          <p class="page-head__desc">管理公共图库中的图片、审核、举报和分类标签。</p>
         </div>
         <div class="admin-toolbar__actions">
           <a-button type="primary" href="/add_picture" target="_blank">+ 创建图片</a-button>
@@ -39,9 +37,7 @@
       </div>
       <div class="toolbar-panel__filters">
         <div class="toolbar-panel__filter-bar">
-          <p class="toolbar-panel__summary">
-            关键词常显，其余条件按需展开，治理入口继续留在动作区。
-          </p>
+          <p class="toolbar-panel__summary">关键词支持快速检索，其它条件可在更多筛选中设置。</p>
           <a-button class="toolbar-toggle" @click="openFilterModal">
             {{ `更多筛选${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
           </a-button>
@@ -64,7 +60,7 @@
     <section class="paper-panel paper-section table-panel">
       <div class="table-panel__head">
         <span class="sketch-note">Records</span>
-        <p>审核和删除逻辑不变，只是把治理入口从表格主链路旁边拆出去。</p>
+        <p>在这里查看图片内容、审核状态和操作入口。</p>
       </div>
       <a-table
         class="picture-manage-table"
@@ -208,7 +204,7 @@
         <div class="governance-modal__head">
           <div class="table-cell-stack table-cell-stack--tight">
             <strong>公共图库举报</strong>
-            <small>成立会把图片审核状态改成拒绝，这是后端已经写死的治理规则。</small>
+            <small>成立后会将图片标记为拒绝状态。</small>
           </div>
           <a-select
             v-model:value="reportStatusFilter"
@@ -293,7 +289,7 @@
         <div class="dict-modal__form">
           <div class="table-cell-stack table-cell-stack--tight">
             <strong>{{ editingTagId ? '编辑标签' : '新增标签' }}</strong>
-            <small>标签一旦落库，就会直接进入前台搜索和编辑选项。</small>
+            <small>保存后可在前台筛选和编辑时使用该标签。</small>
           </div>
           <a-form layout="vertical">
             <a-form-item label="标签名称" required>
@@ -341,7 +337,7 @@
         <div class="dict-modal__form">
           <div class="table-cell-stack table-cell-stack--tight">
             <strong>{{ editingCategoryId ? '编辑分类' : '新增分类' }}</strong>
-            <small>分类会直接影响前台筛选和图片编辑表单。</small>
+            <small>保存后可在前台筛选和编辑时使用该分类。</small>
           </div>
           <a-form layout="vertical">
             <a-form-item label="分类名称" required>

@@ -4,7 +4,7 @@
       <div class="chart-shell__copy">
         <span class="sketch-note">Capacity</span>
         <h3>空间使用分析</h3>
-        <p>容量和数量拆成两块展示，避免把两个比例混成一张卡。</p>
+        <p>查看空间容量和数量使用情况。</p>
       </div>
     </div>
 

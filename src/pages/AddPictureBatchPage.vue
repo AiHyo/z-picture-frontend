@@ -3,14 +3,14 @@
     <section class="page-head page-head--compact">
       <span class="sketch-note">Batch Intake</span>
       <h1 class="page-head__title">批量创建图片</h1>
-      <p class="page-head__desc">关键词、数量和标签保留原逻辑，首屏直接看到任务表单。</p>
+      <p class="page-head__desc">批量抓取图片并补充分类、标签和命名信息。</p>
     </section>
 
     <section class="workspace-grid workspace-grid--sidebar">
       <div class="paper-panel paper-section batch-form-panel">
         <div class="panel-intro">
           <span class="sketch-note">Task Setup</span>
-          <p>先定义抓取范围，再给结果加统一前缀和标签。主链路还是提交同一个批量创建接口。</p>
+          <p>设置关键词、数量以及生成后的图片信息。</p>
         </div>
         <a-form layout="vertical" :model="formData" @finish="handleSubmit">
           <div class="batch-form-grid">
@@ -76,8 +76,8 @@
           <span class="sketch-note">Workflow</span>
           <ul class="sketch-meta-list">
             <li>关键词决定来源，分类和标签决定后续检索质量。</li>
-            <li>名称前缀只做批量命名，不会破坏原有图片详情结构。</li>
-            <li>成功后仍然回到首页，和现有流程保持兼容。</li>
+            <li>名称前缀会自动追加序号，方便批量命名。</li>
+            <li>创建成功后会返回首页查看结果。</li>
           </ul>
         </div>
       </aside>
@@ -93,6 +93,7 @@ import {
   uploadPictureByBatchUsingPost,
 } from '@/api/pictureController.ts'
 import router from '@/router'
+import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 
 const formData = reactive<API.PictureUploadByBatchRequest>({
   count: 10,
@@ -104,14 +105,9 @@ const tagOptions = ref<{ value: string; label: string }[]>([])
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   if (res.data.code === 0 && res.data.data) {
-    tagOptions.value = (res.data.data.tagList ?? []).map((data: string) => ({
-      value: data,
-      label: data,
-    }))
-    categoryOptions.value = (res.data.data.categoryList ?? []).map((data: string) => ({
-      value: data,
-      label: data,
-    }))
+    const metaOptions = buildPictureMetaOptions(res.data.data)
+    tagOptions.value = metaOptions.tagOptions
+    categoryOptions.value = metaOptions.categoryOptions
   } else {
     message.error('加载选项失败，' + res.data.message)
   }

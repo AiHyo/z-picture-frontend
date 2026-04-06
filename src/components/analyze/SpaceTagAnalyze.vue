@@ -4,7 +4,7 @@
       <div class="chart-shell__copy">
         <span class="sketch-note">Tag Cloud</span>
         <h3>空间图片标签分析</h3>
-        <p>颜色稳定，不再每次刷新随机乱跳。词频才是主角，不是噪声。</p>
+        <p>查看标签词频分布。</p>
       </div>
     </div>
     <v-chart :option="options" class="chart-shell__canvas" autoresize :loading="loading" />

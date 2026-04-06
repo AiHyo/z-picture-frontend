@@ -3,7 +3,7 @@
     <section class="page-head">
       <span class="sketch-note">Reverse Search</span>
       <h1 class="page-head__title">以图搜图</h1>
-      <p class="page-head__desc">原始搜图逻辑不动，只把“原图”和“结果”关系讲清楚，让这页像真正的视觉检索面板。</p>
+      <p class="page-head__desc">查看原图并获取相似结果和来源链接。</p>
     </section>
 
     <section class="search-picture-layout">

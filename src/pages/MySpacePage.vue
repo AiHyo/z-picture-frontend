@@ -3,7 +3,7 @@
     <div v-if="loading" class="paper-panel redirect-note">
       <span class="sketch-note">Workspace Hub</span>
       <h2>正在检查你的空间和邀请</h2>
-      <p>没有待处理事项时会继续沿用旧逻辑自动跳转；只有真有待办，才停下来给你处理。</p>
+      <p>正在为你整理空间和邀请信息。</p>
     </div>
 
     <template v-else>
@@ -11,7 +11,7 @@
         <div class="page-head__meta">
           <span class="sketch-note">Workspace Hub</span>
           <h1 class="page-head__title">我的空间</h1>
-          <p class="page-head__desc">把待处理邀请、我创建的空间和我加入的团队放在一起，但首屏仍然优先露出可操作内容。</p>
+          <p class="page-head__desc">集中查看邀请、我创建的空间和我加入的团队。</p>
         </div>
         <div class="compact-stat-row workspace-head__stats">
           <div class="compact-stat-chip">
@@ -35,7 +35,7 @@
             <span class="sketch-note">Pending Invite</span>
             <h2>待处理邀请</h2>
           </div>
-          <p>接受后会自动加入团队空间；拒绝不会污染现有空间链路。</p>
+          <p>处理邀请后会同步更新你的团队空间列表。</p>
         </div>
         <div class="invite-list">
           <article v-for="invite in inviteList" :key="invite.id" class="invite-card">

@@ -1,12 +1,10 @@
 <template>
   <div id="spaceDetailPage" class="page-shell space-page">
     <section class="paper-panel space-hero">
-      <div class="space-hero__copy page-head page-head--compact">
-        <span class="sketch-note">{{ spaceTypeText }}</span>
-        <h1 class="page-head__title">{{ space.spaceName ?? '空间看板' }}</h1>
-        <p class="page-head__desc">
-          上传、筛选、批量编辑和协作都保留，但首屏优先把真正有用的图库内容往前推。
-        </p>
+        <div class="space-hero__copy page-head page-head--compact">
+          <span class="sketch-note">{{ spaceTypeText }}</span>
+          <h1 class="page-head__title">{{ space.spaceName ?? '空间看板' }}</h1>
+        <p class="page-head__desc">在这里管理空间图片、筛选条件和协作内容。</p>
         <div class="compact-stat-row">
           <div class="compact-stat-chip">
             <strong>{{ `${usagePercent}%` }}</strong>
@@ -28,7 +26,7 @@
           </a-tooltip>
           <div class="quota-copy">
             <strong>容量进度</strong>
-            <p>容量信息保留，但说明区不再膨胀。</p>
+            <p>查看当前空间容量与配额使用情况。</p>
           </div>
         </div>
 
@@ -92,7 +90,7 @@
               <a-tag v-if="noticeList[0]?.isPinned === 1" color="orange">置顶</a-tag>
             </div>
             <p>{{ noticeList[0]?.content }}</p>
-            <small>共 {{ noticeList.length }} 条公告，完整列表放进弹窗。</small>
+            <small>共 {{ noticeList.length }} 条公告，可在弹窗查看完整列表。</small>
           </div>
           <div v-else class="notice-rail__empty">团队空间暂时还没有公告。</div>
         </div>
@@ -104,7 +102,7 @@
         <div class="filter-shell__copy">
           <span class="sketch-note">Filter Workshop</span>
           <span class="filter-shell__summary"
-            >已激活 {{ activeFilterCount }} 项筛选，需要时再打开关键词、标签、分类和颜色筛选。</span
+            >已激活 {{ activeFilterCount }} 项筛选，可继续按关键词、标签、分类和颜色筛选。</span
           >
         </div>
         <a-button size="small" class="toolbar-toggle" @click="openFilterModal">
@@ -142,7 +140,7 @@
     <a-modal
       v-model:open="filterModalVisible"
       title="筛选面板"
-      width="920px"
+      width="min(920px, calc(100vw - 24px))"
       :footer="null"
       @cancel="closeFilterModal"
     >
@@ -152,7 +150,7 @@
           <a-form-item label="按颜色搜索" class="color-shell__picker">
             <color-picker format="hex" @pureColorChange="onColorChange" />
           </a-form-item>
-          <p>颜色搜索仍单独处理，避免和主筛选互相污染。</p>
+          <p>颜色搜索会按当前空间单独查询。</p>
         </div>
         <div class="filter-modal__actions">
           <span class="toolbar-panel__summary">已激活 {{ activeFilterCount }} 项筛选</span>
@@ -207,7 +205,7 @@
         <div v-if="canManageSpaceUser" class="notice-modal__form">
           <div class="table-cell-stack table-cell-stack--tight">
             <strong>{{ editingNoticeId ? '编辑公告' : '发布公告' }}</strong>
-            <small>这里只保留最小必要字段：标题、内容、置顶。</small>
+            <small>填写公告标题、内容和置顶状态。</small>
           </div>
           <a-form layout="vertical">
             <a-form-item label="公告标题" required>
@@ -281,7 +279,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const spaceId = computed<string | number>(() => props.id)
+const spaceId = computed<number>(() => Number(props.id))
 
 watch(
   () => props.id,

@@ -110,12 +110,7 @@ const originItems = [
     key: '/vip_exchange',
     label: '会员兑换',
     title: '会员兑换',
-  },
-  {
-    key: 'others',
-    label: h('a', { href: 'https://gitee.com/', target: '_blank' }, '编程导航'),
-    title: '编程导航',
-  },
+  }
 ]
 
 const filterMenus = (menus = [] as MenuProps['items']) => {

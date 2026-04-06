@@ -63,6 +63,7 @@ import { onMounted, reactive, ref } from 'vue'
 import dayjs from 'dayjs'
 import { listPictureTagCategoryUsingGet } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
+import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 
 interface Props {
   onSearch?: (searchParams: API.PictureQueryRequest) => void
@@ -81,19 +82,9 @@ const tagOptions = ref<{ value: string; label: string }[]>([])
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   if (res.data.code === 0 && res.data.data) {
-    // 转换成下拉选项组件接受的格式
-    tagOptions.value = (res.data.data.tagList ?? []).map((data: string) => {
-      return {
-        value: data,
-        label: data,
-      }
-    })
-    categoryOptions.value = (res.data.data.categoryList ?? []).map((data: string) => {
-      return {
-        value: data,
-        label: data,
-      }
-    })
+    const metaOptions = buildPictureMetaOptions(res.data.data)
+    tagOptions.value = metaOptions.tagOptions
+    categoryOptions.value = metaOptions.categoryOptions
   } else {
     message.error('加载选项失败，' + res.data.message)
   }
@@ -136,6 +127,11 @@ const doClear = () => {
 </script>
 
 <style scoped>
+.picture-search-form,
+.picture-search-form__grid > * {
+  min-width: 0;
+}
+
 .picture-search-form__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -147,11 +143,26 @@ const doClear = () => {
 }
 
 .picture-search-form__actions {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 8px;
 }
 
 .picture-search-form__field {
   width: 100%;
+}
+
+.picture-search-form :deep(.ant-input),
+.picture-search-form :deep(.ant-picker),
+.picture-search-form :deep(.ant-input-number),
+.picture-search-form :deep(.ant-select),
+.picture-search-form :deep(.ant-select-selector) {
+  width: 100%;
+  max-width: 100%;
+}
+
+.picture-search-form__actions :deep(.ant-space) {
+  flex-wrap: wrap;
 }
 
 @media (max-width: 900px) {

@@ -37,6 +37,14 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const toNumberId = (value: string | number | undefined) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined
+  }
+  const id = Number(value)
+  return Number.isFinite(id) ? id : undefined
+}
+
 const beforeUpload = (file: any) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
@@ -54,7 +62,7 @@ const handleUpload = async ({ file }: { file: File }) => {
   loading.value = true
   try {
     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
-    params.spaceId = props.spaceId
+    params.spaceId = toNumberId(props.spaceId)
     const res = await uploadPictureUsingPost(params as any, {}, file)
     const result = res.data as any
     if (result.code === 0 && result.data) {

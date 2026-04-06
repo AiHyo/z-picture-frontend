@@ -5,7 +5,7 @@
         <div class="page-head page-head--compact home-toolbar__copy">
           <span class="sketch-note">Public Gallery</span>
           <h1 class="page-head__title">公共图库</h1>
-          <p class="page-head__desc">搜索和筛选收进工具条，首屏先给图片列表。</p>
+          <p class="page-head__desc">搜索公共图库中的图片、分类和标签。</p>
         </div>
         <div class="home-toolbar__stats">
           <article class="home-stat home-stat--primary">
@@ -27,13 +27,18 @@
       </div>
 
       <div class="home-toolbar__controls">
-        <a-input-search
-          class="home-toolbar__search"
-          v-model:value="searchParams.searchText"
-          placeholder="从图片名称、简介和标签中搜索"
-          enter-button="搜索"
-          @search="doSearch"
-        />
+        <div class="home-toolbar__search">
+          <a-input
+            v-model:value="searchParams.searchText"
+            class="home-toolbar__search-input"
+            placeholder="从图片名称、简介和标签中搜索"
+            allow-clear
+            @pressEnter="doSearch"
+          />
+          <a-button type="primary" class="home-toolbar__search-button" @click="doSearch">
+            搜索
+          </a-button>
+        </div>
         <a-button class="toolbar-toggle home-toolbar__filter-button" @click="openFilterModal">
           {{ `筛选面板${activeFilterCount ? ` (${activeFilterCount})` : ''}` }}
         </a-button>
@@ -60,7 +65,7 @@
           <span class="sketch-note">Records</span>
           <h2>{{ total }} 张图片</h2>
         </div>
-        <span class="gallery-shell__summary">结果区前置，首屏直接露出图片卡片。</span>
+        <span class="gallery-shell__summary">支持按关键词、分类和标签查看结果。</span>
       </div>
       <PictureList :dataList="dataList" :loading="loading" />
     </section>
@@ -81,14 +86,14 @@
     <a-modal
       v-model:open="filterModalVisible"
       title="筛选面板"
-      width="880px"
+      width="min(880px, calc(100vw - 24px))"
       :footer="null"
       @cancel="closeFilterModal"
     >
       <div class="home-filter-modal">
         <div class="home-filter__head">
           <span class="sketch-note">Filter</span>
-          <p>深筛继续放进弹层，避免把图库主内容挤出首屏。</p>
+          <p>选择分类和标签后会立即刷新结果。</p>
         </div>
         <a-tabs v-model:active-key="selectedCategory" @change="doSearch">
           <a-tab-pane key="all" tab="全部" />
@@ -113,7 +118,10 @@
           <span class="search-row__summary"
             >分类：{{ selectedCategoryLabel }} · 标签：{{ selectedTagCount }} 个</span
           >
-          <a-button type="primary" @click="closeFilterModal">完成</a-button>
+          <div class="home-filter-modal__buttons">
+            <a-button @click="resetFilterPanel">重置筛选</a-button>
+            <a-button type="primary" @click="closeFilterModal">完成</a-button>
+          </div>
         </div>
       </div>
     </a-modal>
@@ -128,6 +136,7 @@ import {
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import PictureList from '@/components/PictureList.vue'
+import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 
 const dataList = ref<API.PictureVO[]>([])
 const total = ref(0)
@@ -198,8 +207,23 @@ const getTagCategoryOptions = async () => {
   try {
     const res = await listPictureTagCategoryUsingGet()
     if (res.data.code === 0 && res.data.data) {
-      categoryList.value = res.data.data.categoryList ?? []
-      tagList.value = res.data.data.tagList ?? []
+      const selectedTags = selectedTagList.value.reduce((result, selected, index) => {
+        const tag = tagList.value[index]
+        if (selected && tag) {
+          result.add(tag)
+        }
+        return result
+      }, new Set<string>())
+      const metaOptions = buildPictureMetaOptions(res.data.data)
+      categoryList.value = metaOptions.categoryList
+      tagList.value = metaOptions.tagList
+      selectedTagList.value = metaOptions.tagList.map((tag) => selectedTags.has(tag))
+      if (
+        selectedCategory.value !== 'all' &&
+        !metaOptions.categoryList.includes(selectedCategory.value)
+      ) {
+        selectedCategory.value = 'all'
+      }
     } else {
       message.error('加载分类标签失败，' + res.data.message)
     }
@@ -255,6 +279,12 @@ const doSearch = () => {
 
 const openFilterModal = () => {
   filterModalVisible.value = true
+}
+
+const resetFilterPanel = () => {
+  selectedCategory.value = 'all'
+  selectedTagList.value = tagList.value.map(() => false)
+  doSearch()
 }
 
 const closeFilterModal = () => {
@@ -323,27 +353,44 @@ const closeFilterModal = () => {
 }
 
 .home-toolbar__controls {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(146px, auto);
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: stretch;
 }
 
+.home-toolbar__controls > * {
+  min-width: 0;
+}
+
 .home-toolbar__search {
-  width: 100%;
+  display: flex;
+  flex: 0 1 540px;
+  gap: 10px;
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+  width: min(100%, 540px);
+}
+
+.home-toolbar__search-input {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .home-toolbar__search :deep(.ant-input),
-.home-toolbar__search :deep(.ant-input-search-button),
+.home-toolbar__search-button,
 .home-toolbar__filter-button {
   min-height: 42px;
 }
 
-.home-toolbar__search :deep(.ant-input-search-button) {
+.home-toolbar__search-button {
+  flex: 0 0 auto;
   padding-inline: 16px;
 }
 
 .home-toolbar__filter-button {
+  flex: 0 0 auto;
   white-space: nowrap;
 }
 
@@ -417,6 +464,7 @@ const closeFilterModal = () => {
 .home-filter-modal {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .home-filter__head {
@@ -443,6 +491,16 @@ const closeFilterModal = () => {
   font-size: 0.9rem;
 }
 
+.tag-bar__scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tag-bar__scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .home-filter-modal__actions {
   display: flex;
   flex-wrap: wrap;
@@ -452,9 +510,28 @@ const closeFilterModal = () => {
   padding-top: 4px;
 }
 
+.home-filter-modal__actions .search-row__summary {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.home-filter-modal__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 960px) {
-  .home-toolbar__controls {
-    grid-template-columns: 1fr;
+  .home-toolbar__search {
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    width: 100%;
+  }
+
+  .home-toolbar__search-input,
+  .home-toolbar__search-button {
+    width: 100%;
   }
 
   .home-toolbar__stats {
@@ -476,13 +553,20 @@ const closeFilterModal = () => {
     display: none;
   }
 
-  .tag-bar__scroll {
-    overflow-x: auto;
-    scrollbar-width: none;
+  .home-filter-modal__actions {
+    justify-content: flex-end;
   }
 
-  .tag-bar__scroll::-webkit-scrollbar {
-    display: none;
+  .home-filter-modal__actions .search-row__summary {
+    flex-basis: 100%;
+  }
+
+  .home-filter-modal__buttons {
+    width: 100%;
+  }
+
+  .home-filter-modal__buttons :deep(.ant-btn) {
+    flex: 1 1 0;
   }
 
   .tag-bar__space {

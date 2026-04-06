@@ -4,7 +4,7 @@
       <div class="chart-shell__copy">
         <span class="sketch-note">Category Mix</span>
         <h3>空间图片分类分析</h3>
-        <p>数量和体积并列展示，避免只看图片张数而忽略实际占用。</p>
+        <p>对比各分类的图片数量和总大小。</p>
       </div>
     </div>
     <v-chart :option="options" class="chart-shell__canvas" autoresize :loading="loading" />

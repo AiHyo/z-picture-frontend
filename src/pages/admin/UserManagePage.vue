@@ -4,7 +4,7 @@
       <div class="page-head page-head--compact">
         <span class="sketch-note">Admin Console</span>
         <h1 class="page-head__title">用户管理</h1>
-        <p class="page-head__desc">账号与角色信息保留，首屏优先暴露用户表。</p>
+        <p class="page-head__desc">查看用户账号、角色和基础信息。</p>
       </div>
       <div class="admin-overview">
         <div class="admin-stat">
@@ -22,7 +22,7 @@
       </div>
       <div class="toolbar-panel__filters">
         <div class="toolbar-panel__filter-bar">
-          <p class="toolbar-panel__summary">账号和用户名已经足够，不再铺更多无效条件。</p>
+          <p class="toolbar-panel__summary">支持按账号和用户名搜索用户。</p>
         </div>
         <a-form layout="inline" :model="searchParams" @finish="doSearch">
           <a-form-item label="账号">
@@ -41,7 +41,7 @@
     <section class="paper-panel paper-section table-panel">
       <div class="table-panel__head">
         <span class="sketch-note">Records</span>
-        <p>头像、角色和时间信息保留，表格直接进入可视区。</p>
+        <p>这里展示用户资料、角色和时间信息。</p>
       </div>
       <a-table
         :columns="columns"
