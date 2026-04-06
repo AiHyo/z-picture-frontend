@@ -603,6 +603,8 @@ declare namespace API {
     picScale?: number
     picSize?: number
     picWidth?: number
+    reviewMessage?: string
+    reviewStatus?: number
     spaceId?: ID
     tags?: string[]
     thumbnailUrl?: string

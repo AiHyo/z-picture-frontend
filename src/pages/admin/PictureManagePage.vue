@@ -223,7 +223,18 @@
           :scroll="{ x: 1500 }"
         >
           <template #bodyCell="{ column, record }">
-            <template v-if="column.dataIndex === 'reporter'">
+            <template v-if="column.dataIndex === 'pictureId'">
+              <a
+                v-if="record.pictureId"
+                :href="`/picture/${record.pictureId}`"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{ record.pictureId }}
+              </a>
+              <span v-else>-</span>
+            </template>
+            <template v-else-if="column.dataIndex === 'reporter'">
               <a-space>
                 <a-avatar :src="record.reporter?.userAvatar" />
                 <div class="table-cell-stack table-cell-stack--tight">

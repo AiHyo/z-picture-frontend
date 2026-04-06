@@ -1,5 +1,9 @@
 <template>
-  <div id="PictureDetailPage" class="page-shell detail-page">
+  <div
+    id="PictureDetailPage"
+    class="page-shell detail-page"
+    :class="{ 'detail-page--off-shelf': isOffShelf }"
+  >
     <section class="page-head">
       <span class="sketch-note">Picture Note</span>
       <h1 class="page-head__title">{{ picture.name ?? '未命名图片' }}</h1>
@@ -10,6 +14,11 @@
       <a-card title="图片预览" class="detail-preview">
         <div class="preview-frame">
           <a-image :src="picture.url || ''" class="preview-image" />
+          <div v-if="isOffShelf" class="off-shelf-watermark" aria-label="已下架">
+            <div class="off-shelf-watermark__seal">
+              <span>已下架</span>
+            </div>
+          </div>
         </div>
       </a-card>
 
@@ -71,24 +80,40 @@
         </a-descriptions>
 
         <div class="sketch-actions detail-actions">
-          <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit">编辑</a-button>
-          <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete">删除</a-button>
+          <a-button
+            v-if="canEdit"
+            :icon="h(EditOutlined)"
+            type="default"
+            :disabled="isOffShelf"
+            @click="doEdit"
+          >
+            编辑
+          </a-button>
+          <a-button
+            v-if="canDelete"
+            :icon="h(DeleteOutlined)"
+            danger
+            :disabled="isOffShelf"
+            @click="doDelete"
+          >
+            删除
+          </a-button>
           <a-button
             v-if="canReportPicture"
             danger
             ghost
-            :disabled="!loginUserStore.loginUser.id"
+            :disabled="isOffShelf || !loginUserStore.loginUser.id"
             @click="openReportModal"
           >
             举报图片
           </a-button>
-          <a-button type="primary" @click="doDownload">
+          <a-button type="primary" :disabled="isOffShelf" @click="doDownload">
             <template #icon>
               <DownloadOutlined />
             </template>
             免费下载
           </a-button>
-          <a-button type="primary" ghost @click="doShare">
+          <a-button type="primary" ghost :disabled="isOffShelf" @click="doShare">
             分享
             <template #icon>
               <ShareAltOutlined />
@@ -147,6 +172,7 @@ import { useRouter } from 'vue-router'
 import { toHexColor } from '@/router'
 import ShareModal from '@/components/ShareModal.vue'
 import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
+import { PIC_REVIEW_STATUS_ENUM } from '@/constants/picture.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 // const props = defineProps<{
@@ -268,6 +294,7 @@ function createPermissionChecker(permission: string) {
 const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
 const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 const canReportPicture = computed(() => !!picture.value.id && !picture.value.spaceId)
+const isOffShelf = computed(() => picture.value.reviewStatus === PIC_REVIEW_STATUS_ENUM.REJECT)
 
 const resetReportForm = () => {
   reportForm.reportReasonType = reportReasonOptions[0].value
@@ -329,6 +356,28 @@ const submitReport = async () => {
   gap: 22px;
 }
 
+.detail-page--off-shelf .page-head,
+.detail-page--off-shelf .detail-side,
+.detail-page--off-shelf .author-strip {
+  filter: grayscale(1) saturate(0.45);
+}
+
+.detail-page--off-shelf .detail-side,
+.detail-page--off-shelf .preview-frame {
+  opacity: 0.88;
+}
+
+.detail-page--off-shelf .preview-frame :deep(.ant-image),
+.detail-page--off-shelf .preview-frame :deep(.ant-image-img),
+.detail-page--off-shelf .preview-frame :deep(img) {
+  filter: grayscale(1) saturate(0.45);
+}
+
+.detail-page--off-shelf .preview-frame :deep(.ant-image),
+.detail-page--off-shelf .preview-frame :deep(.ant-image-img) {
+  pointer-events: none;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.78fr);
@@ -341,6 +390,7 @@ const submitReport = async () => {
 }
 
 .preview-frame {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 560px;
@@ -360,6 +410,33 @@ const submitReport = async () => {
 :deep(.preview-image img) {
   max-height: 600px;
   object-fit: contain;
+}
+
+.off-shelf-watermark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.off-shelf-watermark__seal {
+  display: grid;
+  place-items: center;
+  width: clamp(128px, 22vw, 188px);
+  height: clamp(128px, 22vw, 188px);
+  border: 8px solid rgba(174, 34, 34, 0.82);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(174, 34, 34, 0.16);
+  transform: rotate(-14deg);
+}
+
+.off-shelf-watermark__seal span {
+  color: rgba(174, 34, 34, 0.9);
+  font-family: var(--sketch-title-font);
+  font-size: clamp(1.5rem, 3vw, 2.3rem);
+  letter-spacing: 0.14em;
 }
 
 .author-strip {
