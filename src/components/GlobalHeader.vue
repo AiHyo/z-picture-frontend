@@ -124,6 +124,9 @@
             allow-clear
           />
         </a-form-item>
+        <a-form-item label="User ID">
+          <a-input :value="loginUserStore.loginUser.id || '-'" disabled />
+        </a-form-item>
         <a-form-item label="账号">
           <a-input :value="loginUserStore.loginUser.userAccount || '-'" disabled />
         </a-form-item>

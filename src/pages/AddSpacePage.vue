@@ -32,7 +32,7 @@
         <span class="sketch-note">Space Levels</span>
         <h2>空间级别介绍</h2>
         <p class="level-panel__desc">
-          目前默认先开普通版。升级策略仍然由现有后端规则控制，不在前端瞎搞兼容逻辑。
+          目前普通用户只可开通普通版。如需升级，请联系客服，开通会员。
         </p>
         <div class="level-list">
           <div v-for="spaceLevel in spaceLevelList" :key="spaceLevel.value" class="level-item">
@@ -128,12 +128,12 @@ const handleSubmit = async (values: any) => {
   if (res.data.code === 0 && res.data.data) {
     message.success('操作成功')
     const loginUserStore = useLoginUserStore()
-    const newSpace = res.data.data as { id?: string }
+    const newSpaceId = String(res.data.data)
     if (loginUserStore.loginUser.userRole == 'admin'){
       router.push({path: '/admin/spaceManage'})
     } else {
       router.push({
-        path: `/space/${newSpace.id}`,
+        path: `/space/${newSpaceId}`,
       })
     }
   } else {

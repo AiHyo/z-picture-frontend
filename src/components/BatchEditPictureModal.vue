@@ -36,7 +36,7 @@ import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 
 interface Props {
   pictureList: API.PictureVO[]
-  spaceId: string
+  spaceId?: string
   onSuccess: () => void
 }
 
@@ -85,7 +85,7 @@ watch(
 )
 
 const handleSubmit = async (values: { category: string; tags: string[]; nameRule: string }) => {
-  if (!props.pictureList) {
+  if (!props.pictureList || !props.spaceId) {
     return
   }
   const pictureIdList = props.pictureList.map((picture) => picture.id).filter(Boolean)

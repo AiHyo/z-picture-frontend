@@ -279,11 +279,19 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const spaceId = computed<string>(() => String(props.id))
+const spaceId = computed<string | undefined>(() => {
+  if (props.id === undefined || props.id === null || props.id === '') {
+    return undefined
+  }
+  return String(props.id)
+})
 
 watch(
   () => props.id,
   () => {
+    if (!spaceId.value) {
+      return
+    }
     fetchSpaceDetail()
     fetchData()
   },
@@ -333,6 +341,10 @@ const closeFilterModal = () => {
 }
 
 const fetchSpaceDetail = async () => {
+  if (!spaceId.value) {
+    message.error('空间 id 缺失')
+    return
+  }
   try {
     const res = await getSpaceVoByIdUsingGet({
       id: spaceId.value,
@@ -353,6 +365,10 @@ const fetchSpaceDetail = async () => {
 }
 
 const fetchData = async () => {
+  if (!spaceId.value) {
+    message.error('空间 id 缺失')
+    return
+  }
   loading.value = true
   try {
     const params = {
@@ -372,6 +388,10 @@ const fetchData = async () => {
 }
 
 onMounted(() => {
+  if (!spaceId.value) {
+    message.error('空间 id 缺失')
+    return
+  }
   fetchSpaceDetail()
   fetchData()
 })
@@ -392,6 +412,10 @@ const onSearch = (newSearchParams: API.PictureQueryRequest) => {
 }
 
 const onColorChange = async (color: string) => {
+  if (!spaceId.value) {
+    message.error('空间 id 缺失')
+    return
+  }
   loading.value = true
   try {
     const res = await searchPictureByColorUsingPost({
