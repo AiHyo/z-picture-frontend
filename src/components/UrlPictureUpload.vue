@@ -39,9 +39,14 @@ const loading = ref(false)
 const fileUrl = ref<string>()
 
 const handleUpload = async () => {
+  const trimmedFileUrl = fileUrl.value?.trim()
+  if (!trimmedFileUrl) {
+    message.warning('请输入图片 URL')
+    return
+  }
   loading.value = true
   try {
-    const params: API.PictureUploadRequest = { fileUrl: fileUrl.value }
+    const params: API.PictureUploadRequest = { fileUrl: trimmedFileUrl }
     if (props.picture) {
       params.id = props.picture.id
     }

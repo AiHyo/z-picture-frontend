@@ -1,7 +1,13 @@
 <template>
   <a-modal v-model:open="visible" title="批量编辑图片" :footer="false" width="640px" @cancel="closeModal">
-    <p class="modal-note">只对当前页面选中的图片生效。</p>
+    <p class="modal-note">{{ scopeNote }}</p>
     <a-form layout="vertical" :model="formData" @finish="handleSubmit">
+      <a-form-item label="生效范围" name="scope">
+        <a-radio-group v-model:value="formData.scope">
+          <a-radio value="CURRENT_PAGE">当前筛选结果的当前页（{{ currentPageCount }} 张）</a-radio>
+          <a-radio value="SPACE">整个空间（{{ total }} 张）</a-radio>
+        </a-radio-group>
+      </a-form-item>
       <div class="batch-edit-grid">
         <a-form-item label="分类" name="category">
           <a-auto-complete v-model:value="formData.category" :options="categoryOptions">
@@ -29,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineExpose, reactive, ref, watch } from 'vue'
+import { computed, defineExpose, reactive, ref, watch } from 'vue'
 import { editPictureByBatchUsingPost, listPictureTagCategoryUsingGet } from '@/api/pictureController'
 import { message } from 'ant-design-vue'
 import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
@@ -37,6 +43,7 @@ import { buildPictureMetaOptions } from '@/utils/pictureMeta.ts'
 interface Props {
   pictureList: API.PictureVO[]
   spaceId?: string
+  total?: number
   onSuccess: () => void
 }
 
@@ -55,10 +62,19 @@ defineExpose({
 })
 
 const formData = reactive({
+  scope: 'CURRENT_PAGE',
   category: '',
   tags: [] as string[],
   nameRule: '',
 })
+
+const currentPageCount = computed(() => props.pictureList?.length ?? 0)
+const total = computed(() => Number(props.total ?? currentPageCount.value))
+const scopeNote = computed(() =>
+  formData.scope === 'SPACE'
+    ? '将对整个空间内的全部图片生效，请谨慎操作。'
+    : '只对当前筛选结果的当前页图片生效。',
+)
 
 const categoryOptions = ref<{ value: string; label: string }[]>([])
 const tagOptions = ref<{ value: string; label: string }[]>([])
@@ -84,13 +100,18 @@ watch(
   { immediate: true },
 )
 
-const handleSubmit = async (values: { category: string; tags: string[]; nameRule: string }) => {
+const handleSubmit = async (values: {
+  scope: string
+  category: string
+  tags: string[]
+  nameRule: string
+}) => {
   if (!props.pictureList || !props.spaceId) {
     return
   }
   const pictureIdList = props.pictureList.map((picture) => picture.id).filter(Boolean)
   const res = await editPictureByBatchUsingPost({
-    pictureIdList,
+    pictureIdList: values.scope === 'SPACE' ? undefined : pictureIdList,
     spaceId: props.spaceId,
     ...values,
   } as any)

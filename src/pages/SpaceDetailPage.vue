@@ -245,6 +245,7 @@
       ref="batchEditPictureModalRef"
       :spaceId="spaceId"
       :pictureList="dataList"
+      :total="total"
       :onSuccess="onBatchEditPictureSuccess"
     />
   </div>

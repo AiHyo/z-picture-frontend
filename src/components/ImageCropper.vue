@@ -111,19 +111,24 @@ defineExpose({ openModal })
 
 const isTeamSpace = computed(() => props.space?.spaceType === SPACE_TYPE_ENUM.TEAM)
 const loginUserStore = useLoginUserStore()
-const loginUser = loginUserStore.loginUser
+const loginUser = computed(() => loginUserStore.loginUser)
 const editingUser = ref<any>()
 const collaborationUnavailable = ref(false)
 const socketOpened = ref(false)
+const isCurrentUser = (userId?: string | number) => {
+  const loginUserId = loginUser.value.id
+  if (userId === undefined || loginUserId === undefined) {
+    return false
+  }
+  return String(userId) === String(loginUserId)
+}
 const canEnterEdit = computed(() => !collaborationUnavailable.value && !editingUser.value)
-const canExitEdit = computed(
-  () => !collaborationUnavailable.value && editingUser.value?.id === loginUser.id,
-)
+const canExitEdit = computed(() => !collaborationUnavailable.value && isCurrentUser(editingUser.value?.id))
 const canEdit = computed(() => {
   if (!isTeamSpace.value || collaborationUnavailable.value) {
     return true
   }
-  return editingUser.value?.id === loginUser.id
+  return isCurrentUser(editingUser.value?.id)
 })
 
 let websocket: PictureEditWebSocket | null = null
@@ -185,7 +190,7 @@ const initWebsocket = () => {
       return
     }
     collaborationUnavailable.value = true
-    editingUser.value = loginUser
+    editingUser.value = loginUser.value
     if (visible.value) {
       message.warning('协同编辑不可用，已切换为本地编辑')
     }
@@ -193,7 +198,7 @@ const initWebsocket = () => {
   websocket.on('close', () => {
     if (!socketOpened.value && !collaborationUnavailable.value) {
       collaborationUnavailable.value = true
-      editingUser.value = loginUser
+      editingUser.value = loginUser.value
     }
     socketOpened.value = false
   })

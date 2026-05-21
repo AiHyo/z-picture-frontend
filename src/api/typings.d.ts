@@ -465,6 +465,7 @@ declare namespace API {
     category?: string
     nameRule?: string
     pictureIdList?: ID[]
+    scope?: string
     spaceId?: ID
     tags?: string[]
   }
