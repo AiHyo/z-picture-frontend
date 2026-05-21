@@ -77,7 +77,15 @@
             <a-space wrap>
               <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">分析</a-button>
               <a-button type="link" :href="`/add_space?id=${record.id}`" target="_blank">编辑</a-button>
-              <a-button type="link" danger @click="doDelete(record.id)">删除</a-button>
+              <a-popconfirm
+                title="确认删除该空间？删除后不可恢复。"
+                ok-text="确认删除"
+                cancel-text="取消"
+                ok-type="danger"
+                @confirm="doDelete(record.id)"
+              >
+                <a-button type="link" danger>删除</a-button>
+              </a-popconfirm>
             </a-space>
           </template>
         </template>

@@ -89,15 +89,18 @@
           >
             编辑
           </a-button>
-          <a-button
-            v-if="canDelete"
-            :icon="h(DeleteOutlined)"
-            danger
-            :disabled="isOffShelf"
-            @click="doDelete"
+          <a-popconfirm
+            v-if="canDelete && !isOffShelf"
+            title="确认删除这张图片？"
+            description="删除后该图片将无法继续在详情页查看。"
+            ok-text="确认删除"
+            cancel-text="取消"
+            ok-type="danger"
+            @confirm="doDelete"
           >
-            删除
-          </a-button>
+            <a-button :icon="h(DeleteOutlined)" danger> 删除 </a-button>
+          </a-popconfirm>
+          <a-button v-else-if="canDelete" :icon="h(DeleteOutlined)" danger disabled> 删除 </a-button>
           <a-button
             v-if="canReportPicture"
             danger
@@ -165,7 +168,7 @@ import {
   deletePictureUsingPost,
   getPictureVoByIdUsingGet,
 } from '@/api/pictureController.ts'
-import { message } from 'ant-design-vue'
+import { Modal, message } from 'ant-design-vue'
 import { downloadImage, formatSize } from '@/utils'
 import { EditOutlined, DeleteOutlined, DownloadOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
@@ -259,12 +262,24 @@ const doDelete = async () => {
   if (!id) {
     return
   }
-  const res = await deletePictureUsingPost({ id: String(id) } as any)
-  if (res.data.code === 0) {
-    message.success('删除成功')
-    router.back()
-  } else {
-    message.error('删除失败')
+  if (isOffShelf.value) {
+    message.warning('图片已下架，不能删除')
+    return
+  }
+  try {
+    const res = await deletePictureUsingPost({ id: String(id) } as any)
+    if (res.data.code === 0) {
+      Modal.success({
+        title: '删除成功',
+        content: '图片已删除，返回首页继续浏览。',
+        okText: '返回首页',
+        onOk: () => router.replace('/'),
+      })
+    } else {
+      message.error('删除失败，' + res.data.message)
+    }
+  } catch (error) {
+    message.error('删除失败，' + (error as Error).message)
   }
 }
 

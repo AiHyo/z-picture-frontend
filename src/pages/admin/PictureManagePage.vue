@@ -13,7 +13,7 @@
             >+ 批量创建图片</a-button
           >
           <a-button ghost @click="openReportModal">举报处理</a-button>
-          <a-button ghost @click="openDictModal">标签分类维护</a-button>
+          <a-button ghost @click="openDictModal()">标签分类维护</a-button>
         </div>
       </div>
       <div class="admin-overview">
@@ -143,7 +143,15 @@
               <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank"
                 >编辑</a-button
               >
-              <a-button type="link" danger @click="doDelete(record.id)">删除</a-button>
+              <a-popconfirm
+                title="确认删除该图片？"
+                ok-text="确认删除"
+                cancel-text="取消"
+                ok-type="danger"
+                @confirm="doDelete(record.id)"
+              >
+                <a-button type="link" danger>删除</a-button>
+              </a-popconfirm>
             </div>
           </template>
         </template>
@@ -196,6 +204,7 @@
       v-model:open="reportModalVisible"
       title="举报处理"
       width="min(1720px, calc(100vw - 16px))"
+      wrap-class-name="report-manage-modal-wrap"
       :footer="null"
       @cancel="reportModalVisible = false"
     >
@@ -284,7 +293,7 @@
       :footer="null"
       @cancel="closeDictModal"
     >
-      <a-tabs v-model:activeKey="dictTabKey" class="dict-tabs">
+      <a-tabs v-model:active-key="dictTabKey" class="dict-tabs">
         <a-tab-pane key="tag" tab="标签管理">
           <div class="dict-panel">
             <div class="dict-panel__form">
@@ -299,9 +308,16 @@
                 <div class="dict-panel__actions">
                   <a-space>
                     <a-button v-if="editingTagId" @click="resetTagForm">取消编辑</a-button>
-                    <a-button type="primary" @click="submitTag">{{
-                      editingTagId ? '保存标签' : '新增标签'
-                    }}</a-button>
+                    <a-popconfirm
+                      v-if="editingTagId"
+                      title="确认保存标签修改？"
+                      ok-text="确认保存"
+                      cancel-text="取消"
+                      @confirm="submitTag"
+                    >
+                      <a-button type="primary">保存标签</a-button>
+                    </a-popconfirm>
+                    <a-button v-else type="primary" @click="submitTag">新增标签</a-button>
                   </a-space>
                 </div>
               </a-form>
@@ -312,8 +328,23 @@
                   <template v-if="column.dataIndex === 'name'">{{ record.tagName }}</template>
                   <template v-else-if="column.key === 'action'">
                     <a-space>
-                      <a-button size="small" @click="startEditTag(record)">编辑</a-button>
-                      <a-button size="small" danger @click="removeTag(record.id)">删除</a-button>
+                      <a-popconfirm
+                        title="确认编辑该标签？"
+                        ok-text="确认编辑"
+                        cancel-text="取消"
+                        @confirm="startEditTag(record)"
+                      >
+                        <a-button size="small">编辑</a-button>
+                      </a-popconfirm>
+                      <a-popconfirm
+                        title="确认删除该标签？"
+                        ok-text="确认删除"
+                        cancel-text="取消"
+                        ok-type="danger"
+                        @confirm="removeTag(record.id)"
+                      >
+                        <a-button size="small" danger>删除</a-button>
+                      </a-popconfirm>
                     </a-space>
                   </template>
                 </template>
@@ -338,9 +369,16 @@
                 <div class="dict-panel__actions">
                   <a-space>
                     <a-button v-if="editingCategoryId" @click="resetCategoryForm">取消编辑</a-button>
-                    <a-button type="primary" @click="submitCategory">
-                      {{ editingCategoryId ? '保存分类' : '新增分类' }}
-                    </a-button>
+                    <a-popconfirm
+                      v-if="editingCategoryId"
+                      title="确认保存分类修改？"
+                      ok-text="确认保存"
+                      cancel-text="取消"
+                      @confirm="submitCategory"
+                    >
+                      <a-button type="primary">保存分类</a-button>
+                    </a-popconfirm>
+                    <a-button v-else type="primary" @click="submitCategory">新增分类</a-button>
                   </a-space>
                 </div>
               </a-form>
@@ -356,8 +394,23 @@
                   <template v-if="column.dataIndex === 'name'">{{ record.categoryName }}</template>
                   <template v-else-if="column.key === 'action'">
                     <a-space>
-                      <a-button size="small" @click="startEditCategory(record)">编辑</a-button>
-                      <a-button size="small" danger @click="removeCategory(record.id)">删除</a-button>
+                      <a-popconfirm
+                        title="确认编辑该分类？"
+                        ok-text="确认编辑"
+                        cancel-text="取消"
+                        @confirm="startEditCategory(record)"
+                      >
+                        <a-button size="small">编辑</a-button>
+                      </a-popconfirm>
+                      <a-popconfirm
+                        title="确认删除该分类？"
+                        ok-text="确认删除"
+                        cancel-text="取消"
+                        ok-type="danger"
+                        @confirm="removeCategory(record.id)"
+                      >
+                        <a-button size="small" danger>删除</a-button>
+                      </a-popconfirm>
                     </a-space>
                   </template>
                 </template>
@@ -372,7 +425,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import {
   addPictureCategoryUsingPost,
   addPictureTagUsingPost,
@@ -722,8 +775,8 @@ const resetCategoryForm = () => {
   categoryForm.categoryName = ''
 }
 
-const openDictModal = async (tab: 'tag' | 'category' = 'tag') => {
-  dictTabKey.value = tab
+const openDictModal = async (tab?: 'tag' | 'category') => {
+  dictTabKey.value = tab === 'category' ? 'category' : 'tag'
   dictModalVisible.value = true
   resetTagForm()
   resetCategoryForm()
@@ -798,7 +851,11 @@ const removeTag = async (id?: string) => {
     }
     fetchTagData()
   } else {
-    message.error('删除标签失败，' + res.data.message)
+    Modal.warning({
+      title: '无法删除标签',
+      content: res.data.message || '该标签已被图片使用，无法删除',
+      okText: '知道了',
+    })
   }
 }
 
@@ -814,7 +871,11 @@ const removeCategory = async (id?: string) => {
     }
     fetchCategoryData()
   } else {
-    message.error('删除分类失败，' + res.data.message)
+    Modal.warning({
+      title: '无法删除分类',
+      content: res.data.message || '该分类已被图片使用，无法删除',
+      okText: '知道了',
+    })
   }
 }
 </script>
@@ -837,13 +898,18 @@ const removeCategory = async (id?: string) => {
   min-width: 100%;
 }
 
-#pictureManagePage :deep(.report-manage-table .ant-table-thead > tr > th),
-#pictureManagePage :deep(.report-manage-table .ant-table-tbody > tr > td) {
+.report-manage-table {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.report-manage-table :deep(.ant-table-thead > tr > th),
+.report-manage-table :deep(.ant-table-tbody > tr > td) {
   vertical-align: top;
   word-break: break-word;
 }
 
-#pictureManagePage :deep(.report-manage-table table) {
+.report-manage-table :deep(table) {
   min-width: 1500px;
 }
 
@@ -911,6 +977,7 @@ const removeCategory = async (id?: string) => {
 .dict-panel {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .governance-modal__head,
@@ -920,6 +987,30 @@ const removeCategory = async (id?: string) => {
   justify-content: space-between;
   gap: 12px 16px;
   align-items: center;
+  min-width: 0;
+}
+
+:global(.report-manage-modal-wrap .ant-modal) {
+  max-width: calc(100vw - 16px);
+}
+
+:global(.report-manage-modal-wrap .ant-modal-content),
+:global(.report-manage-modal-wrap .ant-modal-body) {
+  overflow: hidden;
+}
+
+:global(.report-manage-modal-wrap .report-manage-table .ant-table-content) {
+  max-width: 100%;
+  overflow-x: auto !important;
+}
+
+:global(.report-manage-modal-wrap .report-manage-table .ant-pagination) {
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
+:global(.report-manage-modal-wrap .report-manage-table .ant-pagination-options) {
+  margin-inline-start: 0;
 }
 
 .dict-tabs {
