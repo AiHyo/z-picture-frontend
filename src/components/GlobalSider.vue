@@ -55,7 +55,7 @@
 </template>
 <script lang="ts" setup>
 import { computed, h, ref, watchEffect } from 'vue'
-import { PictureOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { ApartmentOutlined, PictureOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { listMyTeamSpaceUsingPost } from '@/api/spaceUserController.ts'
@@ -77,12 +77,13 @@ const fixedMenuItems = [
     label: '我的空间',
     icon: () => h(UserOutlined),
   },
-  {
-    key: '/add_space?type=' + SPACE_TYPE_ENUM.TEAM,
-    label: '创建团队',
-    icon: () => h(TeamOutlined),
-  },
 ]
+
+const createTeamMenuItem = {
+  key: '/add_space?type=' + SPACE_TYPE_ENUM.TEAM,
+  label: '创建团队',
+  icon: () => h(TeamOutlined),
+}
 
 const router = useRouter()
 const doMenuClick = ({ key }: { key: string }) => {
@@ -92,7 +93,12 @@ const doMenuClick = ({ key }: { key: string }) => {
 const teamSpaceList = ref<API.SpaceUserVO[]>([])
 const menuItems = computed(() => {
   if (teamSpaceList.value.length < 1) {
-    return fixedMenuItems
+    return [...fixedMenuItems, createTeamMenuItem]
+  }
+  const teamHubMenuItem = {
+    key: '/my_team_space',
+    label: '我的团队空间',
+    icon: () => h(ApartmentOutlined),
   }
   const teamSpaceSubMenus = teamSpaceList.value.map((spaceUser) => {
     const space = spaceUser.space
@@ -107,7 +113,7 @@ const menuItems = computed(() => {
     key: 'teamSpace',
     children: teamSpaceSubMenus,
   }
-  return [...fixedMenuItems, teamSpaceMenuGroup]
+  return [...fixedMenuItems, teamHubMenuItem, createTeamMenuItem, teamSpaceMenuGroup]
 })
 
 const fetchTeamSpaceList = async () => {

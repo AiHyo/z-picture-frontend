@@ -10,26 +10,28 @@
       <section class="page-head page-head--compact workspace-head">
         <div class="page-head__meta">
           <span class="sketch-note">Workspace Hub</span>
-          <h1 class="page-head__title">我的空间</h1>
-          <p class="page-head__desc">集中查看邀请、我创建的空间和我加入的团队。</p>
+          <h1 class="page-head__title">{{ isTeamMode ? '我的团队空间' : '我的空间' }}</h1>
+          <p class="page-head__desc">
+            {{ isTeamMode ? '集中查看我创建或加入的团队空间。' : '固定查看我的私人空间。' }}
+          </p>
         </div>
         <div class="compact-stat-row workspace-head__stats">
-          <div class="compact-stat-chip">
+          <div v-if="isTeamMode" class="compact-stat-chip">
             <strong>{{ pendingInviteCount }}</strong>
             <span>待处理邀请</span>
           </div>
           <div class="compact-stat-chip">
             <strong>{{ ownedSpaceList.length }}</strong>
-            <span>我创建的空间</span>
+            <span>{{ isTeamMode ? '我创建的团队' : '我的私人空间' }}</span>
           </div>
-          <div class="compact-stat-chip">
+          <div v-if="isTeamMode" class="compact-stat-chip">
             <strong>{{ teamSpaceList.length }}</strong>
             <span>我加入的团队</span>
           </div>
         </div>
       </section>
 
-      <section v-if="pendingInviteCount > 0" class="paper-panel hub-section">
+      <section v-if="isTeamMode && pendingInviteCount > 0" class="paper-panel hub-section">
         <div class="hub-section__head">
           <div>
             <span class="sketch-note">Pending Invite</span>
@@ -62,10 +64,12 @@
         <div class="paper-panel hub-section">
           <div class="hub-section__head">
             <div>
-              <span class="sketch-note">Owned Spaces</span>
-              <h2>我创建的空间</h2>
+              <span class="sketch-note">{{ isTeamMode ? 'Owned Teams' : 'Private Space' }}</span>
+              <h2>{{ isTeamMode ? '我创建的团队空间' : '我的私人空间' }}</h2>
             </div>
-            <a-button type="primary" href="/add_space">创建空间</a-button>
+            <a-button type="primary" :href="isTeamMode ? `/add_space?type=${SPACE_TYPE_ENUM.TEAM}` : '/add_space'">
+              {{ isTeamMode ? '创建团队' : '创建空间' }}
+            </a-button>
           </div>
           <div v-if="ownedSpaceList.length" class="workspace-card-grid">
             <article v-for="space in ownedSpaceList" :key="space.id" class="workspace-card">
@@ -88,12 +92,12 @@
           </div>
           <div v-else class="sketch-empty sketch-empty--compact">
             <span class="sketch-note">No Owned Space</span>
-            <h3>你还没有创建自己的空间</h3>
-            <p>如果你只是参与团队空间，下面也能直接进入。</p>
+            <h3>{{ isTeamMode ? '你还没有创建团队空间' : '你还没有创建私人空间' }}</h3>
+            <p>{{ isTeamMode ? '创建团队后可邀请成员协作。' : '创建后这里会固定展示你的私人空间。' }}</p>
           </div>
         </div>
 
-        <div class="paper-panel hub-section">
+        <div v-if="isTeamMode" class="paper-panel hub-section">
           <div class="hub-section__head">
             <div>
               <span class="sketch-note">Joined Teams</span>
@@ -151,10 +155,21 @@ import {
   rejectSpaceInviteUsingPost,
 } from '@/api/spaceInviteController.ts'
 import { formatSize } from '@/utils'
-import { SPACE_LEVEL_MAP, SPACE_ROLE_ENUM, SPACE_ROLE_MAP, SPACE_TYPE_MAP } from '@/constants/space.ts'
+import {
+  SPACE_LEVEL_MAP,
+  SPACE_ROLE_ENUM,
+  SPACE_ROLE_MAP,
+  SPACE_TYPE_ENUM,
+  SPACE_TYPE_MAP,
+} from '@/constants/space.ts'
+
+const props = defineProps<{
+  mode?: 'private' | 'team'
+}>()
 
 const router = useRouter()
 const loginUserStore = useLoginUserStore()
+const isTeamMode = computed(() => props.mode === 'team')
 
 const loading = ref(true)
 const ownedSpaceList = ref<API.SpaceVO[]>([])
@@ -165,6 +180,7 @@ const pendingInviteCount = computed(() => inviteList.value.length)
 const fetchOwnedSpaceList = async (userId: string) => {
   const res = await listSpaceVoByPageUsingPost({
     userId,
+    spaceType: isTeamMode.value ? SPACE_TYPE_ENUM.TEAM : SPACE_TYPE_ENUM.PRIVATE,
     current: 1,
     pageSize: 8,
     sortField: 'createTime',
@@ -197,14 +213,14 @@ const fetchInviteList = async () => {
 }
 
 const tryLegacyRedirect = () => {
-  if (inviteList.value.length > 0) {
+  if (isTeamMode.value && inviteList.value.length > 0) {
     return false
   }
   if (ownedSpaceList.value.length > 0) {
     router.replace(`/space/${ownedSpaceList.value[0].id}`)
     return true
   }
-  if (teamSpaceList.value.length > 0) {
+  if (isTeamMode.value && teamSpaceList.value.length > 0) {
     router.replace(`/space/${teamSpaceList.value[0].spaceId}`)
     return true
   }

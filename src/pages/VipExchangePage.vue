@@ -3,14 +3,13 @@
     <section class="page-head page-head--compact">
       <span class="sketch-note">Membership</span>
       <h1 class="page-head__title">会员兑换中心</h1>
-      <p class="page-head__desc">输入兑换码直接提交，权益说明退到次级位置。</p>
+      <p class="page-head__desc">输入兑换码后即可开通对应会员权益。</p>
     </section>
 
     <section class="workspace-grid workspace-grid--sidebar">
       <div class="paper-panel paper-section vip-form-panel">
         <div class="panel-intro">
           <span class="sketch-note">Redeem Code</span>
-          <p>输入兑换码后直接走原有兑换接口。成功和失败反馈仍然由现有消息提示承接。</p>
         </div>
         <a-form :model="formState" name="vipExchangeForm" :rules="rules" @finish="onFinish" layout="vertical">
           <a-form-item label="兑换码" name="vipCode">
@@ -34,7 +33,6 @@
         <div class="paper-panel paper-section">
           <div class="panel-intro vip-benefits-head">
             <span class="sketch-note">Benefits</span>
-            <p>这是权益说明，不是装饰。用户在提交前应该先知道自己买到了什么。</p>
           </div>
           <ul class="benefits-list">
             <li><CheckCircleFilled /> 无限制图片上传</li>

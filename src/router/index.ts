@@ -86,6 +86,12 @@ const router = createRouter({
       component: MySpacePage,
     },
     {
+      path: '/my_team_space',
+      name: '我的团队空间',
+      component: MySpacePage,
+      props: { mode: 'team' },
+    },
+    {
       path: '/space/:id',
       name: '空间详情',
       component: SpaceDetailPage,

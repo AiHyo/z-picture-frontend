@@ -177,7 +177,7 @@ const originItems = [
     key: '/vip_exchange',
     label: '会员兑换',
     title: '会员兑换',
-  }
+  },
 ]
 
 const filterMenus = (menus = [] as MenuProps['items']) => {
